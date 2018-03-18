@@ -40,6 +40,8 @@ for(var j = 0; j < level.length; j++) {
 	
 	for(var i = 0; i < level[j].length; i++) {		
 		
+		// Get a free case
+		
 		if(freeCases[j][i]) {
 			
 			var ax = i;
@@ -51,23 +53,26 @@ for(var j = 0; j < level.length; j++) {
 			var horizontalExtensionPossible = true;
 			var verticalExtensionPossible = true;
 			
+			// While it is possible to extend the rect vertically or horizontally
+			
 			while((horizontalExtensionPossible || verticalExtensionPossible) && bx < level[j].length && by < level.length) {
 				
 				if(horizontalExtensionPossible) {
 					bx++;
-					
-					//console.log("Try", i, j, {ax : ax, ay : ay, bx : bx, by: by})
-					
+										
 					for(var y = ay; y <= by; y++) {
+						
+						// Extend horizontally is no longer possible
 						
 						if(!freeCases[y][bx]) {
 							horizontalExtensionPossible = false;
 							bx--;
 							break;
-							console.log("Failed")
 						}
 						
 					}
+					
+					// Mark extended cases as non free
 					
 					for(var y = ay; y <= by; y++) {
 						freeCases[y][bx] = false;
@@ -80,6 +85,8 @@ for(var j = 0; j < level.length; j++) {
 					
 					for(var x = ax; x <= bx; x++) {
 						
+						// Extend vertically is no longer possible
+						
 						if(!freeCases[by][x]) {
 							verticalExtensionPossible = false;
 							by--;
@@ -88,6 +95,8 @@ for(var j = 0; j < level.length; j++) {
 						
 					}
 					
+					// Mark extended cases as non free
+					
 					for(var x = ax; x <= bx; x++) {
 						freeCases[by][x] = false;
 						outputLevel[by][x] = rectId;
@@ -95,6 +104,8 @@ for(var j = 0; j < level.length; j++) {
 				}			
 				
 			}
+			
+			// When extension no extension is no longer possible, finalize the rect
 		
 			outputLevel[ay][ax] = rectId;
 		
@@ -107,11 +118,15 @@ for(var j = 0; j < level.length; j++) {
 				j++;
 			}
 			
+			// Let's go to the next rect
+			
 			rectId++;
 		}
 
 	}
 }
+
+// Display the rects
 
 console.log("")
 
