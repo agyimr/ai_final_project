@@ -53,3 +53,7 @@ fabric.properties
 
 bin/
 build.xml
+
+.idea/*
+*.xml
+*.iml

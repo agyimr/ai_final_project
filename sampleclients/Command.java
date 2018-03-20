@@ -1,7 +1,7 @@
 package sampleclients;
 
 import java.util.LinkedList;
-
+import java.util.Arrays;
 public class Command {
 	static {
 		LinkedList< Command > cmds = new LinkedList< Command >();
@@ -25,6 +25,7 @@ public class Command {
 		}
 
 		every = cmds.toArray( new Command[0] );
+//		System.err.println(every.toString());
 	}
 
 	public final static Command[] every;
