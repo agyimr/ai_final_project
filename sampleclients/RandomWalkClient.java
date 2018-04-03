@@ -21,7 +21,11 @@ public class RandomWalkClient {
 	public RandomWalkClient() throws IOException {
 		readMap();
 		Agent someAgent = agents.get(2);
-        LinkedList<Node> path = someAgent.findPath(5, 5);
+        LinkedList<Node> path = someAgent.findPath(5, 6);
+        System.err.println(path + " for Agent: " + someAgent);
+        
+		someAgent = agents.get(4);
+        path = someAgent.findPath(5, 5);
         System.err.println(path + " for Agent: " + someAgent);
 	}
 
@@ -106,15 +110,22 @@ public class RandomWalkClient {
 	}
 
 	public static void main( String[] args ) {
-
 		// Use stderr to print to console
 		System.err.println( "Hello from RandomWalkClient. I am sending this using the error outputstream" );
 		try {
 			RandomWalkClient client = new RandomWalkClient();
-			while ( client.update() )
-				;
+			while ( client.update() ) {
+				//System.err.println("[Server:"+System.in.readString()+"]");
+				System.err.print("Server:");
+				int ch;
+			    while ((ch = System.in.read ()) != ']') {
+			    	System.err.print((char) ch);
+			    }
+				System.err.println();
+				
+			}
 
-		} catch ( IOException e ) {
+		} catch ( IOException e ) {	
 			// Got nowhere to write to probably
 		}
 	}
