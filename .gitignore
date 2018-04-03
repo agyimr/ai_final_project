@@ -57,3 +57,5 @@ build.xml
 .idea/*
 *.xml
 *.iml
+.project
+.classpath
