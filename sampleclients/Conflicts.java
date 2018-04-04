@@ -48,47 +48,65 @@ public class Conflicts {
 	}
 	//This method is for detecting and delegating the type of conflict to the correct methods
 	private void delegateConflictType(Agent agent1, Agent agent2, char[][] board){
-		int a1X = agent1.getX(); int a1Y = agent1.getY(); int a2X = agent1.getX(); int a2Y = agent1.getY();
-		Node a1nextStep = agent1.path.getFirst();
-		Node a2nextStep = agent2.path.getFirst();
-		//Easy nop case
-		if(a1nextStep==a2nextStep){
-			int prio1 =	calculatePriority(agent1);
-			int prio2 = calculatePriority(agent2);
+		//Easy nop case  TODO
+		int prio1 =	calculatePriority(agent1);
+		int prio2 = calculatePriority(agent2);
+		Agent pawn = (prio1 > prio2) ? agent2 : agent1;
+		Agent king = (prio1 < prio2) ? agent2 : agent1;
 
-			if(prio1>prio2){
+		if(king.boxAttached){
+			//twice
+			i=2;
+		} else{
+			i=1;
+		}
+		//TODO (J=1/0, første action poppet?)
 
-				if(agent1.boxAttached?){
-					//nop agent2 X2
-				} else{
-					//nop agent2 X1
-				}
-				//nop agent 2
-			} else if (prio1<prio2){
-				if(agent2.boxAttached){
-					//nop agent1 X2
-				} else{
-					//nop agent1 X1
+		Node tmpPosA = null;
+		List<Node> posPrio;
+		List<Node> posPawn;
+		for (int j = 1; j < i; j++) {
+			Command ck = king.path.get(j);
+			Command cp = pawn.path.get(j);
+
+			if(tmpPosA != null){
+				posPrio = ck.getNext(tmpPosA.getX(),tmpPosA.getY());
+				posPawn = cp.getNext(pawn.getX(),pawn.getY());
+			} else{
+				posPrio = ck.getNext(king.getX(),king.getY());
+				posPawn = cp.getNext(pawn.getX(),pawn.getY());
+			}
+
+			//TODO Node == Pos CHANGE?
+
+			//
+			if(!posPawn.contains(posPrio)){
+
+				break;
+			}else{
+				pawn.path.add(NOOP)
+				if(posPrio.contains(pawnPoint)){
+					planmerge();
 				}
 			}
-			break;
-		} 
-		//planmerge instead
-		else{
-			planMerge();
+			tmpPosA = posPrio.get(0);
 		}
+		
 	}
+
+
 	//For use in deciding who goes first in a simple conflict
 	private int calculatePriority(Agent agent1){
 		int ID = agent1.getID();
 		int heuristicsToGoal = 0;
-		
 		int prio = ID + heuristicsToGoal;
-		
 		return prio;
 
 
 	}
+	
+	
+	
 	//More difficult conflict where one needs to backtrack or go around with/without box
 	private void planMerge(){
 		//not impl
