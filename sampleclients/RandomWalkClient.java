@@ -10,8 +10,9 @@ public class RandomWalkClient {
 	private BufferedReader in = new BufferedReader( new InputStreamReader( System.in ) );
 	private List< Agent > agents = new ArrayList< Agent >();
     private List< Box > boxes = new ArrayList< Box>();
-
     //GLOBAL HERE
+    public static Map<String, List<MovingObject>> ColorGroups;
+    public static Map<Character, Goal> goals = new HashMap<Character, Goal>();
     public static int MainBoardYDomain = 0, MainBoardXDomain = 0;
     public static char[][] MainBoard; //every state change is seen on the main board
     public static boolean isAgent (char id) { return ( '0' <= id && id <= '9' );}
@@ -19,10 +20,10 @@ public class RandomWalkClient {
     public static boolean isGoal (char id) { return ( 'a' <= id && id <= 'z' ); }
     public static boolean isWall (char id) {return (id == '+');}
 	public RandomWalkClient() throws IOException {
-		readMap();
-		Agent someAgent = agents.get(2);
-        LinkedList<Node> path = someAgent.findPath(5, 5);
-        System.err.println(path + " for Agent: " + someAgent);
+		readMap(); // do not do anything before!
+/*		Agent someAgent = agents.get(2);
+        LinkedList<Node> path = someAgent.findPathToBox(ColorGroups.get(someAgent.getColor()).get(2));
+        System.err.println(path + " for Agent: " + someAgent);*/
 	}
 
 	private void readMap() throws IOException {
@@ -37,41 +38,56 @@ public class RandomWalkClient {
 			for ( String id : line.split( ":" )[1].split( "," ) )
 				colors.put( id.charAt( 0 ), color );
 		}
-
         // Read lines specifying level layout
+        ColorGroups = new HashMap<String, List<MovingObject>>(colors.size());
         ArrayList<String> table = new ArrayList<>();
-		int currentColumn = 0;
+		int currentX = 0;
         while ( !line.equals( "" ) ) {
             for ( int i = 0; i < line.length(); i++ ) {
                 char id = line.charAt( i );
                 if (isAgent(id)) {
-                    agents.add( new Agent( id, colors.get( id ), MainBoardYDomain, currentColumn) );
+                    String currentColor = colors.get( id );
+                    if(currentColor == null) currentColor = "blue";
+                    Agent newAgent = new Agent( id,currentColor, MainBoardYDomain, currentX);
+                    agents.add( newAgent );
+
                 }
                 else if (isBox(id)) {
-                    boxes.add( new Box( id, colors.get( id ), MainBoardYDomain, currentColumn ) );
+                    String currentColor = colors.get( id );
+                    if(currentColor == null) currentColor = "blue";
+                    Box newBox = new Box( id, currentColor, MainBoardYDomain, currentX);
+                    boxes.add( newBox );
+                    List<MovingObject> result = ColorGroups.get(currentColor);
+                    if (ColorGroups.get(currentColor) == null) {
+                        result = new ArrayList<MovingObject>();
+                        result.add(newBox);
+                        ColorGroups.put(currentColor, result);
+                    }
+                    else {
+                        result.add(newBox);
+                    }
+                }
+                else if(isGoal(id)) {
+                    goals.put(id, new Goal(id, MainBoardYDomain, currentX));
                 }
 
-                ++currentColumn;
+                ++currentX;
             }
-//            System.err.println(line); //prints a map
-            if(MainBoardXDomain < currentColumn) {
-                MainBoardXDomain = currentColumn; }
+            if(MainBoardXDomain < currentX) {
+                MainBoardXDomain = currentX; }
             table.add(line);
             line = in.readLine();
-            currentColumn = 0;
+            currentX = 0;
             ++MainBoardYDomain;
         }
-
-
         Collections.sort(agents, (left, right) -> left.getID() - right.getID());
-
 
         MainBoard = new char[MainBoardYDomain][MainBoardXDomain];
         for(int row = 0; row < MainBoardYDomain; ++row) {
             MainBoard[row] = table.get(row).toCharArray();
         }
-        printBoard(MainBoard);
-        System.err.println(agents);
+//        printBoard(MainBoard);
+//        System.err.println(ColorGroups);
 	}
 
     void printBoard(char board[][]) {
@@ -93,13 +109,15 @@ public class RandomWalkClient {
 		// Place message in buffer
 		System.out.println( jointAction );
 		System.err.println(jointAction);
-//		printBoard(MainBoard);
-		// Flush buffer
-		System.out.flush();
 
-		// Disregard these for now, but read or the server stalls when its output buffer gets filled!
-		String percepts = in.readLine();
-		if ( percepts == null )
+		// Flush buffer
+        System.out.flush();
+
+        // Disregard these for now, but read or the server stalls when its output buffer gets filled!
+        String percepts = in.readLine();
+        System.err.println(percepts);
+        printBoard(MainBoard);
+        if ( percepts == null )
 			return false;
 
 		return true;
