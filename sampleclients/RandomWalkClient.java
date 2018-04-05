@@ -124,15 +124,26 @@ public class RandomWalkClient {
 	}
 
 	public static void main( String[] args ) {
-
 		// Use stderr to print to console
 		System.err.println( "Hello from RandomWalkClient. I am sending this using the error outputstream" );
 		try {
 			RandomWalkClient client = new RandomWalkClient();
-			while ( client.update() )
-				;
+			Conflicts conf = new Conflicts();
+			while ( client.update() ) {
+				//System.err.println("[Server:"+System.in.readString()+"]");
+				System.err.print("Server:");
+				int ch;
+				StringBuilder sb = new StringBuilder();
+			    while ((ch = System.in.read ()) != ']') {
+			    	System.err.print((char) ch);
+			    	sb.append((char) ch);
+			    }
+				System.err.println();
+				String response = sb.toString();
+				conf.handleConflict(response);
+			}
 
-		} catch ( IOException e ) {
+		} catch ( IOException e ) {	
 			// Got nowhere to write to probably
 		}
 	}

@@ -2,6 +2,7 @@ package sampleclients;
 
 import java.util.LinkedList;
 import java.util.Arrays;
+import java.util.*;
 public class Command {
 	static {
 		LinkedList< Command > cmds = new LinkedList< Command >();
@@ -70,5 +71,33 @@ public class Command {
 	public String toActionString() {
 		return "[" + this.toString() + "]";
 	}
+	
+	public List<Node> getReservedNodes(int x ,int y){
+		List<Node> n = new ArrayList<Node>();
+		try{
+            switch (dir1) {
+                case N:
+                    n.add(new Node(y - 1, x));
+                    break;
 
+                case S:
+                    n.add(new Node(y + 1, x));
+                    break;
+
+                case E:
+                	n.add(new Node(y, x + 1));
+                    break;
+
+                case W:
+                	n.add(new Node(y, x - 1));
+                    break;
+
+            }
+            return n;
+        }
+        catch(UnsupportedOperationException exc) {
+
+            return n;
+        }
+	}
 }
