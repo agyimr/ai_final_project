@@ -13,7 +13,7 @@ public class Agent extends MovingObject {
         super(id, color, y, x, "Agent");
     }
     public String act() {
-
+        //TODO surprisingly server does not allow agents to follow each other, need to find a workaround
         if(attachedBox == null) {
             if(!findABox()) {
                 return "NoOp";

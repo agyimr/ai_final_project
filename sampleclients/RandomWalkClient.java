@@ -140,7 +140,7 @@ public class RandomWalkClient {
 			    }
 				System.err.println();
 				String response = sb.toString();
-				conf.handleConflict(response);
+				//conf.handleConflict(response);
 			}
 
 		} catch ( IOException e ) {	
