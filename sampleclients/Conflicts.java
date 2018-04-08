@@ -47,27 +47,27 @@ public class Conflicts {
 	public List<String> BackTrack(char[][] map, List<String> plan, Point p1, Point p2 ){
 		Point agent1 = p1, agent2=p2;
 		List<String> newP = new ArrayList<String>();
-		
+
 		int planPointer = 0;
 		while(true) {
 			List<Point> blocked = new ArrayList<Node>();
 			Point blocked1 = agent1;
 			Point blocked2 = getPointFrom(plan.get(planPointer),agent1);
-			
+
 			Point blocked3 = blocked2;
 			if(planPointer < plan.size()-1) {
 				blocked3 = getPointFrom(plan.get(planPointer+1),blocked2);
 			}
-			
+
 			blocked.add(blocked1);
 			blocked.add(blocked2);
 			blocked.add(blocked3);
-//			System.out.println();
-//			System.out.println("iteration:"+planPointer);
-//			System.out.println("agent1:"+agent1);
-//			System.out.println("agent2:"+agent2);
-//			System.out.println();
-			
+			//			System.out.println();
+			//			System.out.println("iteration:"+planPointer);
+			//			System.out.println("agent1:"+agent1);
+			//			System.out.println("agent2:"+agent2);
+			//			System.out.println();
+
 			//////////// Searh directions ///////////////
 			Point candidat;
 			//North
@@ -76,7 +76,7 @@ public class Conflicts {
 				newP.add("Move(N)");
 				break;
 			}
-			
+
 			//South
 			candidat = getPointFrom("Move(S)",agent2);
 			if(!blocked.contains(candidat) && map[candidat.y][candidat.x] == ' ') {
@@ -96,44 +96,22 @@ public class Conflicts {
 				break;
 			}
 			////////////////////////////////////////////
-			
-			
+
+
 			//if no solution
 			planPointer++;
 			newP.add(plan.get(planPointer));
-			
+
 			agent1 = blocked2;
 			agent2 = blocked3;
-			
+
 			//System.out.println(newP.get(0));
 		}
-		
-		
+
+
 		return newP;
 	}
-	
-	
-	public static Point getPointFrom(String action,Point p) {
-		Point newPoint = (Point) p.clone();
-		if(action == "Move(N)") {
-			newPoint.y--;
-			return newPoint;
-		}
-		if(action == "Move(S)") {
-			newPoint.y++;
-			return newPoint;
-		}
-		if(action == "Move(E)") {
-			newPoint.x++;
-			return newPoint;
-		}
-		if(action == "Move(W)") {
-			newPoint.x--;
-			return newPoint;
-		}
-		return null;
-		
-	}
+
 	public static void printMap(char[][] m) {
 		for(int i = 0;i<m.length;i++) {
 			for(int j = 0; j<m[0].length;j++) {
@@ -142,8 +120,6 @@ public class Conflicts {
 			System.out.println();
 		}
 	}
-}
-}
 	//This method is for detecting and delegating the type of conflict to the correct methods
 	private void delegateConflictType(Agent agent1, Agent agent2, char[][] board){
 		//Easy nop case  TODO
@@ -189,10 +165,8 @@ public class Conflicts {
 			}
 			tmpPosA = posPrio.get(0);
 		}
-		
+
 	}
-
-
 	//For use in deciding who goes first in a simple conflict
 	private int calculatePriority(Agent agent1){
 		int ID = agent1.getID();
@@ -202,10 +176,29 @@ public class Conflicts {
 
 
 	}
-	
-	
-	
 	//More difficult conflict where one needs to backtrack or go around with/without box
-	private void planMerge(){
-		//not impl
+	
+	private void planMerge(Agent kingAgent, Agent pawnAgent){
+		int kingPathIndex;
+		LinkedList<Command> kingPath = kingAgent.path;
+		Command lastPawnCommand = pawnAgent.path.get(0); //TODO (get 0 i linkedlist ??? er det poppet??) (COMMAND/NODE)
+		//First find pawnAgent position relative to kingAgent.
+		Point kAgentPos = new Point(kingAgent.getX(),kingAgent.getY());
+		}
 	}
+}
+
+
+
+
+
+
+
+
+
+//Loop
+// reverse af sidste commando til BFS
+// Sig til BFS at der ikke skal søges i 2 af retningerne
+// list<commando> returneret, nop king 1 gang, og tillæg dette til planen
+// Ellers hvis NULL returneret, gå 1 bagud, og BFS igen.
+//Der skal hele tiden holdes øje med positionen i planen.
