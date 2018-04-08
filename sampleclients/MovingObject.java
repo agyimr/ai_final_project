@@ -7,14 +7,14 @@ import static sampleclients.Command.type;
 
 public class MovingObject extends BasicObject {
     private String color;
-    private char id;
     public LinkedList<Node> path;
-    public MovingObject ( char id, String color, int currentRow, int currentColumn , String ObjectType) {
-        super(currentRow, currentColumn, ObjectType);
+    Goal steppedOnGoal = null;
+    public MovingObject ( char id, String color, int y, int x , String ObjectType) {
+        super(y, x, id,  ObjectType);
         this.color = color;
-        this.id = id;
+
     }
-    public char getID() { return id;}
+
     public String getColor(){ return color;}
 
     public String move(dir Direction) throws UnsupportedOperationException {
@@ -23,33 +23,43 @@ public class MovingObject extends BasicObject {
         try{
             switch (Direction) {
                 case N:
-                    changePosition(getY() - 1, getX());
+                    changePosition(getX(), getY() - 1);
                     break;
 
                 case S:
-                    changePosition(getY() + 1, getX());
+                    changePosition(getX(), getY() + 1);
                     break;
 
                 case E:
-                    changePosition(getY(), getX() + 1);
+                    changePosition(getX()+ 1, getY());
                     break;
 
                 case W:
-                    changePosition(getY(), getX() - 1);
+                    changePosition(getX() - 1, getY());
                     break;
 
             }
         }
         catch(UnsupportedOperationException exc) {
-
-            return "NoOp";
+            throw exc;
         }
         return type.Move + "(" + Direction + ")";
     }
     //Overloaded method, beware!
     public String move(int x, int y) throws UnsupportedOperationException {
-        if(RandomWalkClient.MainBoard[getY()][getX()] != getID()) return "NoOp";
-        dir Direction = dir.N;
+//        if(RandomWalkClient.MainBoard[getY()][getX()] != getID()) return "NoOp";
+
+        String move = type.Move + "(" + getDirection(x, y) + ")";
+        try{
+            changePosition(x, y);
+        }
+        catch(UnsupportedOperationException exc) {
+            throw exc;
+        }
+        return move;
+    }
+    dir getDirection(int x,int y) {
+        dir Direction = null;
         if(x!=getX()) {
             if(x>getX()) {
                 Direction = dir.E;
@@ -64,34 +74,44 @@ public class MovingObject extends BasicObject {
                 Direction = dir.N;
             }
         }
-        try{
-            changePosition(y, x);
-        }
-        catch(UnsupportedOperationException exc) {
-            return "NoOp";
-        }
-        System.err.println(Direction);
-        return type.Move + "(" + Direction + ")";
+        return Direction;
     }
-    void changePosition(int y, int x) throws UnsupportedOperationException {
+    public void changePosition(int x, int y) throws UnsupportedOperationException {
         if(yOutOfBounds(y)
                 || xOutOfBounds(x)
                 || !spaceEmpty(y,x)) throw new UnsupportedOperationException();
-        RandomWalkClient.MainBoard[getY()][getX()] = ' ';
+        if(steppedOnGoal != null) {
+            RandomWalkClient.MainBoard[getY()][getX()] = steppedOnGoal.getID();
+            steppedOnGoal = null;
+        }
+        if(RandomWalkClient.isGoal(RandomWalkClient.MainBoard[y][x])) {
+            steppedOnGoal = RandomWalkClient.goals.get(RandomWalkClient.MainBoard[y][x]);
+        }
+        forceNewPosition(x, y);
+    }
+    public void forceNewPosition(int x, int y) {
+        //make sure you know what you're doing
+        if(RandomWalkClient.MainBoard[getY()][getX()] == getID())
+            RandomWalkClient.MainBoard[getY()][getX()] = ' ';
         setY(y);
         setX(x);
         RandomWalkClient.MainBoard[y][x] = getID();
     }
     boolean yOutOfBounds(int y) { return (y > (RandomWalkClient.MainBoardYDomain - 1) || y < 0);}
     boolean xOutOfBounds(int x) {return (x >= (RandomWalkClient.MainBoardXDomain) || x < 0);}
-    boolean spaceEmpty(int y, int x) {return RandomWalkClient.MainBoard[y][x] == ' '; }
+    boolean spaceEmpty(int y, int x) {return RandomWalkClient.isGoal(RandomWalkClient.MainBoard[y][x]) || RandomWalkClient.MainBoard[y][x] == ' '; }
 
+    @Override
+    public String toString() {
+        return getObjectType() + " id:" + getID() + " color: " + getColor() + " at position: (" + getX() + ", " + getY() + ")";
+    }
 
     public LinkedList<Node> findPath(int xGoal, int yGoal) {
         path = doAStar(new Node(getX(), getY()), new Node(xGoal, yGoal));
+        if(path != null)
+            path.removeFirst();
         return path;
     }
-
 
     public static LinkedList<Node> doAStar(Node start, Node goal) {
         Set<Node> closed = new HashSet<Node>();
