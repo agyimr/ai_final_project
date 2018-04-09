@@ -1,5 +1,6 @@
 package sampleclients;
 
+import sampleclients.ConflictBFS;
 import java.awt.Point;
 import java.io.*;
 import java.util.*;
@@ -19,8 +20,8 @@ public class Conflicts {
 		
 		if(!noopFix(pawnAgent, kingAgent)){
 			if(!planMerge(kingAgent,pawnAgent,board)){
-				if(!Bid()){
-					system.err.println("Conflict can not be resolved on kingAgent"+kingAgent.getID+"and pawnAgent"+pawnAgent.getID);
+				if(!bid()){
+					System.err.println("Conflict can not be resolved on kingAgent"+kingAgent.getID()+"and pawnAgent"+pawnAgent.getID());
 				}
 			}
 		}			
@@ -31,8 +32,8 @@ public class Conflicts {
 		List<Point> pawnArea = new ArrayList<Point>();		
 		pawnArea.add(new Point(pawnAgent.getX(),pawnAgent.getY()));
 		
-		if (pawnAgent.isBoxAttached){
-			pawnArea.add(new Point(pawnAgent.getBoxX,pawnAgent.getBoxY)); //FIX 
+		if(pawnAgent.isBoxAttached()){
+			pawnArea.add(new Point(pawnAgent,pawnAgent.getBoxY())); //FIX
 		}
 		
 		List<Point> kingArea = new ArrayList<Point>();
@@ -40,23 +41,23 @@ public class Conflicts {
 		
 		
 		kingArea.add(new Point(kingAgent.getX(),kingAgent.getY()));
-		int i =1;
-		if(kingAgent.isBoxAttached){
-			i--;
-			kingArea.add(new Point(kingAgent.getBoxX,kingAgent.getBoxY));
+		int ij =1;
+		if(kingAgent.isBoxAttached()){
+			ij--;
+			kingArea.add(new Point(kingAgent.getBoxX(),kingAgent.getBoxY()));
 		}
 		kingArea.add(kingCommand.getNext(kingArea));
 		
 		
 		
-		for (i; i < 3; i++) {
+		for (int i = ij; i < 3; i++) {
 			kingCommand = kingAgent.path.get(i);
 			kingArea = kingCommand.getNext(kingArea);
-			if(kingArea.contains(pawnArea){
+			if(kingArea.contains(pawnArea)){
 				return false;
 			}
 		}
-		if(kingAgent.isBoxAttached){
+		if(kingAgent.isBoxAttached()){
 			pawnAgent.path.add(new Command());
 		}
 		pawnAgent.path.add(new Command());
@@ -81,31 +82,30 @@ public class Conflicts {
 		Point posKing = new Point(kingAgent.getX(),kingAgent.getY()); //Node 0 for the king
 		//How do i get box position?
 		Point posBox = new Point(posKing.getBoxX(),posKing.getBoxY());
-		
-		List<Point> pos = new List<Point>();
+		List<Point> pos = new ArrayList<Point>();
 		pos.add(posKing);
 		pos.add(posBox);
 		//Run though path 7 times, and return a list of those points?
 		int numLocked = 7;
-		List<Point> locked = new List<Point>();
+		List<Point> locked = new ArrayList<Point>();
 		
 		for (int i = 0; i < numLocked; i++) {
 			Node tmpPos = kingAgent.path.get(i);
 			Point tmpPoint = new Point(tmpPos.getX(),tmpPos.getY());
 			locked.add(tmpPoint);
 		}
-		List<Command> solution = doBFS(locked, pos, board);
-		if(solution.length == 0){
+		List<Command> solution = ConflictBFS.doBFS(locked, pos, board);
+		if(solution.size() == 0){
 			return false;
 		}
-		return true
+		return true;
 	}
 	
 	
-	//private boolean bid(){
-		
-		
-	//}
+	private boolean bid(){
+		System.err.println("NotDoneYet");
+
+	}
 	
 	
 	
@@ -158,7 +158,7 @@ public class Conflicts {
 
 //Loop
 // reverse af sidste commando til BFS
-// Sig til BFS at der ikke skal søges i 2 af retningerne
-// list<commando> returneret, nop king 1 gang, og tillæg dette til planen
-// Ellers hvis NULL returneret, gå 1 bagud, og BFS igen.
-//Der skal hele tiden holdes øje med positionen i planen.
+// Sig til BFS at der ikke skal sï¿½ges i 2 af retningerne
+// list<commando> returneret, nop king 1 gang, og tillï¿½g dette til planen
+// Ellers hvis NULL returneret, gï¿½ 1 bagud, og BFS igen.
+//Der skal hele tiden holdes ï¿½je med positionen i planen.

@@ -7,7 +7,7 @@ import sampleclients.Command.dir;
 import sampleclients.Command.type;
 
 public class ConflictBFS {
-	public List<Command> doBFS(List<Point> locked, List<Point> pos, char[][] map){
+	public static List<Command> doBFS(List<Point> locked, List<Point> pos, char[][] map){
 		List<ConflictNode> frontier = new ArrayList<ConflictNode>();
 		List<ConflictNode> explored = new ArrayList<ConflictNode>();
 		List<Command> path = new ArrayList<Command>();
@@ -66,7 +66,7 @@ public class ConflictBFS {
 		return path;
 	}
 	
-	private List<ConflictNode> getNeighbours(ConflictNode cur,List<Point> startPos, char[][] map){
+	private static List<ConflictNode> getNeighbours(ConflictNode cur,List<Point> startPos, char[][] map){
 		List<ConflictNode> n = new ArrayList<ConflictNode>();
 		dir boxdir = null;
 		Command[] allCommands = Command.every;
@@ -114,7 +114,7 @@ public class ConflictBFS {
 		}
 		return n;
 	}
-	private boolean isAllowed(List<Point> cand,List<Point> startPos, char[][] map){
+	private static boolean isAllowed(List<Point> cand,List<Point> startPos, char[][] map){
 		//go through box and agent position. Check if they are free in the map
 		for(int i = 0; i < cand.size(); i++){
 			//disregard the starting position in the map
@@ -129,7 +129,7 @@ public class ConflictBFS {
 //		System.out.println("isAllowed: true");
 		return true;
 	}
-	private List<Command> generateGoalPath(ConflictNode goal){
+	private static List<Command> generateGoalPath(ConflictNode goal){
 		List<Command> solution = new ArrayList<Command>();
 		
 		ConflictNode cur = goal;
@@ -141,7 +141,7 @@ public class ConflictBFS {
 		
 		return solution;
 	}
-	public <E> boolean containsList(List<E> l1, List<E> l2){
+	public static <E> boolean containsList(List<E> l1, List<E> l2){
 		//goes through two list and returns false if one element is in the other list and vice versa
 		for(E n : l1){
 			if(l2.contains(n)){
@@ -151,7 +151,7 @@ public class ConflictBFS {
 		return false;
 		
 	}
-	private dir getBoxDir(ConflictNode cur){
+	private static dir getBoxDir(ConflictNode cur){
 		dir boxdir = null;
 		Point agent =  cur.getPoints().get(0);
 		Point box = cur.getPoints().get(1);
