@@ -180,4 +180,8 @@ public class Agent extends MovingObject {
         }
         return null;
     }
+    
+    public boolean isBoxAttached() {
+    	return attachedBox == null;
+    }
 }

@@ -42,13 +42,19 @@ public class Command {
 	};
 	
 	public static enum type {
-		Move, Push, Pull
+		Move, Push, Pull, Noop
 	};
 
 	public final type actType;
 	public final dir dir1;
 	public final dir dir2;
 
+	public Command() {
+		actType = type.Noop;
+		dir1 = null;
+		dir2 = null;
+	}
+	
 	public Command( dir d ) {
 		actType = type.Move;
 		dir1 = d;
@@ -74,6 +80,12 @@ public class Command {
 	}
 	
 	public Point getNext(Point pos){
+		
+		//if noop return same point
+		if(actType.equals(type.Noop)) {
+			return pos;
+		}
+		
 		Point next = null;
 		Point agent = pos;
 		
@@ -102,6 +114,11 @@ public class Command {
 //		System.out.println(toString());
 		List<Point> next = new ArrayList<Point>();
 		Point agent = pos.get(0);
+		
+		//If noop return same point
+		if(actType.equals(type.Noop)) {
+			return pos;
+		}
 		
 		//North
 		if(dir1.equals(dir.N)){
