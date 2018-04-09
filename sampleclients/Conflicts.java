@@ -18,13 +18,12 @@ public class Conflicts {
 		Agent kingAgent = (priority1 < priority2) ? agent2 : agent1;
 		
 		if(!noopFix()){
-
 			if(!planMerge(kingAgent,pawnAgent,board)){
-				Bid();
+				if(!Bid()){
+					system.err.println("Conflict can not be resolved on kingAgent"+kingAgent.getID+"and pawnAgent"+pawnAgent.getID);
+				}
 			}
-			
-			system.err.println("Conflict can not be resolved on kingAgent"+kingAgent.getID+"and pawnAgent"+pawnAgent.getID);
-				
+		}			
 		
 		
 		
