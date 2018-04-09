@@ -12,50 +12,82 @@ public class Conflicts {
 	//This method is for detecting and delegating the type of conflict to the correct methods
 	private void delegateConflictType(Agent agent1, Agent agent2, char[][] board){
 		//Easy nop case  TODO
-		int prio1 =	calculatePriority(agent1);
-		int prio2 = calculatePriority(agent2);
-		Agent pawn = (prio1 > prio2) ? agent2 : agent1;
-		Agent king = (prio1 < prio2) ? agent2 : agent1;
-		int i;
-		if(king.isBoxAttached()){
-			//twice
-			i=2;
+		int priority1 =	calculatePriority(agent1);
+		int priority2 = calculatePriority(agent2);
+		Agent pawnAgent = (priority1 > priority2) ? agent2 : agent1;
+		Agent kingAgent = (priority1 < priority2) ? agent2 : agent1;
+		
+		if(noopFix()==true){
+			pawnAgent.path.add(new Command());
 		} else{
-			i=1;
-		}
-		//TODO (J=1/0, første action poppet?)
-
-		Node tmpPosA = null;
-		List<Node> posPrio;
-		List<Node> posPawn;
-		for (int j = 1; j < i; j++) {
-			Command ck = king.path.get(j);
-			Command cp = pawn.path.get(j);
-
-			if(tmpPosA != null){
-				posPrio = ck.getNext(tmpPosA.getX(),tmpPosA.getY());
-				posPawn = cp.getNext(pawn.getX(),pawn.getY());
-			} else{
-				posPrio = ck.getNext(king.getX(),king.getY());
-				posPawn = cp.getNext(pawn.getX(),pawn.getY());
+			if(planMerge(kingAgent,pawnAgent,board)==false){
+				Bid();
 			}
-
-			//TODO Node == Pos CHANGE?
-
-			//
-			if(!posPawn.contains(posPrio)){
-
-				break;
-			}else{
-				pawn.path.add(new Command());
-				if(posPrio.contains(pawnPoint)){
-					planMerge(king,pawn,board);
-				}
-			}
-			tmpPosA = posPrio.get(0);
+			
+			system.err.println("Conflict can not be resolved on kingAgent"+kingAgent.getID+"and pawnAgent"+pawnAgent.getID);
+			
 		}
-
+		
+		
+		
 	}
+	
+	private boolean noopFix(Agent pawnAgent, Agent kingAgent){
+		//Find next two points for king, if intersects with pawnAgent pos, return false, else true.
+		Point pawnPoint = new Point(pawnAgent.getX(),pawnAgent.getY());
+		if (pawnAgent.isBoxAttached){
+			Point pawnBoxPoint = new Point(pawnAgent.getBoxX,pawnAgent.getBoxY);
+		}
+		for (int i = 0; i < 3; i++) {
+			Command tmpC = kingAgent.path.get(i);
+			Point tmpP = tmpC.getNext(new Point(kingAgent.getX(),kingAgent.getY()));
+			if(tmpP == pawnPoint || tmpP == pawnBoxPoint){
+				return false;
+			}
+		}
+		return true;
+		
+		
+	}
+//		int i;
+//		if(kingAgent.isBoxAttached()){
+//			i=2;
+//		} else{
+	
+//			i=1;
+//		}
+//
+//		Node temporaryPosition = null;
+//		List<Node> posKing = new ArrayList<Node>();
+//		List<Node> posPawn = new ArrayList<Node>();
+//		for (int j = 0; j < i; j++) {
+//			Command ck = kingAgent.path.get(j);
+//			Command cp = pawnAgent.path.get(j);
+//
+//			if(temporaryPosition != null){
+//				posKing = ck.getNext(new Point(temporaryPosition.getX(),temporaryPosition.getY()));
+//				posPawn = cp.getNext(new Point(pawnAgent.getX(),pawnAgent.getY()));
+//			} else{
+//				posKing = ck.getNext(new Point(kingAgent.getX(),kingAgent.getY()));
+//				posPawn = cp.getNext(new Point(pawnAgent.getX(),pawnAgent.getY()));
+//			}
+//
+//			if(!posPawn.contains(posKing)){
+//
+//				break;
+//			}else{
+//				pawnAgent.path.add(new Command());
+//				pawnAgent.path.add(new Command());
+//				if(posKing.contains(pawnPoint)){ //Check if resolved?
+//					planMerge(kingAgent,pawnAgent,board);
+//					kingAgent.path.add(new Command());
+//					kingAgent.path.add(new Command());
+//				}
+//			}
+//			temporaryPosition = posKing.get(0);
+//		}
+
+	
 	//For use in deciding who goes first in a simple conflict
 	private int calculatePriority(Agent agent1){
 		int ID = agent1.getID();
@@ -67,7 +99,7 @@ public class Conflicts {
 	}
 	//More difficult conflict where one needs to backtrack or go around with/without box
 	
-	private void planMerge(Agent kingAgent, Agent pawnAgent, char[][] board){
+	private boolean planMerge(Agent kingAgent, Agent pawnAgent, char[][] board){
 		int index = 0;
 		Point posKing = new Point(kingAgent.getX(),kingAgent.getY()); //Node 0 for the king
 		//How do i get box position?
@@ -85,9 +117,15 @@ public class Conflicts {
 			Point tmpPoint = new Point(tmpPos.getX(),tmpPos.getY());
 			locked.add(tmpPoint);
 		}
-		
 		List<Command> solution = doBFS(locked, pos, board);
+		if(solution.length == 0){
+			return false;
+		}
+		return true
 	}
+	
+	
+	private boolean bid()
 }
 
 
