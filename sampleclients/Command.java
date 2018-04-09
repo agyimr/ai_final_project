@@ -3,6 +3,7 @@ package sampleclients;
 import java.util.LinkedList;
 import java.util.Arrays;
 import java.util.*;
+import java.awt.Point;
 public class Command {
 	static {
 		LinkedList< Command > cmds = new LinkedList< Command >();
@@ -72,32 +73,98 @@ public class Command {
 		return "[" + this.toString() + "]";
 	}
 	
-	public List<Node> getReservedNodes(int x ,int y){
-		List<Node> n = new ArrayList<Node>();
-		try{
-            switch (dir1) {
-                case N:
-                    n.add(new Node(y - 1, x));
-                    break;
-
-                case S:
-                    n.add(new Node(y + 1, x));
-                    break;
-
-                case E:
-                	n.add(new Node(y, x + 1));
-                    break;
-
-                case W:
-                	n.add(new Node(y, x - 1));
-                    break;
-
-            }
-            return n;
-        }
-        catch(UnsupportedOperationException exc) {
-
-            return n;
-        }
+	public Point getNext(Point pos){
+		Point next = null;
+		Point agent = pos;
+		
+		//North
+		if(dir1.equals(dir.N)){
+			next = new Point( agent.x, agent.y-1 );
+		}
+		//West
+		if(dir1.equals(dir.W)){
+			next = new Point( agent.x-1, agent.y );
+		}
+		//East
+		if(dir1.equals(dir.E)){
+			next = new Point( agent.x+1, agent.y );
+		}
+		//South
+		if(dir1.equals(dir.S)){
+			next = new Point( agent.x, agent.y+1 );
+		}
+		
+		return next;
+	}
+	public List<Point> getNext(List<Point> pos){
+//		System.out.println(actType);
+//		System.out.println(pos.toString());
+//		System.out.println(toString());
+		List<Point> next = new ArrayList<Point>();
+		Point agent = pos.get(0);
+		
+		//North
+		if(dir1.equals(dir.N)){
+			next.add(new Point( agent.x, agent.y-1 ));
+		}
+		//West
+		if(dir1.equals(dir.W)){
+			next.add(new Point( agent.x-1, agent.y ));
+		}
+		//East
+		if(dir1.equals(dir.E)){
+			next.add(new Point( agent.x+1, agent.y ));
+		}
+		//South
+		if(dir1.equals(dir.S)){
+			next.add(new Point( agent.x, agent.y+1 ));
+		}
+		
+		
+		if(pos.size() == 2 && actType.equals(type.Pull)){
+			Point box = pos.get(1);
+			//North
+			if(dir2.equals(dir.N)){
+				next.add(new Point( box.x, box.y+1 ));
+			}
+			//West
+			if(dir2.equals(dir.W)){
+				next.add(new Point( box.x+1, box.y ));
+			}
+			//East
+			if(dir2.equals(dir.E)){
+				next.add(new Point( box.x-1, box.y ));
+			}
+			//South
+			if(dir2.equals(dir.S)){
+				next.add(new Point( box.x, box.y-1 ));
+			}
+			
+		}
+		
+		if(pos.size() == 2 && actType.equals(type.Push)){
+			Point box = pos.get(1);
+			//North
+			if(dir2.equals(dir.N)){
+				next.add(new Point( box.x, box.y-1 ));
+			}
+			//West
+			if(dir2.equals(dir.W)){
+				next.add(new Point( box.x-1, box.y ));
+			}
+			//East
+			if(dir2.equals(dir.E)){
+				next.add(new Point( box.x+1, box.y ));
+			}
+			//South
+			if(dir2.equals(dir.S)){
+				next.add(new Point( box.x, box.y+1 ));
+			}
+			
+		}
+		
+		
+		
+		return next;
 	}
 }
