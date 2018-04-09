@@ -17,16 +17,15 @@ public class Conflicts {
 		Agent pawnAgent = (priority1 > priority2) ? agent2 : agent1;
 		Agent kingAgent = (priority1 < priority2) ? agent2 : agent1;
 		
-		if(noopFix()==true){
-			pawnAgent.path.add(new Command());
-		} else{
-			if(planMerge(kingAgent,pawnAgent,board)==false){
+		if(!noopFix()){
+
+			if(!planMerge(kingAgent,pawnAgent,board)){
 				Bid();
 			}
 			
 			system.err.println("Conflict can not be resolved on kingAgent"+kingAgent.getID+"and pawnAgent"+pawnAgent.getID);
-			
-		}
+				
+		
 		
 		
 		
@@ -45,6 +44,12 @@ public class Conflicts {
 				return false;
 			}
 		}
+		if(pawnAgent.isBoxAttached){
+			pawnAgent.path.add(new Command());
+		
+		}
+		pawnAgent.path.add(new Command());
+		pawnAgent.path.add(new Command());
 		return true;
 		
 		
