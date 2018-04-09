@@ -17,79 +17,52 @@ public class Conflicts {
 		Agent pawnAgent = (priority1 > priority2) ? agent2 : agent1;
 		Agent kingAgent = (priority1 < priority2) ? agent2 : agent1;
 		
-		if(!noopFix()){
+		if(!noopFix(pawnAgent, kingAgent)){
 			if(!planMerge(kingAgent,pawnAgent,board)){
 				if(!Bid()){
 					system.err.println("Conflict can not be resolved on kingAgent"+kingAgent.getID+"and pawnAgent"+pawnAgent.getID);
 				}
 			}
 		}			
-		
-		
-		
-		
 	}
 	
 	private boolean noopFix(Agent pawnAgent, Agent kingAgent){
 		//Find next two points for king, if intersects with pawnAgent pos, return false, else true.
-		Point pawnPoint = new Point(pawnAgent.getX(),pawnAgent.getY());
+		List<Point> pawnArea = new ArrayList<Point>();		
+		pawnArea.add(new Point(pawnAgent.getX(),pawnAgent.getY()));
+		
 		if (pawnAgent.isBoxAttached){
-			Point pawnBoxPoint = new Point(pawnAgent.getBoxX,pawnAgent.getBoxY);
+			pawnArea.add(new Point(pawnAgent.getBoxX,pawnAgent.getBoxY)); //FIX 
 		}
-		for (int i = 0; i < 3; i++) {
-			Command tmpC = kingAgent.path.get(i);
-			Point tmpP = tmpC.getNext(new Point(kingAgent.getX(),kingAgent.getY()));
-			if(tmpP == pawnPoint || tmpP == pawnBoxPoint){
+		
+		List<Point> kingArea = new ArrayList<Point>();
+		Command kingCommand = kingAgent.path.get(0);
+		
+		
+		kingArea.add(new Point(kingAgent.getX(),kingAgent.getY()));
+		int i =1;
+		if(kingAgent.isBoxAttached){
+			i--;
+			kingArea.add(new Point(kingAgent.getBoxX,kingAgent.getBoxY));
+		}
+		kingArea.add(kingCommand.getNext(kingArea));
+		
+		
+		
+		for (i; i < 3; i++) {
+			kingCommand = kingAgent.path.get(i);
+			kingArea = kingCommand.getNext(kingArea);
+			if(kingArea.contains(pawnArea){
 				return false;
 			}
 		}
-		if(pawnAgent.isBoxAttached){
+		if(kingAgent.isBoxAttached){
 			pawnAgent.path.add(new Command());
-		
 		}
 		pawnAgent.path.add(new Command());
 		pawnAgent.path.add(new Command());
 		return true;
-		
-		
 	}
-//		int i;
-//		if(kingAgent.isBoxAttached()){
-//			i=2;
-//		} else{
-	
-//			i=1;
-//		}
-//
-//		Node temporaryPosition = null;
-//		List<Node> posKing = new ArrayList<Node>();
-//		List<Node> posPawn = new ArrayList<Node>();
-//		for (int j = 0; j < i; j++) {
-//			Command ck = kingAgent.path.get(j);
-//			Command cp = pawnAgent.path.get(j);
-//
-//			if(temporaryPosition != null){
-//				posKing = ck.getNext(new Point(temporaryPosition.getX(),temporaryPosition.getY()));
-//				posPawn = cp.getNext(new Point(pawnAgent.getX(),pawnAgent.getY()));
-//			} else{
-//				posKing = ck.getNext(new Point(kingAgent.getX(),kingAgent.getY()));
-//				posPawn = cp.getNext(new Point(pawnAgent.getX(),pawnAgent.getY()));
-//			}
-//
-//			if(!posPawn.contains(posKing)){
-//
-//				break;
-//			}else{
-//				pawnAgent.path.add(new Command());
-//				pawnAgent.path.add(new Command());
-//				if(posKing.contains(pawnPoint)){ //Check if resolved?
-//					planMerge(kingAgent,pawnAgent,board);
-//					kingAgent.path.add(new Command());
-//					kingAgent.path.add(new Command());
-//				}
-//			}
-//			temporaryPosition = posKing.get(0);
-//		}
 
 	
 	//For use in deciding who goes first in a simple conflict
@@ -129,7 +102,13 @@ public class Conflicts {
 	}
 	
 	
-	private boolean bid()
+	//private boolean bid(){
+		
+		
+	//}
+	
+	
+	
 }
 
 
@@ -138,6 +117,43 @@ public class Conflicts {
 
 
 
+//		int i;
+//		if(kingAgent.isBoxAttached()){
+//			i=2;
+//		} else{
+	
+//			i=1;
+//		}
+//
+//		Node temporaryPosition = null;
+//		List<Node> posKing = new ArrayList<Node>();
+//		List<Node> posPawn = new ArrayList<Node>();
+//		for (int j = 0; j < i; j++) {
+//			Command ck = kingAgent.path.get(j);
+//			Command cp = pawnAgent.path.get(j);
+//
+//			if(temporaryPosition != null){
+//				posKing = ck.getNext(new Point(temporaryPosition.getX(),temporaryPosition.getY()));
+//				posPawn = cp.getNext(new Point(pawnAgent.getX(),pawnAgent.getY()));
+//			} else{
+//				posKing = ck.getNext(new Point(kingAgent.getX(),kingAgent.getY()));
+//				posPawn = cp.getNext(new Point(pawnAgent.getX(),pawnAgent.getY()));
+//			}
+//
+//			if(!posPawn.contains(posKing)){
+//
+//				break;
+//			}else{
+//				pawnAgent.path.add(new Command());
+//				pawnAgent.path.add(new Command());
+//				if(posKing.contains(pawnPoint)){ //Check if resolved?
+//					planMerge(kingAgent,pawnAgent,board);
+//					kingAgent.path.add(new Command());
+//					kingAgent.path.add(new Command());
+//				}
+//			}
+//			temporaryPosition = posKing.get(0);
+//		}
 
 
 //Loop
