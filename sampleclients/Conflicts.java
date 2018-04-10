@@ -165,6 +165,9 @@ public class Conflicts {
 			return false;
 			//bid()
 		}
+		if(solution.size() == 0){
+			solution.add(new Command());
+		}
 		pawnAgent.replacePath(solution);
 		return true;
 	}
