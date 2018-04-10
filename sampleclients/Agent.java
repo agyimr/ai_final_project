@@ -181,6 +181,13 @@ public class Agent extends MovingObject {
         }
         return null;
     }
+<<<<<<< HEAD
+    
+    public boolean isBoxAttached() {
+    	return attachedBox == null;
+    }
+}
+=======
     void updatePosition() throws UnsupportedOperationException {
         //save'em so you can restore the state if sth goes wrong`
         int  AttachedBoxCoordX = 0,
@@ -222,3 +229,4 @@ public class Agent extends MovingObject {
 
     }
 }
+>>>>>>> master
