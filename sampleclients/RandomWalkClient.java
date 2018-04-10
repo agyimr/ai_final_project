@@ -14,7 +14,7 @@ public class RandomWalkClient {
     public static Map<String, List<MovingObject>> ColorGroups;
     public static Map<Character, Goal> goals = new HashMap<Character, Goal>();
     public static int MainBoardYDomain = 0, MainBoardXDomain = 0;
-    public static char[][] MainBoard; //every state change is seen on the main board
+    public static char[][] MainBoard; //every state change is seen on the main board TODO embed in a class
     public static boolean isAgent (char id) { return ( '0' <= id && id <= '9' );}
     public static boolean isBox (char id) { return ( 'A' <= id && id <= 'Z' );}
     public static boolean isGoal (char id) { return ( 'a' <= id && id <= 'z' ); }
