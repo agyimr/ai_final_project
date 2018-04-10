@@ -17,38 +17,13 @@ public class MovingObject extends BasicObject {
 
     public String getColor(){ return color;}
 
-    public String getMoveDirection(dir Direction)  {
+    public Command getMoveDirection(int x, int y) throws UnsupportedOperationException {
 //        if(RandomWalkClient.MainBoard[getY()][getX()] != getID()) return "NoOp";
-/*        try{
-            switch (Direction) {
-                case N:
-                    changePosition(getX(), getY() - 1);
-                    break;
-
-                case S:
-                    changePosition(getX(), getY() + 1);
-                    break;
-
-                case E:
-                    changePosition(getX()+ 1, getY());
-                    break;
-
-                case W:
-                    changePosition(getX() - 1, getY());
-                    break;
-
-            }
+//        changePosition(x, y, RandomWalkClient.NextMainBoard);
+        if(x == getX() && y == getY()) {
+            return new Command();
         }
-        catch(UnsupportedOperationException exc) {
-            throw exc;
-        }*/
-        return type.Move + "(" + Direction + ")";
-    }
-    //Overloaded method, beware!
-    public String getMoveDirection(int x, int y) throws UnsupportedOperationException {
-//        if(RandomWalkClient.MainBoard[getY()][getX()] != getID()) return "NoOp";
-        String move = type.Move + "(" + getDirection(x, y) + ")";
-        return move;
+        return new Command(getDirection(x, y));
     }
     dir getDirection(int x,int y) {
         dir Direction = null;
@@ -68,30 +43,30 @@ public class MovingObject extends BasicObject {
         }
         return Direction;
     }
-    public void changePosition(int x, int y) throws UnsupportedOperationException {
+    public void changePosition(int x, int y, char[][] board) throws UnsupportedOperationException {
         if(yOutOfBounds(y)
                 || xOutOfBounds(x)
-                || !spaceEmpty(y,x)) throw new UnsupportedOperationException();
+                || !spaceEmpty(x,y)) throw new UnsupportedOperationException();
         if(steppedOnGoal != null) {
-            RandomWalkClient.MainBoard[getY()][getX()] = steppedOnGoal.getID();
+            board[getY()][getX()] = steppedOnGoal.getID();
             steppedOnGoal = null;
         }
-        if(RandomWalkClient.isGoal(RandomWalkClient.MainBoard[y][x])) {
-            steppedOnGoal = RandomWalkClient.goals.get(RandomWalkClient.MainBoard[y][x]);
+        if(RandomWalkClient.isGoal(board[y][x])) {
+            steppedOnGoal = RandomWalkClient.goals.get(board[y][x]);
         }
-        forceNewPosition(x, y);
+        forceNewPosition(x, y, board);
     }
-    public void forceNewPosition(int x, int y) {
+    public void forceNewPosition(int x, int y, char[][] board) {
         //make sure you know what you're doing
-        if(RandomWalkClient.MainBoard[getY()][getX()] == getID())
-            RandomWalkClient.MainBoard[getY()][getX()] = ' ';
+        if(board[getY()][getX()] == getID())
+            board[getY()][getX()] = ' ';
         setY(y);
         setX(x);
-        RandomWalkClient.MainBoard[y][x] = getID();
+        board[y][x] = getID();
     }
     boolean yOutOfBounds(int y) { return (y > (RandomWalkClient.MainBoardYDomain - 1) || y < 0);}
     boolean xOutOfBounds(int x) {return (x >= (RandomWalkClient.MainBoardXDomain) || x < 0);}
-    boolean spaceEmpty(int y, int x) {return RandomWalkClient.isGoal(RandomWalkClient.MainBoard[y][x]) || RandomWalkClient.MainBoard[y][x] == ' '; }
+    boolean spaceEmpty(int x, int y) {return RandomWalkClient.isGoal(RandomWalkClient.MainBoard[y][x]) || RandomWalkClient.MainBoard[y][x] == ' '; }
 
     @Override
     public String toString() {

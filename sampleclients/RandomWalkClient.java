@@ -15,6 +15,7 @@ public class RandomWalkClient {
     public static Map<Character, Goal> goals = new HashMap<Character, Goal>();
     public static int MainBoardYDomain = 0, MainBoardXDomain = 0;
     public static char[][] MainBoard; //every state change is seen on the main board TODO embed in a class
+    public static char[][] NextMainBoard;
     public static boolean isAgent (char id) { return ( '0' <= id && id <= '9' );}
     public static boolean isBox (char id) { return ( 'A' <= id && id <= 'Z' );}
     public static boolean isGoal (char id) { return ( 'a' <= id && id <= 'z' ); }
@@ -86,7 +87,9 @@ public class RandomWalkClient {
         for(int row = 0; row < MainBoardYDomain; ++row) {
             MainBoard[row] = table.get(row).toCharArray();
         }
-//        printBoard(MainBoard);
+        NextMainBoard = deepCopy(MainBoard);
+        printBoard(MainBoard);
+        printBoard(NextMainBoard);
 //        System.err.println(ColorGroups);
 	}
 
@@ -98,12 +101,29 @@ public class RandomWalkClient {
         System.err.println();
     }
 
+    public static char[][] deepCopy(char[][] original) {
+        if (original == null) {
+            return null;
+        }
+        final char[][] result = new char[original.length][];
+        for (int i = 0; i < original.length; i++) {
+            result[i] = Arrays.copyOf(original[i], original[i].length);
+        }
+        return result;
+    }
 	public boolean update() throws IOException {
 		String jointAction = "[";
 
-		for ( int i = 0; i < agents.size() - 1; i++ )
-			jointAction += agents.get( i ).act() + ",";
-		
+		for ( int i = 0; i < agents.size() - 1; i++ ) {
+            try {
+                jointAction += agents.get( i ).act() + ",";
+            }
+            catch(UnsupportedOperationException exc) {
+                agents.get( i );
+            }
+
+        }
+
 		jointAction += agents.get( agents.size() - 1 ).act() + "]";
 
 		// Place message in buffer
@@ -138,7 +158,7 @@ public class RandomWalkClient {
 		System.err.println( "Hello from NotSoRandomWalkClient. I am sending this using the error outputstream" );
 		try {
 			RandomWalkClient client = new RandomWalkClient();
-			Conflicts conf = new Conflicts();
+//			Conflicts conf = new Conflicts();
             System.out.flush();
             System.err.println(client.in.readLine());
 			while ( client.update() ) {
