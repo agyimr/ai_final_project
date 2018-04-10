@@ -7,7 +7,7 @@ import java.util.*;
 
 public class Conflicts {
 
-	private void delegateConflict(Agent agent1){
+	public static void delegateConflict(Agent agent1){
 		//Easy nop case  TODO
 		char[][] board = RandomWalkClient.MainBoard;
 		List<Agent> agents = RandomWalkClient.agents;
@@ -39,7 +39,7 @@ public class Conflicts {
 		}
 	}
 
-	private MovingObject getConflictPartners(Agent agent1){
+	private static MovingObject getConflictPartners(Agent agent1){
 		Command c = agent1.getCommand(0); //Find command for agent in path
 		List<Point> pos = new ArrayList<Point>(); //Pos array handles the positions of agent and maybe box
 		pos.add(agent1.getAgentPoint()); //add agent to pos
@@ -83,7 +83,7 @@ public class Conflicts {
 	}
 	//This method is for detecting and delegating the type of conflict to the correct methods
 
-	private boolean noopFix(Agent pawnAgent, Agent kingAgent){
+	private static boolean noopFix(Agent pawnAgent, Agent kingAgent){
 		//Find next two points for king, if intersects with pawnAgent pos, return false, else true.
 		List<Point> pawnArea = new ArrayList<Point>();		
 		pawnArea.add(new Point(pawnAgent.getX(),pawnAgent.getY()));
@@ -102,12 +102,12 @@ public class Conflicts {
 			ij--;
 			kingArea.add(kingAgent.getAttachedBoxPoint());
 		}
-		kingArea.add(kingCommand.getNext(kingArea));
+		kingArea.addAll(kingCommand.getNext(kingArea));
 		
 		
 		
 		for (int i = ij; i < 3; i++) {
-			kingCommand = kingAgent.path.getCommand(0);
+			kingCommand = kingAgent.getCommand(0);
 			kingArea = kingCommand.getNext(kingArea);
 			if(kingArea.contains(pawnArea)){
 				return false;
@@ -123,7 +123,7 @@ public class Conflicts {
 
 	
 	//For use in deciding who goes first in a simple conflict
-	private int calculatePriority(Agent agent1){
+	private static int calculatePriority(Agent agent1){
 		int ID = agent1.getID();
 		int heuristicsToGoal = 0;
 		int prio = ID + heuristicsToGoal;
@@ -133,7 +133,7 @@ public class Conflicts {
 	}
 	//More difficult conflict where one needs to backtrack or go around with/without box
 	
-	private boolean planMerge(Agent kingAgent, Agent pawnAgent){
+	private static boolean planMerge(Agent kingAgent, Agent pawnAgent){
 		char[][] board = RandomWalkClient.MainBoard;
 		int index = 0;
 		Point posKing = new Point(kingAgent.getX(),kingAgent.getY()); //Node 0 for the king
@@ -165,10 +165,10 @@ public class Conflicts {
 			return false;
 			//bid()
 		}
-		pawnAgent.replace(solution);
+		pawnAgent.replacePath(solution);
 		return true;
 	}
-	private boolean bid(Box box){
+	private static boolean bid(Box box){
 		System.err.println("NotDoneYet");
 		List<Agent> agents = RandomWalkClient.agents;
 		//getRelevantAgents(box,agents);

@@ -119,7 +119,7 @@ public class RandomWalkClient {
                 jointAction += agents.get( i ).act() + ",";
             }
             catch(UnsupportedOperationException exc) {
-                agents.get( i );
+                Conflicts.delegateConflict(agents.get(i));
             }
 
         }
@@ -158,7 +158,6 @@ public class RandomWalkClient {
 		System.err.println( "Hello from NotSoRandomWalkClient. I am sending this using the error outputstream" );
 		try {
 			RandomWalkClient client = new RandomWalkClient();
-//			Conflicts conf = new Conflicts();
             System.out.flush();
             System.err.println(client.in.readLine());
 			while ( client.update() ) {

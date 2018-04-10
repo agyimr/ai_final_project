@@ -1,6 +1,6 @@
 package sampleclients;
 
-import java.awt.*;
+
 import java.io.*;
 import java.util.*;
 import java.awt.Point;
@@ -206,6 +206,7 @@ public class Agent extends MovingObject {
             return null;
         }
     }
+
     boolean replacePath(List<Command> commands) {
         for(int i = 0; i< commands.size(); i++) {
             Command current = commands.get(i);
@@ -241,17 +242,11 @@ public class Agent extends MovingObject {
         }
         return null;
     }
-<<<<<<< HEAD
 
-=======
->>>>>>> 810a915c1ed1bed35b9b6c46e5391587de2270f2
     public boolean isBoxAttached() {
     	return attachedBox != null;
     }
-<<<<<<< HEAD
 
-=======
->>>>>>> 810a915c1ed1bed35b9b6c46e5391587de2270f2
     void updatePosition() throws UnsupportedOperationException {
         //save'em so you can restore the state if sth goes wrong`
         int  AttachedBoxCoordX = 0,
@@ -292,9 +287,4 @@ public class Agent extends MovingObject {
         }
 
     }
-<<<<<<< HEAD
 }
-
-=======
-}
->>>>>>> 810a915c1ed1bed35b9b6c46e5391587de2270f2
