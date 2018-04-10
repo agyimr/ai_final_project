@@ -13,4 +13,8 @@ public class Box extends MovingObject {
         super(id, color, currentRow, currentColumn, "Box");
 //            System.err.println("Found " + color + " box " + id + " at pos: " + currentColumn + ", " + currentRow );
     }
+    public void clearOwnerReferences() {
+        assignedGoal = null;
+        assignedAgent = null;
+    }
 }
