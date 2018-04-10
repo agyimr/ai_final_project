@@ -17,10 +17,9 @@ public class MovingObject extends BasicObject {
 
     public String getColor(){ return color;}
 
-    public String move(dir Direction) throws UnsupportedOperationException {
-        if(RandomWalkClient.MainBoard[getY()][getX()] != getID()) return "NoOp";
-
-        try{
+    public String getMoveDirection(dir Direction)  {
+//        if(RandomWalkClient.MainBoard[getY()][getX()] != getID()) return "NoOp";
+/*        try{
             switch (Direction) {
                 case N:
                     changePosition(getX(), getY() - 1);
@@ -42,20 +41,13 @@ public class MovingObject extends BasicObject {
         }
         catch(UnsupportedOperationException exc) {
             throw exc;
-        }
+        }*/
         return type.Move + "(" + Direction + ")";
     }
     //Overloaded method, beware!
-    public String move(int x, int y) throws UnsupportedOperationException {
+    public String getMoveDirection(int x, int y) throws UnsupportedOperationException {
 //        if(RandomWalkClient.MainBoard[getY()][getX()] != getID()) return "NoOp";
-
         String move = type.Move + "(" + getDirection(x, y) + ")";
-        try{
-            changePosition(x, y);
-        }
-        catch(UnsupportedOperationException exc) {
-            throw exc;
-        }
         return move;
     }
     dir getDirection(int x,int y) {

@@ -14,7 +14,7 @@ public class RandomWalkClient {
     public static Map<String, List<MovingObject>> ColorGroups;
     public static Map<Character, Goal> goals = new HashMap<Character, Goal>();
     public static int MainBoardYDomain = 0, MainBoardXDomain = 0;
-    public static char[][] MainBoard; //every state change is seen on the main board
+    public static char[][] MainBoard; //every state change is seen on the main board TODO embed in a class
     public static boolean isAgent (char id) { return ( '0' <= id && id <= '9' );}
     public static boolean isBox (char id) { return ( 'A' <= id && id <= 'Z' );}
     public static boolean isGoal (char id) { return ( 'a' <= id && id <= 'z' ); }
@@ -109,28 +109,40 @@ public class RandomWalkClient {
 		// Place message in buffer
 		System.out.println( jointAction );
 		System.err.println(jointAction);
-
 		// Flush buffer
         System.out.flush();
-
-        // Disregard these for now, but read or the server stalls when its output buffer gets filled!
+        //server's output
         String percepts = in.readLine();
-        System.err.println(percepts);
-        printBoard(MainBoard);
         if ( percepts == null )
-			return false;
-
+            return false;
+//        System.err.println(percepts);
+        String[] results = percepts.replace("[","")
+                            .replace("]","")
+                            .replace(",", "")
+                            .split(" "); //this is dumb but I don't know the simpler way to just read it into Array String in Java
+        System.err.println(Arrays.toString(results));
+        printBoard(MainBoard);
+        for(int i= 0;i<results.length; ++i) {
+            if(results[i].equals("true")) {
+                agents.get(i).updatePosition();
+            }
+            else {
+                agents.get(i).path = null;
+            }
+        }
 		return true;
 	}
 
 	public static void main( String[] args ) {
 		// Use stderr to print to console
-		System.err.println( "Hello from RandomWalkClient. I am sending this using the error outputstream" );
+		System.err.println( "Hello from NotSoRandomWalkClient. I am sending this using the error outputstream" );
 		try {
 			RandomWalkClient client = new RandomWalkClient();
 			Conflicts conf = new Conflicts();
+            System.out.flush();
+            System.err.println(client.in.readLine());
 			while ( client.update() ) {
-				//System.err.println("[Server:"+System.in.readString()+"]");
+/*				//System.err.println("[Server:"+System.in.readString()+"]");
 				System.err.print("Server:");
 				int ch;
 				StringBuilder sb = new StringBuilder();
@@ -140,9 +152,8 @@ public class RandomWalkClient {
 			    }
 				System.err.println();
 				String response = sb.toString();
-				//conf.handleConflict(response);
+				conf.handleConflict(response);*/
 			}
-
 		} catch ( IOException e ) {	
 			// Got nowhere to write to probably
 		}

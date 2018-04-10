@@ -25,7 +25,6 @@ public class Command {
 				}
 			}
 		}
-
 		every = cmds.toArray( new Command[0] );
 //		System.err.println(every.toString());
 	}
