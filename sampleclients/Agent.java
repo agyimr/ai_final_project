@@ -1,5 +1,6 @@
 package sampleclients;
 
+import java.awt.*;
 import java.io.*;
 import java.util.*;
 import static sampleclients.Command.dir;
@@ -7,7 +8,23 @@ import static sampleclients.Command.type;
 
 public class Agent extends MovingObject {
     private boolean waiting = false;
+
+
+    public Box getAttachedBox() {
+        return attachedBox;
+    }
+
+    public Point getAgentPoint(){
+        return new Point(this.getX(),this.getY());
+    }
+
     private Box attachedBox = null;
+
+    public Point getAttachedBoxPoint() {
+        Point tmp = new Point(attachedBox.getX(),attachedBox.getY());
+        return tmp;
+    }
+
     boolean pushingBox = false;
     public Agent( char id, String color, int y, int x ) {
         super(id, color, y, x, "Agent");
@@ -40,6 +57,7 @@ public class Agent extends MovingObject {
                 return act();
             }
         }
+
 
         //box at the goal position!
         if (attachedBox.assignedGoal.atGoalPosition(attachedBox)) {
@@ -180,7 +198,7 @@ public class Agent extends MovingObject {
         }
         return null;
     }
-    
+
     public boolean isBoxAttached() {
     	return attachedBox == null;
     }

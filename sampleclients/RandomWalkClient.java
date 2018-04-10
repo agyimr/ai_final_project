@@ -8,8 +8,8 @@ import java.util.*;
 public class RandomWalkClient {
 	private static Random rand = new Random();
 	private BufferedReader in = new BufferedReader( new InputStreamReader( System.in ) );
-	private List< Agent > agents = new ArrayList< Agent >();
-    private List< Box > boxes = new ArrayList< Box>();
+	public static List< Agent > agents = new ArrayList< Agent >();
+    public static List< Box > boxes = new ArrayList< Box>();
     //GLOBAL HERE
     public static Map<String, List<MovingObject>> ColorGroups;
     public static Map<Character, Goal> goals = new HashMap<Character, Goal>();

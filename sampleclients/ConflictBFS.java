@@ -7,7 +7,8 @@ import sampleclients.Command.dir;
 import sampleclients.Command.type;
 
 public class ConflictBFS {
-	public static List<Command> doBFS(List<Point> locked, List<Point> pos, char[][] map){
+	public static List<Command> doBFS(List<Point> locked, List<Point> pos){
+		char[][] map = RandomWalkClient.MainBoard;
 		List<ConflictNode> frontier = new ArrayList<ConflictNode>();
 		List<ConflictNode> explored = new ArrayList<ConflictNode>();
 		List<Command> path = new ArrayList<Command>();
