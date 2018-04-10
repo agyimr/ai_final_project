@@ -2,13 +2,16 @@ package sampleclients;
 
 import java.io.*;
 import java.util.*;
-
+import static sampleclients.Command.dir;
+import static sampleclients.Command.type;
 
 public class Node {
     private final int x, y;
-    public Node(int x, int y) {
+    private final Command action;
+    public Node(int x, int y, Command a) {
         this.x = x;
         this.y = y;
+        this.action = a;
     }
     public double getHeuristic(Node goal) {
         return Math.abs(x - goal.x) + Math.abs(y - goal.y);
@@ -19,6 +22,7 @@ public class Node {
     }
     public int getX() { return x;}
     public int getY() {return y;}
+    public Command getAction() { return action;}
     public Set<Node> getNeighbours() {
         Set<Node> neighbours = new HashSet<Node>();
 
@@ -35,12 +39,29 @@ public class Node {
                         || RandomWalkClient.isWall(RandomWalkClient.MainBoard[j][i])) {
                     continue;
                 }
-                neighbours.add(new Node(i, j));
+                neighbours.add(new Node(i, j, new Command(getDirection(i, j))));
             }
         }
         return neighbours;
     }
-
+    dir getDirection(int x,int y) {
+        dir Direction = null;
+        if(x!=getX()) {
+            if(x>getX()) {
+                Direction = dir.E;
+            } else {
+                Direction = dir.W;
+            }
+        }
+        else if(y != getY()) {
+            if(y>getY()) {
+                Direction = dir.S;
+            } else {
+                Direction = dir.N;
+            }
+        }
+        return Direction;
+    }
 
     @Override
     public boolean equals(Object obj) {

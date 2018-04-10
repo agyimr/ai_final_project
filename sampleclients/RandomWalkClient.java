@@ -27,7 +27,7 @@ public class RandomWalkClient {
         System.err.println(path + " for Agent: " + someAgent);*/
 	}
 
-	private void readMap() throws IOException {
+	private void readMap() throws IOException  {
 		Map< Character, String > colors = new HashMap< Character, String >();
 		String line, color;
 
@@ -92,15 +92,13 @@ public class RandomWalkClient {
         printBoard(NextMainBoard);
 //        System.err.println(ColorGroups);
 	}
-
-    void printBoard(char board[][]) {
+    static void printBoard(char board[][]) {
         System.err.println();
         for(int row = 0; row < MainBoardYDomain; ++row) {
             System.err.println( new String(board[row]));
         }
         System.err.println();
     }
-
     public static char[][] deepCopy(char[][] original) {
         if (original == null) {
             return null;
@@ -119,11 +117,11 @@ public class RandomWalkClient {
                 jointAction += agents.get( i ).act() + ",";
             }
             catch(UnsupportedOperationException exc) {
+                printBoard(NextMainBoard);
                 Conflicts.delegateConflict(agents.get(i));
+                --i;
             }
-
         }
-
 		jointAction += agents.get( agents.size() - 1 ).act() + "]";
 
 		// Place message in buffer
@@ -161,17 +159,6 @@ public class RandomWalkClient {
             System.out.flush();
             System.err.println(client.in.readLine());
 			while ( client.update() ) {
-/*				//System.err.println("[Server:"+System.in.readString()+"]");
-				System.err.print("Server:");
-				int ch;
-				StringBuilder sb = new StringBuilder();
-			    while ((ch = System.in.read ()) != ']') {
-			    	System.err.print((char) ch);
-			    	sb.append((char) ch);
-			    }
-				System.err.println();
-				String response = sb.toString();
-				conf.handleConflict(response);*/
 			}
 		} catch ( IOException e ) {	
 			// Got nowhere to write to probably

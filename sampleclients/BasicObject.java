@@ -20,7 +20,10 @@ public class BasicObject {
     public int getX() { return x;}
     public void setX(int nextX) {
         x = nextX;}
-
+    public void setCoordinates(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
     public String getObjectType() {return ObjectType;}
     public char getID() { return id;}
     @Override

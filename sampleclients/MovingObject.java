@@ -8,6 +8,7 @@ import static sampleclients.Command.type;
 public class MovingObject extends BasicObject {
     private String color;
     public LinkedList<Node> path;
+    public LinkedList<Command> commandList;
     Goal steppedOnGoal = null;
     public MovingObject ( char id, String color, int y, int x , String ObjectType) {
         super(y, x, id,  ObjectType);
@@ -17,9 +18,11 @@ public class MovingObject extends BasicObject {
 
     public String getColor(){ return color;}
 
-    public Command getMoveDirection(int x, int y) throws UnsupportedOperationException {
-//        if(RandomWalkClient.MainBoard[getY()][getX()] != getID()) return "NoOp";
-//        changePosition(x, y, RandomWalkClient.NextMainBoard);
+    public Command tryToMove(int x, int y)  throws UnsupportedOperationException {
+        updateMap(x, y, RandomWalkClient.NextMainBoard);
+        return getMoveDirection(x, y);
+    }
+    public Command getMoveDirection(int x, int y){
         if(x == getX() && y == getY()) {
             return new Command();
         }
@@ -43,10 +46,25 @@ public class MovingObject extends BasicObject {
         }
         return Direction;
     }
+
     public void changePosition(int x, int y, char[][] board) throws UnsupportedOperationException {
+        updateMap(x, y, board);
+        setCoordinates(x, y);
+    }
+    public void updateMap(int x, int y, char[][] board) throws UnsupportedOperationException {
         if(yOutOfBounds(y)
                 || xOutOfBounds(x)
-                || !spaceEmpty(x,y)) throw new UnsupportedOperationException();
+                || !spaceEmpty(x,y, board)) throw new UnsupportedOperationException();
+        forceMapUpdate(x, y, board);
+    }
+    public void forceMapUpdate(int x, int y, char[][] board) {
+        //make sure you know what you're doing
+        manageMovingThroughGoal(x, y, board);
+        if(board[getY()][getX()] == getID())
+            board[getY()][getX()] = ' ';
+        board[y][x] = getID();
+    }
+    void manageMovingThroughGoal(int x, int y, char[][] board) {
         if(steppedOnGoal != null) {
             board[getY()][getX()] = steppedOnGoal.getID();
             steppedOnGoal = null;
@@ -54,19 +72,10 @@ public class MovingObject extends BasicObject {
         if(RandomWalkClient.isGoal(board[y][x])) {
             steppedOnGoal = RandomWalkClient.goals.get(board[y][x]);
         }
-        forceNewPosition(x, y, board);
-    }
-    public void forceNewPosition(int x, int y, char[][] board) {
-        //make sure you know what you're doing
-        if(board[getY()][getX()] == getID())
-            board[getY()][getX()] = ' ';
-        setY(y);
-        setX(x);
-        board[y][x] = getID();
     }
     boolean yOutOfBounds(int y) { return (y > (RandomWalkClient.MainBoardYDomain - 1) || y < 0);}
     boolean xOutOfBounds(int x) {return (x >= (RandomWalkClient.MainBoardXDomain) || x < 0);}
-    boolean spaceEmpty(int x, int y) {return RandomWalkClient.isGoal(RandomWalkClient.MainBoard[y][x]) || RandomWalkClient.MainBoard[y][x] == ' '; }
+    boolean spaceEmpty(int x, int y, char[][] board) {return RandomWalkClient.isGoal(board[y][x]) || board[y][x] == ' '; }
 
     @Override
     public String toString() {
@@ -74,7 +83,7 @@ public class MovingObject extends BasicObject {
     }
 
     public LinkedList<Node> findPath(int xGoal, int yGoal) {
-        path = doAStar(new Node(getX(), getY()), new Node(xGoal, yGoal));
+        path = doAStar(new Node(getX(), getY(), new Command()), new Node(xGoal, yGoal, new Command()));
         if(path != null)
             path.removeFirst();
         return path;
@@ -106,9 +115,7 @@ public class MovingObject extends BasicObject {
 
                 return route;
             }
-
             closed.add(current);
-
             for (Node neighbour : current.getNeighbours()) {
                 if (closed.contains(neighbour)) {
                     continue;
