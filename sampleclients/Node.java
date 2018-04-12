@@ -1,66 +1,160 @@
 package sampleclients;
 
-import java.io.*;
-import java.util.*;
-import static sampleclients.Command.dir;
-import static sampleclients.Command.type;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.Random;
+
+import sampleclients.Command.type;
 
 public class Node {
-    private final int x, y;
-    private final Command action;
-    public Node(int x, int y, Command a) {
-        this.x = x;
-        this.y = y;
-        this.action = a;
+    private static final Random RND = new Random(3);
+    public int agentY;
+    public int agentX;
+    public int boxY = -1;
+    public int boxX = -1;
+
+    public char[][] boxes;
+    public Node parent;
+    public Command action;
+    private int g;
+    private int _hash = 0;
+
+    public Node(boolean pushingBox, Agent owner) {
+        agentX = owner.getX();
+        agentY = owner.getY();
+        boxes = new char[MainBoard.MainBoardYDomain][MainBoard.MainBoardXDomain];
+        this.g = 0;
+        for (int y = 0; y < MainBoard.MainBoardYDomain; y ++)
+            for (int x = 0; x < MainBoard.MainBoardXDomain; x++)
+                boxes[y][x] = 0;
+
+        for(Box current: MainBoard.boxes) {
+            boxes[current.getY()][current.getX()] = current.getID();
+        }
+        if(pushingBox) {
+            boxX = owner.getAttachedBox().getX();
+            boxY = owner.getAttachedBox().getY();
+            action = new Command();
+        }
     }
-    public double getHeuristic(Node goal) {
-        return Math.abs(x - goal.x) + Math.abs(y - goal.y);
+    public Node(Node parent, Command action, int agentX, int agentY) {
+        boxes = new char[MainBoard.MainBoardYDomain][MainBoard.MainBoardXDomain];
+        this.parent = parent;
+        this.action = action;
+        this.agentX = agentX;
+        this.agentY = agentY;
+        if (parent == null) {
+            this.g = 0;
+        } else {
+            this.g = parent.g() + 1;
+        }
+    }
+    public Node(Node parent, Command action, int agentX, int agentY, int boxX, int boxY) {
+        boxes = new char[MainBoard.MainBoardYDomain][MainBoard.MainBoardXDomain];
+        this.parent = parent;
+        this.action = action;
+        this.agentX = agentX;
+        this.agentY = agentY;
+        this.boxX = boxX;
+        this.boxY = boxY;
+        if (parent == null) {
+            this.g = 0;
+        } else {
+            this.g = parent.g() + 1;
+        }
+    }
+    public int g() {
+        return this.g;
+    }
+    public boolean isInitialState() {
+        return this.parent == null;
     }
 
-    public double getTraversalCost(Node neighbour) {
-        return 1;
-    }
-    public int getX() { return x;}
-    public int getY() {return y;}
-    public Command getAction() { return action;}
-    public Set<Node> getNeighbours() {
-        Set<Node> neighbours = new HashSet<Node>();
+    public ArrayList<Node> getExpandedNodes() {
+        ArrayList<Node> expandedNodes = new ArrayList<Node>(Command.every.length);
+        for (Command c : Command.every) {
+            // Determine applicability of action
+            int newAgentRow = this.agentY + Command.dirToYChange(c.dir1);
+            int newAgentCol = this.agentX + Command.dirToXChange(c.dir1);
 
-        for (int i = x - 1; i <= x + 1; i++) {
-            for (int j = y - 1; j <= y + 1; j++) {
-                if ((i == x && j == y) //x position
-                        || i < 0 || j < 0 // too small
-                        || j >= RandomWalkClient.MainBoardYDomain || i >= RandomWalkClient.MainBoardXDomain //too large
-                        || ((i != x && j != y))) //Diagonals! double checked, it's correct
-                {
-                    continue;
+            if (c.actType == type.Move) {
+                // Check if there's a wall or box on the cell to which the agent is moving
+                if (this.cellIsFree(newAgentRow, newAgentCol)) {
+                    Node n = this.childNode(c, newAgentCol, newAgentRow, this.boxX, this.boxY);
+                    expandedNodes.add(n);
                 }
-                else if (RandomWalkClient.isBox(RandomWalkClient.MainBoard[j][i])
-                        || RandomWalkClient.isWall(RandomWalkClient.MainBoard[j][i])) {
-                    continue;
+            } else if (c.actType == type.Push) {
+                // Make sure that there's actually a box to move
+                if (this.boxAt(newAgentRow, newAgentCol)) {
+                    int newBoxRow = newAgentRow + Command.dirToYChange(c.dir2);
+                    int newBoxCol = newAgentCol + Command.dirToXChange(c.dir2);
+                    // .. and that new cell of box is free
+                    if (this.cellIsFree(newBoxRow, newBoxCol)) {
+                        Node n = this.childNode(c, newAgentCol, newAgentRow, newBoxCol, newBoxRow);
+                        n.boxes[newBoxRow][newBoxCol] = this.boxes[newAgentRow][newAgentCol];
+                        n.boxes[newAgentRow][newAgentCol] = 0;
+                        expandedNodes.add(n);
+                    }
                 }
-                neighbours.add(new Node(i, j, new Command(getDirection(i, j))));
+            } else if (c.actType == type.Pull) {
+                // Cell is free where agent is going
+                if (this.cellIsFree(newAgentRow, newAgentCol)) {
+                    int boxY = this.agentY + Command.dirToYChange(c.dir2);
+                    int boxX = this.agentX + Command.dirToXChange(c.dir2);
+                    // .. and there's a box in "dir2" of the agent
+                    if (this.boxAt(boxY, boxX)) {
+                        Node n = this.childNode(c, newAgentCol, newAgentRow, this.agentX, this.agentY);
+                        n.boxes[this.agentY][this.agentX] = this.boxes[boxY][boxX];
+                        n.boxes[boxY][boxX] = 0;
+                        expandedNodes.add(n);
+                    }
+                }
             }
         }
-        return neighbours;
+        Collections.shuffle(expandedNodes, RND);
+        return expandedNodes;
     }
-    dir getDirection(int x,int y) {
-        dir Direction = null;
-        if(x!=getX()) {
-            if(x>getX()) {
-                Direction = dir.E;
-            } else {
-                Direction = dir.W;
-            }
+
+    private boolean cellIsFree(int y, int x) {
+        return (this.boxes[y][x] == 0) && !RandomWalkClient.gameBoard.isWall(x, y);
+    }
+
+    private boolean boxAt(int y, int x) {
+        return this.boxes[y][x] > 0;
+    }
+
+    private Node childNode(Command action, int agentX, int agentY, int boxX, int boxY) {
+        Node copy = new Node(this, action, agentX, agentY, boxX, boxY);
+        for (int y = 0; y < MainBoard.MainBoardYDomain; y++) {
+            System.arraycopy(this.boxes[y], 0, copy.boxes[y], 0, MainBoard.MainBoardXDomain);
         }
-        else if(y != getY()) {
-            if(y>getY()) {
-                Direction = dir.S;
-            } else {
-                Direction = dir.N;
-            }
+        return copy;
+    }
+
+    public LinkedList<Node> extractPlan() {
+        LinkedList<Node> plan = new LinkedList<Node>();
+        Node n = this;
+        while (!n.isInitialState()) {
+            plan.addFirst(n);
+            n = n.parent;
         }
-        return Direction;
+        return plan;
+    }
+
+    @Override
+    public int hashCode() {
+        if (this._hash == 0) {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + this.agentX;
+            result = prime * result + this.agentY;
+            result = prime * result + Arrays.deepHashCode(this.boxes);
+            this._hash = result;
+        }
+        return this._hash;
     }
 
     @Override
@@ -72,28 +166,15 @@ public class Node {
         if (this.getClass() != obj.getClass())
             return false;
         Node other = (Node) obj;
-        if (x != other.x)
+        if (this.agentY != other.agentY || this.agentX != other.agentX)
             return false;
-        if (y != other.y)
+        if (!Arrays.deepEquals(this.boxes, other.boxes))
             return false;
         return true;
     }
 
     @Override
     public String toString() {
-        return "(" + x + ", " + y + ")";
+        return "Node:" + action + " agent: " + agentX + ", " + agentY + " box: " + boxX + ", " + boxY;
     }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 17;
-        result = prime * result;
-        result = prime * result + x;
-        result = prime * result + y;
-        return result;
-    }
-
-
-
 }

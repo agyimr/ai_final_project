@@ -1,5 +1,6 @@
 package sampleclients;
 
+import java.awt.*;
 import java.io.*;
 import java.util.*;
 
@@ -23,6 +24,9 @@ public class BasicObject {
     public void setCoordinates(int x, int y) {
         this.x = x;
         this.y = y;
+    }
+    public Point getCoordinates() {
+        return new Point(x,y);
     }
     public String getObjectType() {return ObjectType;}
     public char getID() { return id;}

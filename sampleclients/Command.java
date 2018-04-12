@@ -47,19 +47,16 @@ public class Command {
 	public final type actType;
 	public final dir dir1;
 	public final dir dir2;
-
 	public Command() {
 		actType = type.Noop;
 		dir1 = null;
 		dir2 = null;
 	}
-	
 	public Command( dir d ) {
 		actType = type.Move;
 		dir1 = d;
 		dir2 = null;
 	}
-
 	public Command( type t, dir d1, dir d2 ) {
 		actType = t;
 		dir1 = d1;
@@ -79,12 +76,10 @@ public class Command {
 	}
 	
 	public Point getNext(Point pos){
-		
 		//if noop return same point
 		if(actType.equals(type.Noop)) {
 			return pos;
 		}
-		
 		Point next = null;
 		Point agent = pos;
 		
@@ -118,7 +113,6 @@ public class Command {
 		if(actType.equals(type.Noop)) {
 			return pos;
 		}
-		
 		//North
 		if(dir1.equals(dir.N)){
 			next.add(new Point( agent.x, agent.y-1 ));
@@ -135,8 +129,6 @@ public class Command {
 		if(dir1.equals(dir.S)){
 			next.add(new Point( agent.x, agent.y+1 ));
 		}
-		
-		
 		if(pos.size() == 2 && actType.equals(type.Pull)){
 			Point box = pos.get(1);
 			//North
@@ -157,7 +149,6 @@ public class Command {
 			}
 			
 		}
-		
 		if(pos.size() == 2 && actType.equals(type.Push)){
 			Point box = pos.get(1);
 			//North
@@ -178,9 +169,41 @@ public class Command {
 			}
 			
 		}
-		
-		
-		
 		return next;
 	}
+	public static int dirToYChange(dir d) {
+		// South is down one row (1), north is up one row (-1).
+		switch (d) {
+			case S:
+				return 1;
+			case N:
+				return -1;
+			default:
+				return 0;
+		}
+	}
+	public static int dirToXChange(dir d) {
+		// East is right one column (1), west is left one column (-1).
+		switch (d) {
+			case E:
+				return 1;
+			case W:
+				return -1;
+			default:
+				return 0;
+		}
+	}
+    public dir invertDirection(dir Direction) {
+        switch (Direction) {
+            case N:
+                return dir.S;
+            case S:
+                return dir.N;
+            case E:
+                return dir.W;
+            case W:
+                return dir.E;
+        }
+        return null;
+    }
 }

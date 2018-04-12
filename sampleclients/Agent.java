@@ -1,10 +1,9 @@
 package sampleclients;
 
 
-import java.io.*;
 import java.util.*;
 import java.awt.Point;
-import static sampleclients.Command.dir;
+
 import static sampleclients.Command.type;
 
 public class Agent extends MovingObject {
@@ -12,34 +11,21 @@ public class Agent extends MovingObject {
     private boolean waiting = false;
     private Box attachedBox = null;
     boolean isMovingBox = false;
-    boolean pushing = false;
-    public Node nextPullingPosition = null;
+    SearchClient pathFindingEngine;
     int waitingCounter = 0;
-
-    public Box getAttachedBox() {
-        return attachedBox;
-    }
-    public Point getAgentPoint(){
-        return new Point(this.getX(),this.getY());
-    }
-    
-    public Point getAttachedBoxPoint() {
-        Point tmp = new Point(attachedBox.getX(),attachedBox.getY());
-        return tmp;
-    }
 
     public Agent( char id, String color, int y, int x ) {
         super(id, color, y, x, "Agent");
+        pathFindingEngine = new SearchClient(this);
     }
     public String act() {
-        //TODO surprisingly server does not allow agents to follow each other, need to find a workaround
         if(attachedBox == null) {
             if(!findABox()) {
                 return waitingProcedure();
             }
         }
         if(!isMovingBox) {//then move towards box
-            String result = executePathWithoutBox();
+            String result = executePath();
             if(result != null) return result;
             else if(nextToBox(attachedBox)) {
                 isMovingBox = true;
@@ -47,23 +33,22 @@ public class Agent extends MovingObject {
             else if(findPathToBox(attachedBox) == null) {
                 return waitingProcedure();
             }
-            else return executePathWithoutBox();
+            else return executePath();
         }
         //no assigned goal
         if (attachedBox.assignedGoal == null) {
+
             //try finding a goal
-            attachedBox.assignedGoal = RandomWalkClient.goals.get(Character.toLowerCase(attachedBox.getID()));
+            attachedBox.assignedGoal = MainBoard.goals.get(Character.toLowerCase(attachedBox.getID()));
             if (attachedBox.assignedGoal == null) {
                 //no goal that satisfies the box on the map
-                attachedBox.noGoalOntheMap = true;
+                attachedBox.noGoalOnTheMap = true;
                 attachedBox.clearOwnerReferences();
                 attachedBox = null;
                 //try finding a box again
                 return act();
             }
         }
-
-
         //box at the goal position!
         if (attachedBox.assignedGoal.atGoalPosition(attachedBox)) {
             attachedBox.clearOwnerReferences();
@@ -76,36 +61,37 @@ public class Agent extends MovingObject {
         //box attached and not at the goal position
         else {
             //now you must make a move
-            if (attachedBox.path == null) {
-                attachedBox.findPath(attachedBox.assignedGoal.getX(), attachedBox.assignedGoal.getY());
+            if (path == null) {
+                path = findPathWithBox();
             }
-            String result = executePathWithBox();
+            String result = executePath();
             if (result != null) return result;
             else {
                 //path blocked?
-                attachedBox.path = null;
+                path = null;
                 return waitingProcedure();
 
             }
         }
     }
-    boolean findABox() {
+    private boolean findABox() {
         Box newBox = null;
         Box bestBox = null;
         LinkedList<Node> bestPath = null;
-        for(MovingObject currentBox : RandomWalkClient.ColorGroups.get(getColor())) {
+        for(MovingObject currentBox : MainBoard.BoxColorGroups.get(getColor()).values()) {
             if(currentBox instanceof Box) {
                 newBox = (Box) currentBox;
-                if (!newBox.atGoalPosition && (newBox.assignedAgent == null) && !newBox.noGoalOntheMap) {
+                if (!newBox.atGoalPosition && (newBox.assignedAgent == null) && !newBox.noGoalOnTheMap) {
                     findPathToBox(newBox);
                     if(bestPath == null) {
                         bestPath = path;
                         bestBox = newBox;
                         continue;
                     }
-                    else if( nextToBox(newBox)) { // can find a path to box, or is next to!
+                    else if(nextToBox(newBox)) { // can find a path to box, or is next to!
                         attachedBox = newBox;
                         attachedBox.assignedAgent = this;
+                        isMovingBox = true;
                         return true;
                     }
                     else if(path != null && path.size() < bestPath.size()) {
@@ -124,133 +110,122 @@ public class Agent extends MovingObject {
         }
         return false;
     }
-    boolean nextToBox(Box current) {
+    private boolean nextToBox(Box current) {
         return (Math.abs(getX() - current.getX()) == 1) && (Math.abs(getY() - current.getY()) == 0)
                 || (Math.abs(getX() - current.getX()) == 0) && (Math.abs(getY() - current.getY()) == 1);
     }
-    String executePathWithoutBox( ) {
+    private String executePath( ) {
         if (path != null) {
             Node nextStep = path.peek();
             if (nextStep != null) {
-                return tryToMove(nextStep.getX(), nextStep.getY()).toString();
+                tryToMove(nextStep);
+                return nextStep.action.toString();
+
             }
         }
         path = null;
         return null;
     }
-    String executePathWithBox( ) {
-        if (attachedBox.path != null) {
-            Node nextStep = attachedBox.path.peek();
-            if (nextStep != null) {
-                return getMoveDirectionWithBox(nextStep.getX(), nextStep.getY()).toString();
-            }
+    public void tryToMove(Node nextStep)  throws UnsupportedOperationException {
+        //return getMoveDirection(x, y);
+
+        if(nextStep.action.actType == type.Noop) return;
+        else if(nextStep.action.actType == type.Move) {
+            updateMap(nextStep, RandomWalkClient.nextStepGameBoard);
         }
-        path = null;
-        return null;
-    }
-    LinkedList<Node> findPathToBox(Box BoxToMoveTo) {
-        RandomWalkClient.MainBoard[BoxToMoveTo.getY()][ BoxToMoveTo.getX()] = ' ';
-        findPath(BoxToMoveTo.getX(), BoxToMoveTo.getY());
-        if(path != null) path.pollLast();
-        RandomWalkClient.MainBoard[BoxToMoveTo.getY()][ BoxToMoveTo.getX()] = BoxToMoveTo.getID();
-        
-        return path;
-    }
-    String waitingProcedure() {
-        waiting = true;
-        if(waitingCounter >= WAITING_MAX) {
-            if(attachedBox != null) {
-                attachedBox.noGoalOntheMap = true; // this is only temporary to see it work without conflict resolutions!!
-                attachedBox.clearOwnerReferences();
-                attachedBox = null;
-            }
+        else {
+            updateMapWithBox(nextStep, RandomWalkClient.nextStepGameBoard);
         }
-        return "NoOp";
     }
-    Command getMoveDirectionWithBox(int x, int y) throws UnsupportedOperationException {
+    private void updateMap(Node nextStep, MainBoard board)  throws UnsupportedOperationException {
+        board.changePositionOnMap(this, nextStep.agentX, nextStep.agentY);
+    }
+    private void updateMapWithBox (Node nextStep, MainBoard board) throws UnsupportedOperationException {
+        boolean pushing = false;
+        Box movedObject = null;
         try {
-            if(x == getX() && y == getY()) {
-                pushing = false;
-                Node currentPos = new Node(getX(), getY(), new Command());
-                nextPullingPosition = currentPos.getNeighbours().iterator().next();
-                if(nextPullingPosition != null) {
-                    updateMap(nextPullingPosition.getX(), nextPullingPosition.getY(), RandomWalkClient.NextMainBoard);
-                    attachedBox.updateMap(getX(), getY(), RandomWalkClient.NextMainBoard);
-                    return new Command( type.Pull, getDirection(nextPullingPosition.getX(), nextPullingPosition.getY()), invertDirection(attachedBox.getDirection(getX(), getY())));
-                }
-                else {
-                    throw new UnsupportedOperationException();
-                    //TODO handle situation where you have no place to move
-                }
-            }
-            else {
+            if(nextStep.action.actType ==  Command.type.Push) {
                 pushing = true;
-                attachedBox.updateMap(x, y, RandomWalkClient.NextMainBoard);
-                updateMap(attachedBox.getX(), attachedBox.getY(), RandomWalkClient.NextMainBoard);
-                return new Command(type.Push, getDirection(attachedBox.getX(),attachedBox.getY()), attachedBox.getDirection(x, y));
+                movedObject = (Box) board.getElement(nextStep.agentX, nextStep.agentY);
+                board.changePositionOnMap(movedObject, nextStep.boxX, nextStep.boxY);
+                board.changePositionOnMap(this, nextStep.agentX, nextStep.agentY);
+            }
+            else if(nextStep.action.actType ==  Command.type.Pull){
+                pushing = false;
+                movedObject = (Box) board.getElement(
+                        nextStep.boxX + Command.dirToXChange(nextStep.action.dir2),
+                        nextStep.boxY + Command.dirToYChange(nextStep.action.dir2));
+                board.changePositionOnMap(this, nextStep.agentX, nextStep.agentY);
+                board.changePositionOnMap(movedObject, nextStep.boxX, nextStep.boxY);
             }
         }
         catch(UnsupportedOperationException exc) {
-            forceMapUpdate(getX(), getY(), RandomWalkClient.NextMainBoard);
-            attachedBox.forceMapUpdate(attachedBox.getX(), attachedBox.getY(), RandomWalkClient.NextMainBoard);
+            if(pushing) {
+                board.changePositionOnMap(movedObject, movedObject.getX(), movedObject.getY());
+            }
+            else {
+                board.changePositionOnMap(this, getX(), getY());
+            }
             throw exc;
         }
     }
-    Command getCommand(int i) {
+    private LinkedList<Node> findPathToBox(Box BoxToMoveTo) {
+        RandomWalkClient.gameBoard.setElement(  BoxToMoveTo.getX(), BoxToMoveTo.getY(), null);
+        path = pathFindingEngine.FindPath(false, BoxToMoveTo.getX(), BoxToMoveTo.getY());
+        //findPath(BoxToMoveTo.getX(), BoxToMoveTo.getY());
+        if(path != null) path.pollLast();
+        RandomWalkClient.gameBoard.setElement(  BoxToMoveTo.getX(), BoxToMoveTo.getY(), BoxToMoveTo);
+        return path;
+    }
+    private LinkedList<Node> findPathWithBox() {
+        path = pathFindingEngine.FindPath(true, attachedBox.assignedGoal.getX(), attachedBox.assignedGoal.getY());
+
+        return path;
+    }
+
+        Command getCommand(int i) {
         Node somePosition= null;
         try{
             if(!isMovingBox) {
-                return attachedBox.path.get(i).getAction();
+                return path.get(i).action;
             }
             else {
-                return attachedBox.path.get(i).getAction();
+                return path.get(i).action;
             }
         }
         catch (IndexOutOfBoundsException exc) {
             return null;
         }
     }
-
-    boolean replacePath(List<Command> commands) {
+    public boolean replacePath(List<Command> commands) {
+        path.clear();
+        int agentY = getY();
+        int agentX = getX();
         for(int i = 0; i< commands.size(); i++) {
-            Command current = commands.get(i);
-            if(current.actType == type.Move) {
-                path.clear();
-                Point nextCoords = current.getNext(new Point(getX(), getY()));
-                path.add(new Node(nextCoords.x, nextCoords.y, current));
+            Command c = commands.get(i);
+            int newAgentY = agentY + Command.dirToYChange(c.dir1);
+            int newAgentX = agentX + Command.dirToXChange(c.dir1);
+            if(c.actType == type.Move) {
+                path.add(new Node(null, c, newAgentX, newAgentY));
             }
-            else if(current.actType == type.Push || current.actType == type.Pull) {
-                List<Point> newList = new ArrayList<Point>();
-                newList.add(new Point(getX(), getY()));
-                newList.add(new Point(attachedBox.getX(), attachedBox.getY()));
-                List<Point> nextCoords = current.getNext(newList);
-                attachedBox.path.clear();
-                attachedBox.path.add(new Node(nextCoords.get(1).x, nextCoords.get(1).y, current));
+            else if(c.actType == type.Push) {
+                int newBoxY = newAgentY + Command.dirToYChange(c.dir2);
+                int newBoxX = newAgentX + Command.dirToXChange(c.dir2);
+                path.add(new Node(null, c, newAgentX, newAgentY, newBoxX, newBoxY));
+            }
+            else if ( c.actType == type.Pull ) {
+                path.add(new Node(null, c, newAgentX, newAgentY, agentX, agentY));
             }
             else {
-                path.add(new Node(getX(), getY(), current));
+                path.add(new Node(null, c, agentX, agentY));
             }
         }
         return true;
-    }
-    dir invertDirection(dir Direction) {
-        switch (Direction) {
-            case N:
-                return dir.S;
-            case S:
-                return dir.N;
-            case E:
-                return dir.W;
-            case W:
-                return dir.E;
-        }
-        return null;
     }
 
     public boolean isBoxAttached() {
     	return attachedBox != null;
     }
-
     void updatePosition() throws UnsupportedOperationException {
         //save'em so you can restore the state if sth goes wrong`
         int  AttachedBoxCoordX = 0,
@@ -265,30 +240,45 @@ public class Agent extends MovingObject {
         waitingCounter = 0;
         try {
             if(isMovingBox) {
-                AttachedBoxCoordX = attachedBox.getX();
-                AttachedBoxCoordY = attachedBox.getY();
-                Node nextStep = attachedBox.path.pollFirst();
-                if(pushing) {
-                    attachedBox.changePosition(nextStep.getX(), nextStep.getY(), RandomWalkClient.MainBoard);
-                    changePosition(AttachedBoxCoordX, AttachedBoxCoordY,  RandomWalkClient.MainBoard);
-                }
-                else{
-                    changePosition(nextPullingPosition.getX(), nextPullingPosition.getY(), RandomWalkClient.MainBoard);
-                    attachedBox.changePosition(nextStep.getX(), nextStep.getY(), RandomWalkClient.MainBoard);
-                }
+                Node nextStep = path.pollFirst();
+                updateMapWithBox(nextStep, RandomWalkClient.gameBoard);
+                Box movedObject = (Box) RandomWalkClient.gameBoard.getElement(nextStep.boxX, nextStep.boxY);
+                setCoordinates(nextStep.agentX, nextStep.agentY);
+                movedObject.setCoordinates(nextStep.boxX, nextStep.boxY);
             }
             else {
                 Node nextStep = path.pollFirst();
-                changePosition(nextStep.getX(), nextStep.getY(), RandomWalkClient.MainBoard);
+                updateMap(nextStep, RandomWalkClient.gameBoard);
+                setCoordinates(nextStep.agentX, nextStep.agentY);
             }
         }
         catch(UnsupportedOperationException exc) {
-            forceMapUpdate(currentX, currentY,  RandomWalkClient.MainBoard);
-            if(isMovingBox) {
-                attachedBox.forceMapUpdate(AttachedBoxCoordX, AttachedBoxCoordY,  RandomWalkClient.MainBoard);
-            }
             throw exc;
         }
 
     }
+    private String waitingProcedure() {
+        waiting = true;
+        if(waitingCounter >= WAITING_MAX) {
+            if(attachedBox != null) {
+                attachedBox.noGoalOnTheMap = true; // this is only temporary to see it work without conflict resolutions!!
+                attachedBox.clearOwnerReferences();
+                attachedBox = null;
+            }
+        }
+        return "NoOp";
+    }
+
+    public Box getAttachedBox() {
+        return attachedBox;
+    }
+    public Point getAgentPoint(){
+        return new Point(this.getX(),this.getY());
+    }
+
+    public Point getAttachedBoxPoint() {
+        Point tmp = new Point(attachedBox.getX(),attachedBox.getY());
+        return tmp;
+    }
+
 }
