@@ -10,7 +10,8 @@ public class Conflicts {
 	private static MainBoard mainBoard;
 
 	public static void delegateConflict(Agent agent1){
-		System.err.println( "Conflict Started" );
+		System.err.println();
+		System.err.println( "Conflict Started for agent:"+agent1.getID() );
 		mainBoard = RandomWalkClient.gameBoard;
 		List<Agent> agents = mainBoard.agents;
 		Agent agent2;
@@ -18,13 +19,15 @@ public class Conflicts {
 		int priority2;// = calculatePriority(agent2);
 		Box box2;
 		BasicObject bob = getConflictPartners(agent1);
-
+		System.err.println("Conflict partner:" + bob.toString() );
 		if (bob instanceof Agent){
 			agent2 = (Agent) bob;
 			priority2 = calculatePriority(agent2);
-			Agent pawnAgent = (priority1 > priority2) ? agent2 : agent1;
-			Agent kingAgent = (priority1 < priority2) ? agent2 : agent1;
-			if(noopFix(pawnAgent,kingAgent)){
+			Agent pawnAgent = (priority1 < priority2) ? agent2 : agent1;
+			Agent kingAgent = (priority1 > priority2) ? agent2 : agent1;
+			System.err.println("pawn is:"+pawnAgent.getID());
+			System.err.println("king is:"+kingAgent.getID());
+			if(!noopFix(pawnAgent,kingAgent)){
 				planMerge(kingAgent,pawnAgent);
 			}
 
@@ -36,23 +39,28 @@ public class Conflicts {
 			} else{
 				agent2 = box2.assignedAgent;
 				priority2 = calculatePriority(agent2);
-				Agent pawnAgent = (priority1 > priority2) ? agent2 : agent1;
-				Agent kingAgent = (priority1 < priority2) ? agent2 : agent1;
+				Agent pawnAgent = (priority1 < priority2) ? agent2 : agent1;
+				Agent kingAgent = (priority1 > priority2) ? agent2 : agent1;
 				//If an agent is assigned to the box
 
-				if(noopFix(pawnAgent,kingAgent)){
+				System.err.println("pawn is:"+pawnAgent.getID());
+				System.err.println("king is:"+kingAgent.getID());
+				if(!noopFix(pawnAgent,kingAgent)){
 					planMerge(kingAgent,pawnAgent);
 				}
 			}
 		}
+		System.err.println("Conflict done");
 	}
 
 	private static BasicObject getConflictPartners(Agent agent1) {
+		System.err.println( "getConflictPartners" );
 		Command c = agent1.getCommand(0); //Find command for agent in path
 		List<Point> pos = new ArrayList<Point>(); //Pos array handles the positions of agent and maybe box
 		pos.add(agent1.getAgentPoint()); //add agent to pos
 		if (agent1.isBoxAttached()) {
 			pos.add(agent1.getAttachedBoxPoint());
+			System.err.println( "Agent has box attached" );
 		} //Add box if exists
 		List<Point> nextPos = c.getNext(pos); //nextPos dependant on if box or not
 		Point nextPosition = null;
@@ -61,7 +69,7 @@ public class Conflicts {
 				nextPosition = nextPos.get(i);
 			}
 		}
-		return mainBoard.getElement((int) nextPosition.getX(), (int) nextPosition.getY());
+		return RandomWalkClient.nextStepGameBoard.getElement((int) nextPosition.getX(), (int) nextPosition.getY());
 
 	}
 
@@ -97,11 +105,18 @@ public class Conflicts {
 				return false;
 			}
 		}
-		/*if(kingAgent.isBoxAttached()){
-			pawnAgent.path.add(new Command());
+
+		LinkedList<Command> newC = new LinkedList<Command>();
+
+		if(kingAgent.isBoxAttached()){
+			newC.add(new Command());
 		}
-		pawnAgent.path.add(new Command());
-		pawnAgent.path.add(new Command());*/
+		newC.add(new Command());
+		newC.add(new Command());
+		newC.add(new Command());
+
+		pawnAgent.replacePath(newC);
+
 		return true;
 	}
 
