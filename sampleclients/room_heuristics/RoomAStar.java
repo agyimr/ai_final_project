@@ -1,4 +1,9 @@
-import java.awt.*;
+package sampleclients.room_heuristics;
+
+import sampleclients.BasicObject;
+import sampleclients.MainBoard;
+
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -10,18 +15,18 @@ public class RoomAStar {
     private ArrayList<Section> vertical_sections;
     private ArrayList<Section> horizontal_sections;
 
-    RoomAStar(String level_name) {
-        PreProcessMap(level_name);
+    public RoomAStar(MainBoard board) {
+        PreProcessMap(board);
     }
 
-    private void PreProcessMap(String level_name) {
-        this.map = new Map(level_name);
+    private void PreProcessMap(MainBoard board) {
+        this.map = new Map(board.getGameBoard());
         this.vertical_sections = Divide.DivideMap(this.map, false);
         this.horizontal_sections = Divide.DivideMap(this.map, true);
         this.passages = new Passage(map, this.horizontal_sections, this.vertical_sections);
     }
 
-    public LinkedList<Node> getShortestPath(Point from, Point to) {
+    public LinkedList<Node> getRoomPath(Point from, Point to) {
         ArrayList<Node> closed_set = new ArrayList<>();
         PriorityQueue<Node> open_set = new PriorityQueue<>(10, Comparator.comparingInt((n) -> n.f));
         Node init_node = new Node(null, passages.section_map[from.y][from.x], from, null, 0, passages.getDistanceFrom(from, to));

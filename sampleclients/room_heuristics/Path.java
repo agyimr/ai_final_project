@@ -1,3 +1,5 @@
+package sampleclients.room_heuristics;
+
 public class Path {
     public Section to;
     public Section through;

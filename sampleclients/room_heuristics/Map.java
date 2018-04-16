@@ -1,73 +1,46 @@
-import java.awt.*;
-import java.io.*;
-import java.util.*;
+package sampleclients.room_heuristics;
+
+import sampleclients.BasicObject;
+
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.List;
 
 public class Map {
     char[][] character_map;
     int width;
     int height;
 
-    Map(String level_name) {
-        Size size = GetSize(level_name);
+    Map(List<List<BasicObject>> gameboard) {
+        Size size = GetSize(gameboard);
         this.width = size.width;
         this.height = size.height;
+        System.err.println("Size: " + size.width + ", " + size.height);
         this.character_map = new char[this.height][this.width];
 
-        try {
-
-            // reading map line by line
-            BufferedReader bufferreader = new BufferedReader(new FileReader("C:\\Egyetem\\Msc\\2. félév\\room_heuristics\\levels\\" + level_name + ".lvl"));
-            String line = bufferreader.readLine();
-            while(!line.contains("+")) {
-                line = bufferreader.readLine();
-            }
-
-            int row = 0;
-
-            // processing each line
-            while (line != null) {
-
-                // each character
-                for (int col = 0; col < line.length(); col++) {
-                    this.character_map[row][col] = line.charAt(col);
+        for (int y = 0; y < gameboard.size(); ++y) {
+            for (int x = 0; x < gameboard.get(y).size(); ++x) {
+                if (gameboard.get(y).get(x) != null) {
+                    this.character_map[y][x] = gameboard.get(y).get(x).getID();
+                } else {
+                    this.character_map[y][x] = ' ';
                 }
-                row++;
-                line = bufferreader.readLine();
             }
-
-        } catch (FileNotFoundException ex) {
-            ex.printStackTrace();
-        } catch (IOException ex) {
-            ex.printStackTrace();
+            System.err.println();
         }
     }
 
-    private Size GetSize(String level_name) {
-        int row = 0;
-        int col_length = 0;
+    private Size GetSize(List<List<BasicObject>> gameboard) {
+        int width = 0;
 
-        try {
-            // reading map line by line
-            BufferedReader bufferreader = new BufferedReader(new FileReader("C:\\Egyetem\\Msc\\2. félév\\room_heuristics\\levels\\" + level_name + ".lvl"));
-            String line = bufferreader.readLine();
-            while(!line.contains("+")) {
-                line = bufferreader.readLine();
-            }
-
-            // processing each line
-            while (line != null) {
-                if (line.length() > col_length) col_length = line.length();
-                row++;
-                line = bufferreader.readLine();
-            }
-
-        } catch (FileNotFoundException ex) {
-            ex.printStackTrace();
-        } catch (IOException ex) {
-            ex.printStackTrace();
+        for (List<BasicObject> row : gameboard) {
+            if (row.size() > width) width = row.size();
         }
+        int height = gameboard.size();
 
-        return new Size(col_length, row);
+        return new Size(width, height);
     }
 
     public boolean isWall(int x, int y) {

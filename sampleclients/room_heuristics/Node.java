@@ -1,5 +1,6 @@
-import java.awt.Point;
-import java.util.Arrays;
+package sampleclients.room_heuristics;
+
+import java.awt.*;
 
 public class Node {
     public Node parent;

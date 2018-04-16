@@ -1,3 +1,5 @@
+package sampleclients.room_heuristics;
+
 public class Size {
     public int width;
     public int height;

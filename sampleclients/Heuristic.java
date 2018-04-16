@@ -1,5 +1,8 @@
 package sampleclients;
 
+import sampleclients.room_heuristics.Section;
+
+import java.awt.*;
 import java.util.Comparator;
 
 import static java.lang.Math.abs;
@@ -8,18 +11,34 @@ public abstract class Heuristic implements Comparator<Node> {
     boolean pushingBox;
     Agent owner;
     int goalX, goalY;
+    Section nextRoom = null;
+
     public Heuristic() {
     }
+
     public void initializeSearch(Agent owner, boolean pushingBox, int goalX, int goalY) {
         this.pushingBox = pushingBox;
         this.owner = owner;
         this.goalX = goalX;
         this.goalY = goalY;
+        this.nextRoom = null;
     }
+
+	public void initializeSearch(Agent owner, boolean pushingBox, Section to) {
+		this.pushingBox = pushingBox;
+		this.owner = owner;
+		this.goalX = -1;
+		this.goalY = -1;
+		this.nextRoom = to;
+	}
+
 	public int h(Node n) {
         if(pushingBox) {
             //RandomWalkClient.printBoard(n.boxes);
             if(n.boxes[n.boxY][n.boxX] == owner.getAttachedBox().getID()) {
+            	if (nextRoom != null) {
+            		return nextRoom.getDistanceFromPoint(new Point(n.agentX, n.agentY));
+				}
                 //System.err.println(n.agentX + " " + n.boxX + " " + n.agentY + " "+ n.boxY);
                 return ManhattanDistance(n.boxX, n.boxY, goalX, goalY);
             }
@@ -28,7 +47,16 @@ public abstract class Heuristic implements Comparator<Node> {
             }
         }
         else {
-            if (n.action.actType == Command.type.Move ) return ManhattanDistance(n.agentX, n.agentY,goalX,goalY);
+            if (n.action.actType == Command.type.Move) {
+            	if (nextRoom != null) {
+					return nextRoom.getDistanceFromPoint(new Point(n.agentX, n.agentY));
+				}
+            	return ManhattanDistance(n.agentX, n.agentY,goalX,goalY);
+			} else {
+				if (nextRoom != null) {
+					return nextRoom.getDistanceFromPoint(new Point(n.agentX, n.agentY)) * 2;
+				}
+			}
             return  2 * ManhattanDistance(n.agentX, n.agentY,goalX,goalY);
         }
 	}

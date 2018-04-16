@@ -1,3 +1,5 @@
+package sampleclients.room_heuristics;
+
 import java.awt.*;
 import java.util.ArrayList;
 

@@ -1,6 +1,8 @@
 package sampleclients;
 
 
+import sampleclients.room_heuristics.Section;
+
 import java.util.*;
 import java.awt.Point;
 
@@ -10,6 +12,9 @@ public class Agent extends MovingObject {
     private static final int WAITING_MAX = 3;
     private boolean waiting = false;
     private Box attachedBox = null;
+    private LinkedList<sampleclients.room_heuristics.Node> roomPath;
+    private Section currentRoom;
+    private Section nextRoom;
     boolean isMovingBox = false;
     SearchClient pathFindingEngine;
     int waitingCounter = 0;
@@ -17,6 +22,10 @@ public class Agent extends MovingObject {
     public Agent( char id, String color, int y, int x ) {
         super(id, color, y, x, "Agent");
         pathFindingEngine = new SearchClient(this);
+
+        currentRoom = null;
+        nextRoom = null;
+        roomPath = new LinkedList<>();
     }
     public String act() {
 //        if(path != null && path.size() > 0 && path.get(0).action.actType == type.Noop){
@@ -193,16 +202,53 @@ public class Agent extends MovingObject {
         }
     }
     private LinkedList<Node> findPathToBox(Box BoxToMoveTo) {
-        RandomWalkClient.gameBoard.setElement(  BoxToMoveTo.getX(), BoxToMoveTo.getY(), null);
+        // First let's schedule a room path if we don't have any...
+        if (roomPath.isEmpty()) {
+            roomPath = RandomWalkClient.roomAStar.getRoomPath(new Point(getX(), getY()), new Point(BoxToMoveTo.getX(), BoxToMoveTo.getY()));
+        }
+
+        // Get the current room we are in
+        sampleclients.room_heuristics.Node currentNode = roomPath.removeFirst();
+        currentRoom = currentNode.through;
+
+        // If we are not in the goal-room, find a path towards the next room.
+        // The goal state's parent is null.
+        if (currentNode.parent != null) {
+            nextRoom = currentNode.parent.through;
+            path = pathFindingEngine.FindPath(false, nextRoom);
+            return path;
+        }
+
+        // But if we are in the goal-room, go straight to the box.
+        RandomWalkClient.gameBoard.setElement(BoxToMoveTo.getX(), BoxToMoveTo.getY(), null);
         path = pathFindingEngine.FindPath(false, BoxToMoveTo.getX(), BoxToMoveTo.getY());
-        //findPath(BoxToMoveTo.getX(), BoxToMoveTo.getY());
-        if(path != null) path.pollLast();
-        RandomWalkClient.gameBoard.setElement(  BoxToMoveTo.getX(), BoxToMoveTo.getY(), BoxToMoveTo);
+        RandomWalkClient.gameBoard.setElement(BoxToMoveTo.getX(), BoxToMoveTo.getY(), BoxToMoveTo);
+        if(path != null) {
+            path.pollLast();
+        }
         return path;
     }
     private LinkedList<Node> findPathWithBox() {
-        path = pathFindingEngine.FindPath(true, attachedBox.assignedGoal.getX(), attachedBox.assignedGoal.getY());
+        // First let's schedule a room path if we don't have any...
+        if (roomPath.isEmpty()) {
+            Point goal = new Point(attachedBox.assignedGoal.getX(), attachedBox.assignedGoal.getY());
+            roomPath = RandomWalkClient.roomAStar.getRoomPath(new Point(getX(), getY()), goal);
+        }
 
+        // Get the current room we are in
+        sampleclients.room_heuristics.Node currentNode = roomPath.removeFirst();
+        currentRoom = currentNode.through;
+
+        // If we are not in the goal-room, find a path towards the next room.
+        // The goal state's parent is null.
+        if (currentNode.parent != null) {
+            nextRoom = currentNode.parent.through;
+            path = pathFindingEngine.FindPath(true, nextRoom);
+            return path;
+        }
+
+        // But if we are in the goal-room, go straight to the box.
+        path = pathFindingEngine.FindPath(true, attachedBox.assignedGoal.getX(), attachedBox.assignedGoal.getY());
         return path;
     }
 

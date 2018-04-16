@@ -1,5 +1,6 @@
 package sampleclients;
 
+import sampleclients.room_heuristics.RoomAStar;
 
 import java.io.*;
 import java.util.*;
@@ -11,9 +12,12 @@ public class RandomWalkClient {
 
     public static MainBoard gameBoard;
     public static MainBoard nextStepGameBoard;
+    public static RoomAStar roomAStar;
+
 	public RandomWalkClient() throws IOException {
         gameBoard = new MainBoard(in); //map read in the constructor
         nextStepGameBoard = new MainBoard(gameBoard);
+        roomAStar = new RoomAStar(gameBoard);
 /*		Agent someAgent = agents.get(2);
         LinkedList<Node> path = someAgent.findPathToBox(BoxColorGroups.get(someAgent.getColor()).get(2));
         System.err.println(path + " for Agent: " + someAgent);*/
