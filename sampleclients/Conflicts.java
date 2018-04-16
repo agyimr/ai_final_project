@@ -111,7 +111,6 @@ public class Conflicts {
 	//More difficult conflict where one needs to backtrack or go around with/without box
 	
 	private static boolean planMerge(Agent kingAgent, Agent pawnAgent){
-		char[][] board = RandomWalkClient.MainBoard;
 		int index = 0;
 		Point posKing = new Point(kingAgent.getX(),kingAgent.getY()); //Node 0 for the king
 		List<Point> pos = new ArrayList<Point>();
