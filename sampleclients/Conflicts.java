@@ -7,15 +7,17 @@ import java.util.*;
 
 public class Conflicts {
 
+	private static MainBoard mainBoard;
+
 	public static void delegateConflict(Agent agent1){
 		//Easy nop case  TODO
-		char[][] board = RandomWalkClient.MainBoard;
-		List<Agent> agents = RandomWalkClient.agents;
+		mainBoard = RandomWalkClient.gameBoard;
+		List<Agent> agents = mainBoard.agents;
 		Agent agent2;
 		int priority1 =	calculatePriority(agent1);
 		int priority2;// = calculatePriority(agent2);
 		Box box2;
-		MovingObject bob = getConflictPartners(agent1);
+		BasicObject bob = getConflictPartners(agent1);
 
 		if (bob instanceof Agent){
 			agent2 = (Agent) bob;
@@ -39,50 +41,25 @@ public class Conflicts {
 		}
 	}
 
-	private static MovingObject getConflictPartners(Agent agent1){
+	private static BasicObject getConflictPartners(Agent agent1) {
 		Command c = agent1.getCommand(0); //Find command for agent in path
 		List<Point> pos = new ArrayList<Point>(); //Pos array handles the positions of agent and maybe box
 		pos.add(agent1.getAgentPoint()); //add agent to pos
-		if (agent1.isBoxAttached()){pos.add(agent1.getAttachedBoxPoint());} //Add box if exists
+		if (agent1.isBoxAttached()) {
+			pos.add(agent1.getAttachedBoxPoint());
+		} //Add box if exists
 		List<Point> nextPos = c.getNext(pos); //nextPos dependant on if box or not
-		int aX = (int)nextPos.get(0).getX();
-		int aY = (int)nextPos.get(0).getY();
-		char nextAgent1Pos = RandomWalkClient.MainBoard[aY][aX]; //agent1 next pos
-		char nextBox1Pos = ' '; // box1
-		if(nextPos.size()>1){ //IF BOX ON AGENT
-			int bX = (int)nextPos.get(1).getX();
-			int bY = (int)nextPos.get(1).getY();
-			nextBox1Pos = RandomWalkClient.MainBoard[bY][bX]; //
-		}
-
-		if(RandomWalkClient.isAgent(nextAgent1Pos) || RandomWalkClient.isBox(nextAgent1Pos)){
-			//AGENT HIT
-			//Get corresponding agent object
-			Agent agentObj = null;
-			for (int i = 0; i < RandomWalkClient.agents.size(); i++) {
-				if(RandomWalkClient.agents.get(i).getID()==nextAgent1Pos){
-					agentObj = RandomWalkClient.agents.get(i);
-					break;
-				}
+		Point nextPosition = null;
+		for (int i = 0; i < nextPos.size(); i++) {
+			if (!pos.contains(nextPos.get(i))) {
+				nextPosition = nextPos.get(i);
 			}
-			return agentObj;
-
-
-		} else if(RandomWalkClient.isAgent(nextBox1Pos) || RandomWalkClient.isBox(nextBox1Pos)){
-			// BOX HIT
-			//Get corresponding box object
-			Box boxObj = null;
-			for (int i = 0; i < RandomWalkClient.boxes.size(); i++) {
-				if(RandomWalkClient.boxes.get(i).getID()==nextBox1Pos){
-					boxObj = RandomWalkClient.boxes.get(i);
-				}
-			}
-			return boxObj;
 		}
-		return null;
+		return mainBoard.getElement((int) nextPosition.getX(), (int) nextPosition.getY());
+
 	}
-	//This method is for detecting and delegating the type of conflict to the correct methods
 
+	//This method is for detecting and delegating the type of conflict to the correct methods
 	private static boolean noopFix(Agent pawnAgent, Agent kingAgent){
 		//Find next two points for king, if intersects with pawnAgent pos, return false, else true.
 		List<Point> pawnArea = new ArrayList<Point>();		
@@ -137,7 +114,6 @@ public class Conflicts {
 		char[][] board = RandomWalkClient.MainBoard;
 		int index = 0;
 		Point posKing = new Point(kingAgent.getX(),kingAgent.getY()); //Node 0 for the king
-		//How do i get box position?
 		List<Point> pos = new ArrayList<Point>();
 		pos.add(posKing);
 		if(kingAgent.isBoxAttached()){
@@ -173,7 +149,7 @@ public class Conflicts {
 	}
 	private static boolean bid(Box box){
 		System.err.println("NotDoneYet");
-		List<Agent> agents = RandomWalkClient.agents;
+		List<Agent> agents = mainBoard.agents;
 		//getRelevantAgents(box,agents);
 		//attached?
 		return true;
