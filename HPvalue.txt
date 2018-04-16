@@ -1,0 +1,31 @@
+public Agent HPvalue(Box b, List<Agent> agents){
+	Agent cand = null;
+	int val = -1;
+	for(Agent a : agents){
+		int currentH = a.getCurrentHeuristic();
+
+		Point agentPos = new Point(a.getX(),a.getY());
+		Point boxPos = new Point(b.getX(),b.getY());
+		int boxH = RoomHeuristic.getH(agent,box);
+
+		int currentVal = boxH - currentH;
+
+		if(val == -1 || currentVal < val){
+			cand = a;
+			val = currentVal;
+		}
+	}
+
+	return cand;
+}
+	
+public List<Agent> getRelevantAgents(Box b, List<Agent> agents){
+	List<Agent> relevant = new LinkedList<Agent>();
+	String c = b.getColor();
+	for (Agent a : agents){
+		if(c.equals(a.getColor())){
+			relevant.add(a);
+		}
+	}
+	return relevant;
+}

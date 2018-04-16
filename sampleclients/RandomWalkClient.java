@@ -1,5 +1,6 @@
 package sampleclients;
 
+
 import java.io.*;
 import java.util.*;
 
@@ -21,21 +22,35 @@ public class RandomWalkClient {
 
 
 	public boolean update() throws IOException {
-
 		String jointAction = "[";
-
-		for ( int i = 0; i < MainBoard.agents.size() - 1; i++ ) {
+		for ( int i = 0; i < MainBoard.agents.size(); i++ ) {
             try {
-                jointAction += MainBoard.agents.get( i ).act() + ",";
+                if (i != 0){
+                    jointAction += ",";
+                }
+                System.err.println("Update agent: "+MainBoard.agents.get(i).getID());
+                jointAction += MainBoard.agents.get( i ).act();
+                System.err.println();
             }
             catch(UnsupportedOperationException exc) {
                 //printBoard(NextMainBoard);
-                //Conflicts.delegateConflict(MainBoard.agents.get(i));
+                System.err.println();
+                System.err.println("Conflict");
+                Conflicts.delegateConflict(MainBoard.agents.get(i));
+                System.err.println("Agent acts after conflict:"+MainBoard.agents.get(i).getID());
+                jointAction += MainBoard.agents.get( i ).act();
+                System.err.println("path:");
+                for(Node n: MainBoard.agents.get(i).path){
+                    System.err.println(n.toString());
+                }
+
+                System.err.println();
                 //--i;
-                throw exc;
+                //throw exc;
+
             }
         }
-		jointAction += MainBoard.agents.get( MainBoard.agents.size() - 1 ).act() + "]";
+		jointAction +=  "]";
 
 		// Place message in buffer
 		System.out.println( jointAction );
@@ -86,4 +101,5 @@ public class RandomWalkClient {
 			// Got nowhere to write to probably
 		}
 	}
+
 }

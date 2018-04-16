@@ -7,8 +7,9 @@ import sampleclients.Command.dir;
 import sampleclients.Command.type;
 
 public class ConflictBFS {
+	private static MainBoard map;
 	public static List<Command> doBFS(List<Point> locked, List<Point> pos){
-		char[][] map = RandomWalkClient.MainBoard;
+		map = RandomWalkClient.gameBoard;
 		List<ConflictNode> frontier = new ArrayList<ConflictNode>();
 		List<ConflictNode> explored = new ArrayList<ConflictNode>();
 		List<Command> path = new ArrayList<Command>();
@@ -34,7 +35,7 @@ public class ConflictBFS {
 			
 			
 			//Get neighbour states of cur
-			List<ConflictNode> neighbours = getNeighbours(cur, pos, map);	
+			List<ConflictNode> neighbours = getNeighbours(cur, pos);
 			
 			//add the current ConflictNode to explored
 			explored.add(cur);
@@ -67,7 +68,7 @@ public class ConflictBFS {
 		return path;
 	}
 	
-	private static List<ConflictNode> getNeighbours(ConflictNode cur,List<Point> startPos, char[][] map){
+	private static List<ConflictNode> getNeighbours(ConflictNode cur,List<Point> startPos){
 		List<ConflictNode> n = new ArrayList<ConflictNode>();
 		dir boxdir = null;
 		Command[] allCommands = Command.every;
@@ -106,7 +107,7 @@ public class ConflictBFS {
 			}
 			
 			//if the command is applicable, and allowed in the enviroment
-			if(posCand != null && isAllowed(posCand,startPos,map)){
+			if(posCand != null && isAllowed(posCand,startPos)){
 				ConflictNode nodeCand = new ConflictNode(posCand);
 				nodeCand.setParent(cur);
 				nodeCand.setCommand(allCommands[i]);
@@ -115,12 +116,12 @@ public class ConflictBFS {
 		}
 		return n;
 	}
-	private static boolean isAllowed(List<Point> cand,List<Point> startPos, char[][] map){
+	private static boolean isAllowed(List<Point> cand,List<Point> startPos){
 		//go through box and agent position. Check if they are free in the map
 		for(int i = 0; i < cand.size(); i++){
 			//disregard the starting position in the map
 			if(!startPos.contains(cand.get(i))){
-				if(map[cand.get(i).y][cand.get(i).x] != ' '){
+				if(map.isFree(cand.get(i).y,cand.get(i).x)){
 //					System.out.println("isAllowed: false");
 					return false;
 				}
