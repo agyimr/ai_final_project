@@ -21,6 +21,7 @@ public class Agent extends MovingObject {
     public String act() {
         if(attachedBox == null) {
             if(!findABox()) {
+                System.err.println("Cant find box: "+toString());
                 return waitingProcedure();
             }
         }
@@ -28,16 +29,21 @@ public class Agent extends MovingObject {
             String result = executePath();
             if(result != null) return result;
             else if(nextToBox(attachedBox)) {
+                System.err.println("isNext to box: "+toString());
                 isMovingBox = true;
             }
             else if(findPathToBox(attachedBox) == null) {
                 return waitingProcedure();
             }
-            else return executePath();
+
+            else {
+                System.err.println("Moving towards box: "+toString());
+                return executePath();
+            }
         }
         //no assigned goal
         if (attachedBox.assignedGoal == null) {
-
+            System.err.println("No assigned goal: "+toString());
             //try finding a goal
             attachedBox.assignedGoal = MainBoard.goals.get(Character.toLowerCase(attachedBox.getID()));
             if (attachedBox.assignedGoal == null) {
@@ -51,6 +57,7 @@ public class Agent extends MovingObject {
         }
         //box at the goal position!
         if (attachedBox.assignedGoal.atGoalPosition(attachedBox)) {
+            System.err.println("box at goal postion: "+toString());
             attachedBox.clearOwnerReferences();
             attachedBox.atGoalPosition = true;
             attachedBox = null;
@@ -60,6 +67,7 @@ public class Agent extends MovingObject {
         }
         //box attached and not at the goal position
         else {
+            System.err.println("Moving box towards goal: "+toString());
             //now you must make a move
             if (path == null) {
                 path = findPathWithBox();
@@ -145,14 +153,21 @@ public class Agent extends MovingObject {
         Box movedObject = null;
         try {
             if(nextStep.action.actType ==  Command.type.Push) {
+                System.err.println();
+                System.err.println("UpdateMapWithBox, Node: "+nextStep.toString());
                 pushing = true;
                 movedObject = (Box) board.getElement(nextStep.agentX, nextStep.agentY);
+                System.err.println("UpdateMapWithBox, calc box: "+movedObject.toString());
                 board.changePositionOnMap(movedObject, nextStep.boxX, nextStep.boxY);
+                System.err.println("UpdateMapWithBox, calc agent: "+toString());
                 board.changePositionOnMap(this, nextStep.agentX, nextStep.agentY);
+                System.err.println();
+
             }
             else if(nextStep.action.actType ==  Command.type.Pull){
                 pushing = false;
-                movedObject = (Box) board.getElement(
+                movedObject = (Box)
+                        board.getElement(
                         nextStep.boxX + Command.dirToXChange(nextStep.action.dir2),
                         nextStep.boxY + Command.dirToYChange(nextStep.action.dir2));
                 board.changePositionOnMap(this, nextStep.agentX, nextStep.agentY);
@@ -187,10 +202,19 @@ public class Agent extends MovingObject {
         Node somePosition= null;
         try{
             if(!isMovingBox) {
-                return path.get(i).action;
+                if(path == null){
+                    return new Command();
+                }else{
+                    return path.get(i).action;
+                }
             }
             else {
-                return path.get(i).action;
+                if(attachedBox.path == null){
+                    return new Command();
+                }else{
+                    return attachedBox.path.get(i).action;
+                }
+
             }
         }
         catch (IndexOutOfBoundsException exc) {

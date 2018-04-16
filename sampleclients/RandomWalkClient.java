@@ -23,16 +23,17 @@ public class RandomWalkClient {
 	public boolean update() throws IOException {
 
 		String jointAction = "[";
-
 		for ( int i = 0; i < MainBoard.agents.size() - 1; i++ ) {
             try {
                 jointAction += MainBoard.agents.get( i ).act() + ",";
             }
             catch(UnsupportedOperationException exc) {
                 //printBoard(NextMainBoard);
-                //Conflicts.delegateConflict(MainBoard.agents.get(i));
+                System.err.println("Conflict");
+                Conflicts.delegateConflict(MainBoard.agents.get(i));
                 //--i;
-                throw exc;
+                //throw exc;
+
             }
         }
 		jointAction += MainBoard.agents.get( MainBoard.agents.size() - 1 ).act() + "]";
@@ -86,4 +87,5 @@ public class RandomWalkClient {
 			// Got nowhere to write to probably
 		}
 	}
+
 }

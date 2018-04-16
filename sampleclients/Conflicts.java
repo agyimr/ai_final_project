@@ -10,7 +10,7 @@ public class Conflicts {
 	private static MainBoard mainBoard;
 
 	public static void delegateConflict(Agent agent1){
-		//Easy nop case  TODO
+		System.err.println( "Conflict Started" );
 		mainBoard = RandomWalkClient.gameBoard;
 		List<Agent> agents = mainBoard.agents;
 		Agent agent2;
@@ -24,7 +24,10 @@ public class Conflicts {
 			priority2 = calculatePriority(agent2);
 			Agent pawnAgent = (priority1 > priority2) ? agent2 : agent1;
 			Agent kingAgent = (priority1 < priority2) ? agent2 : agent1;
-			planMerge(kingAgent,pawnAgent);
+			if(noopFix(pawnAgent,kingAgent)){
+				planMerge(kingAgent,pawnAgent);
+			}
+
 
 		} else if (bob instanceof Box){
 			box2 = (Box) bob;
@@ -36,7 +39,10 @@ public class Conflicts {
 				Agent pawnAgent = (priority1 > priority2) ? agent2 : agent1;
 				Agent kingAgent = (priority1 < priority2) ? agent2 : agent1;
 				//If an agent is assigned to the box
-				planMerge(kingAgent,pawnAgent);
+
+				if(noopFix(pawnAgent,kingAgent)){
+					planMerge(kingAgent,pawnAgent);
+				}
 			}
 		}
 	}
@@ -61,6 +67,7 @@ public class Conflicts {
 
 	//This method is for detecting and delegating the type of conflict to the correct methods
 	private static boolean noopFix(Agent pawnAgent, Agent kingAgent){
+		System.err.println( "NoopFix" );
 		//Find next two points for king, if intersects with pawnAgent pos, return false, else true.
 		List<Point> pawnArea = new ArrayList<Point>();		
 		pawnArea.add(new Point(pawnAgent.getX(),pawnAgent.getY()));
@@ -111,6 +118,7 @@ public class Conflicts {
 	//More difficult conflict where one needs to backtrack or go around with/without box
 	
 	private static boolean planMerge(Agent kingAgent, Agent pawnAgent){
+		System.err.println( "planMerge Started" );
 		int index = 0;
 		Point posKing = new Point(kingAgent.getX(),kingAgent.getY()); //Node 0 for the king
 		List<Point> pos = new ArrayList<Point>();
@@ -119,10 +127,12 @@ public class Conflicts {
 			Point posBox = kingAgent.getAttachedBoxPoint();
 			pos.add(posBox);
 		}
-
-
-		//Run though path 7 times, and return a list of those points?
-		int numLocked = kingAgent.path.size();
+		int numLocked;
+		if(kingAgent.path == null ){
+			numLocked = 0;
+		}else{
+			numLocked = kingAgent.path.size();
+		}
 		List<Point> locked = new ArrayList<Point>();
 		Command tmpC;
 		for (int i = 0; i < numLocked; i++) {
@@ -157,55 +167,3 @@ public class Conflicts {
 	
 	
 }
-
-
-
-
-
-
-
-//		int i;
-//		if(kingAgent.isBoxAttached()){
-//			i=2;
-//		} else{
-	
-//			i=1;
-//		}
-//
-//		Node temporaryPosition = null;
-//		List<Node> posKing = new ArrayList<Node>();
-//		List<Node> posPawn = new ArrayList<Node>();
-//		for (int j = 0; j < i; j++) {
-//			Command ck = kingAgent.path.get(j);
-//			Command cp = pawnAgent.path.get(j);
-//
-//			if(temporaryPosition != null){
-//				posKing = ck.getNext(new Point(temporaryPosition.getX(),temporaryPosition.getY()));
-//				posPawn = cp.getNext(new Point(pawnAgent.getX(),pawnAgent.getY()));
-//			} else{
-//				posKing = ck.getNext(new Point(kingAgent.getX(),kingAgent.getY()));
-//				posPawn = cp.getNext(new Point(pawnAgent.getX(),pawnAgent.getY()));
-//			}
-//
-//			if(!posPawn.contains(posKing)){
-//
-//				break;
-//			}else{
-//				pawnAgent.path.add(new Command());
-//				pawnAgent.path.add(new Command());
-//				if(posKing.contains(pawnPoint)){ //Check if resolved?
-//					planMerge(kingAgent,pawnAgent,board);
-//					kingAgent.path.add(new Command());
-//					kingAgent.path.add(new Command());
-//				}
-//			}
-//			temporaryPosition = posKing.get(0);
-//		}
-
-
-//Loop
-// reverse af sidste commando til BFS
-// Sig til BFS at der ikke skal s�ges i 2 af retningerne
-// list<commando> returneret, nop king 1 gang, og till�g dette til planen
-// Ellers hvis NULL returneret, g� 1 bagud, og BFS igen.
-//Der skal hele tiden holdes �je med positionen i planen.
