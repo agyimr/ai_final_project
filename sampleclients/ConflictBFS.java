@@ -30,6 +30,7 @@ public class ConflictBFS {
 			//goal check - not in any locked points
 			if(!containsList(locked,cur.getPoints())){
 				path = generateGoalPath(cur);
+				System.err.println("final node:"+cur.toString());
 				break;
 			}
 			
@@ -75,8 +76,12 @@ public class ConflictBFS {
 
 		//If box attached - get its direction from the agent
 		if(startPos.size() == 2){
+			System.err.println("Has box");
 			boxdir = getBoxDir(cur);
+		}else{
+			System.err.println("no box");
 		}
+
 		
 		// for all commands
 		for(int i = 0; i<allCommands.length;i++) {
@@ -163,18 +168,20 @@ public class ConflictBFS {
 		dir boxdir = null;
 		Point agent =  cur.getPoints().get(0);
 		Point box = cur.getPoints().get(1);
-		
+		System.err.println("BOX"+box.toString());
+		System.err.println("agent "+agent.toString());
+
 		if(new Command(dir.N).getNext(agent).equals(box)){
-			boxdir = dir.S;
-		}
-		if(new Command(dir.S).getNext(agent).equals(box)){
 			boxdir = dir.N;
 		}
+		if(new Command(dir.S).getNext(agent).equals(box)){
+			boxdir = dir.S;
+		}
 		if(new Command(dir.W).getNext(agent).equals(box)){
-			boxdir = dir.E;
+			boxdir = dir.W;
 		}
 		if(new Command(dir.E).getNext(agent).equals(box)){
-			boxdir = dir.W;
+			boxdir = dir.E;
 		}
 		System.err.println("Boxdir: "+boxdir);
 		return boxdir;

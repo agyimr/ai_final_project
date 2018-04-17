@@ -283,6 +283,9 @@ public class Agent extends MovingObject {
         try {
             if(isMovingBox) {
                 Node nextStep = path.pollFirst();
+                if (nextStep.action.actType == type.Noop){
+                    return;
+                }
                 updateMapWithBox(nextStep, RandomWalkClient.gameBoard);
                 Box movedObject = (Box) RandomWalkClient.gameBoard.getElement(nextStep.boxX, nextStep.boxY);
                 setCoordinates(nextStep.agentX, nextStep.agentY);

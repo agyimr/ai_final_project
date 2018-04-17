@@ -133,24 +133,8 @@ public class Command {
 			next.add(new Point( agent.x, agent.y+1 ));
 		}
 		if(pos.size() == 2 && actType.equals(type.Pull)){
-			Point box = pos.get(1);
-			//North
-			if(dir2.equals(dir.N)){
-				next.add(new Point( box.x, box.y+1 ));
-			}
-			//West
-			if(dir2.equals(dir.W)){
-				next.add(new Point( box.x+1, box.y ));
-			}
-			//East
-			if(dir2.equals(dir.E)){
-				next.add(new Point( box.x-1, box.y ));
-			}
-			//South
-			if(dir2.equals(dir.S)){
-				next.add(new Point( box.x, box.y-1 ));
-			}
-			
+			Point box = new Point(pos.get(0).x,pos.get(0).y);
+			next.add(box);
 		}
 		if(pos.size() == 2 && actType.equals(type.Push)){
 			Point box = pos.get(1);

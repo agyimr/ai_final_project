@@ -151,10 +151,13 @@ public class Conflicts {
 			Point posBox = kingAgent.getAttachedBoxPoint();
 			pos.add(posBox);
 		}
+		System.err.println("planmerge pos: "+pos.toString()) ;
 		List<Point> locked = new ArrayList<Point>();
 		Command tmpC;
 
-		for (int i = 0; i < 3; i++) {
+		System.err.println("ka at: "+kingAgent.toString());
+
+		for (int i = 0; i < kingAgent.path.size(); i++) {
 			tmpC = kingAgent.getCommand(i);
 
 			pos = tmpC.getNext(pos);
@@ -170,15 +173,29 @@ public class Conflicts {
 			System.err.println(p.toString());
 		}
 
-		List<Command> solution = ConflictBFS.doBFS(locked, pos);
+		List<Point> pawnAgentPos = new LinkedList<Point>();
+		pawnAgentPos.add(new Point(pawnAgent.getX(),pawnAgent.getY()));
+		if (pawnAgent.isBoxAttached()){
+			pawnAgentPos.add(pawnAgent.getAttachedBoxPoint());
+		}
+
+		List<Command> solution = ConflictBFS.doBFS(locked, pawnAgentPos);
 		if(solution.size() == 0){
+			System.err.println();
+			System.err.println("PLANMERGE FOUND NO SOLUTION");
+			System.err.println();
 			return false;
+		}else{
+			for (int i = 0; i < pos.size();i++){
+				solution.add(new Command());
+			}
 		}
 
 		System.err.println("PlanMerge found solution with agent "+pawnAgent.getID()+":");
 		for(Command c: solution){
 			System.err.println(c.toString());
 		}
+
 
 
 		pawnAgent.replacePath(solution);
