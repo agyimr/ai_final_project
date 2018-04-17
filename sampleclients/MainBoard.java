@@ -144,6 +144,9 @@ public class MainBoard {
         if(getElement(x, y) == null) return false;
         return (isWall(getElement(x, y).getID()));
     }
+    public boolean isFree (int x, int y) {
+        return getElement(x, y) == null || isGoal(x,y);
+    }
 
     //These are used to change position!
     public void changePositionOnMap(MovingObject obj, int x, int y) {
