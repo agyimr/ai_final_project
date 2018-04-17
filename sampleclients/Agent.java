@@ -13,28 +13,29 @@ public class Agent extends MovingObject {
     boolean isMovingBox = false;
     SearchClient pathFindingEngine;
     int waitingCounter = 0;
+    public int conflictSteps = 0;
 
     public Agent( char id, String color, int y, int x ) {
         super(id, color, y, x, "Agent");
         pathFindingEngine = new SearchClient(this);
     }
     public String act() {
-//        if(path != null && path.size() > 0 && path.get(0).action.actType == type.Noop){
-//            System.err.println("Noop FOund at top of path");
-//            Command action = path.get(0).action;
-//            path.remove(0);
-//            return action.toString();
-//        }
 
 
         if(attachedBox == null) {
             if(!findABox()) {
+                if(conflictSteps > 0){
+                    conflictSteps--;
+                }
                 System.err.println("Cant find box: ");
                 return waitingProcedure();
             }
         }
         if(!isMovingBox) {//then move towards box
             System.err.println("Execute path");
+            if(conflictSteps > 0){
+                conflictSteps--;
+            }
             String result = executePath();
             if(result != null) return result;
             else if(nextToBox(attachedBox)) {
@@ -76,6 +77,9 @@ public class Agent extends MovingObject {
         }
         //box attached and not at the goal position
         else {
+            if(conflictSteps > 0){
+                conflictSteps--;
+            }
             System.err.println("Moving box towards goal: ");
             //now you must make a move
             if (path == null) {
@@ -167,6 +171,10 @@ public class Agent extends MovingObject {
         try {
             if(nextStep.action.actType ==  Command.type.Push) {
                 pushing = true;
+                System.err.println("Agent trying to move to "+nextStep.agentX+","+nextStep.agentY);
+                int bx = nextStep.boxX + Command.dirToXChange(nextStep.action.dir2);
+                int by = nextStep.boxY + Command.dirToYChange(nextStep.action.dir2);
+                System.err.println("Agent trying to move box from "+bx+","+by);
                 movedObject = (Box) board.getElement(nextStep.agentX, nextStep.agentY);
                 board.changePositionOnMap(movedObject, nextStep.boxX, nextStep.boxY);
                 board.changePositionOnMap(this, nextStep.agentX, nextStep.agentY);
@@ -174,11 +182,15 @@ public class Agent extends MovingObject {
             }
             else if(nextStep.action.actType ==  Command.type.Pull){
                 pushing = false;
+                System.err.println("Agent trying to move to "+nextStep.agentX+","+nextStep.agentY);
+                int bx = nextStep.boxX + Command.dirToXChange(nextStep.action.dir2);
+                int by = nextStep.boxY + Command.dirToYChange(nextStep.action.dir2);
+                System.err.println("Agent trying to move box from "+bx+","+by);
                 movedObject = (Box)
                         board.getElement(
                         nextStep.boxX + Command.dirToXChange(nextStep.action.dir2),
                         nextStep.boxY + Command.dirToYChange(nextStep.action.dir2));
-                System.err.println("Agent trying to move to "+nextStep.agentX+","+nextStep.agentY);
+
                 board.changePositionOnMap(this, nextStep.agentX, nextStep.agentY);
                 System.err.println("agent moved");
                 board.changePositionOnMap(movedObject, nextStep.boxX, nextStep.boxY);
@@ -235,7 +247,12 @@ public class Agent extends MovingObject {
         }
     }
     public boolean replacePath(List<Command> commands) {
-        path.clear();
+        if(path != null){
+            path.clear();
+        }else{
+            path = new LinkedList<Node>();
+        }
+
         int agentY = getY();
         int agentX = getX();
         for(int i = 0; i< commands.size(); i++) {
@@ -262,11 +279,12 @@ public class Agent extends MovingObject {
             agentX = newAgentX;
             agentY = newAgentY;
         }
+        conflictSteps = commands.size();
         return true;
     }
 
     public boolean isBoxAttached() {
-    	return attachedBox != null;
+    	return isMovingBox;
     }
     void updatePosition() throws UnsupportedOperationException {
         //save'em so you can restore the state if sth goes wrong`

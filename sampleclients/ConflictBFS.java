@@ -8,8 +8,10 @@ import sampleclients.Command.type;
 
 public class ConflictBFS {
 	private static MainBoard map;
+	private static MainBoard nextMap;
 	public static List<Command> doBFS(List<Point> locked, List<Point> pos){
 		map = RandomWalkClient.gameBoard;
+		nextMap = RandomWalkClient.nextStepGameBoard;
 		List<ConflictNode> frontier = new ArrayList<ConflictNode>();
 		List<ConflictNode> explored = new ArrayList<ConflictNode>();
 		List<Command> path = new ArrayList<Command>();
@@ -129,12 +131,12 @@ public class ConflictBFS {
 		for(int i = 0; i < cand.size(); i++){
 			//disregard the starting position in the map
 			if(!startPos.contains(cand.get(i))){
-
+				System.err.println("cand point:"+cand.get(i).toString());
 				int x = cand.get(i).x;
 				int y = cand.get(i).y;
-				if(map.isWall(x,y) || map.isBox(x,y) || map.isAgent(x,y)){
-					System.err.println("isAllowed: false");
-					return false;
+				if(map.isWall(x,y) || map.isBox(x,y) || map.isAgent(x,y) || nextMap.isWall(x,y) || nextMap.isBox(x,y) || nextMap.isAgent(x,y)){
+						System.err.println("isAllowed: false");
+						return false;
 				}
 			}
 			

@@ -1,6 +1,7 @@
 package sampleclients;
 
 
+
 import java.io.*;
 import java.util.*;
 
@@ -25,12 +26,20 @@ public class RandomWalkClient {
 		String jointAction = "[";
 		for ( int i = 0; i < MainBoard.agents.size(); i++ ) {
             try {
-                if (i != 0){
-                    jointAction += ",";
-                }
                 System.err.println("Update agent: "+MainBoard.agents.get(i).getID());
                 jointAction += MainBoard.agents.get( i ).act();
+                System.err.println("Agent has path:");
+                if(MainBoard.agents.get(i).path != null){
+                    for (Node c : MainBoard.agents.get(i).path){
+                        System.err.println(c.action.toString());
+                    }
+                }
+
+
                 System.err.println();
+                if (i != MainBoard.agents.size() -1){
+                    jointAction += ",";
+                }
             }
             catch(UnsupportedOperationException exc) {
                 //printBoard(NextMainBoard);
@@ -40,11 +49,11 @@ public class RandomWalkClient {
                 System.err.println("path:");
                 System.err.println(MainBoard.agents.get(i).path.toString());
                 System.err.println("\nAgent acts after conflict:"+MainBoard.agents.get(i).getID());
-                jointAction += MainBoard.agents.get( i ).act();
+                //jointAction += MainBoard.agents.get( i ).act();
 
 
                 System.err.println();
-                //--i;
+                --i;
                 //throw exc;
 
             }
@@ -79,10 +88,12 @@ public class RandomWalkClient {
             }
         }
         catch (UnsupportedOperationException exc) {
+            System.err.println("------------ Update board failed -------");
             System.err.println(gameBoard);
             System.err.println(nextStepGameBoard);
             System.err.println(MainBoard.agents.get(i));
             System.err.println(MainBoard.agents.get(i).path);
+            System.err.println("------------ Update board failed -------");
             throw exc;
         }
         return true;
