@@ -118,7 +118,7 @@ public class MainBoard {
     public static boolean isBox (char id) { return ( 'A' <= id && id <= 'Z' );}
     public static boolean isGoal (char id) { return ( 'a' <= id && id <= 'z' ); }
     public static boolean isWall (char id) {return (id == '+');}
-    
+
     //returns object under given coordinates
     BasicObject getElement(int x, int y) {
         if(yOutOfBounds(y) || xOutOfBounds(x)) throw new UnsupportedOperationException();
