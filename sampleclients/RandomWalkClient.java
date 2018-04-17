@@ -35,14 +35,13 @@ public class RandomWalkClient {
             catch(UnsupportedOperationException exc) {
                 //printBoard(NextMainBoard);
                 System.err.println();
-                System.err.println("Conflict");
+                System.err.println("Conflict for agent: "+MainBoard.agents.get(i).getID()+" and action "+MainBoard.agents.get(i).path.get(0).action.toString());
                 Conflicts.delegateConflict(MainBoard.agents.get(i));
-                System.err.println("Agent acts after conflict:"+MainBoard.agents.get(i).getID());
-                jointAction += MainBoard.agents.get( i ).act();
                 System.err.println("path:");
-                for(Node n: MainBoard.agents.get(i).path){
-                    System.err.println(n.toString());
-                }
+                System.err.println(MainBoard.agents.get(i).path.toString());
+                System.err.println("\nAgent acts after conflict:"+MainBoard.agents.get(i).getID());
+                jointAction += MainBoard.agents.get( i ).act();
+
 
                 System.err.println();
                 //--i;
@@ -53,8 +52,9 @@ public class RandomWalkClient {
 		jointAction +=  "]";
 
 		// Place message in buffer
+        System.err.println(jointAction);
 		System.out.println( jointAction );
-		System.err.println(jointAction);
+
 		// Flush buffer
         System.out.flush();
         //server's output

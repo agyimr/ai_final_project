@@ -155,7 +155,7 @@ public class Agent extends MovingObject {
             updateMap(nextStep, RandomWalkClient.nextStepGameBoard);
         }
         else {
-            updateMapWithBox(nextStep, RandomWalkClient.nextStepGameBoard);
+                updateMapWithBox(nextStep, RandomWalkClient.nextStepGameBoard);
         }
     }
     private void updateMap(Node nextStep, MainBoard board)  throws UnsupportedOperationException {
@@ -178,15 +178,20 @@ public class Agent extends MovingObject {
                         board.getElement(
                         nextStep.boxX + Command.dirToXChange(nextStep.action.dir2),
                         nextStep.boxY + Command.dirToYChange(nextStep.action.dir2));
+                System.err.println("Agent trying to move to "+nextStep.agentX+","+nextStep.agentY);
                 board.changePositionOnMap(this, nextStep.agentX, nextStep.agentY);
+                System.err.println("agent moved");
                 board.changePositionOnMap(movedObject, nextStep.boxX, nextStep.boxY);
+                System.err.println("box moved");
             }
         }
         catch(UnsupportedOperationException exc) {
             if(pushing) {
+                System.err.println("Pushing");
                 board.changePositionOnMap(movedObject, movedObject.getX(), movedObject.getY());
             }
             else {
+                System.err.println("pulling");
                 board.changePositionOnMap(this, getX(), getY());
             }
             throw exc;
@@ -217,10 +222,10 @@ public class Agent extends MovingObject {
                 }
             }
             else {
-                if(attachedBox.path == null){
+                if(path == null){
                     return new Command();
                 }else{
-                    return attachedBox.path.get(i).action;
+                    return path.get(i).action;
                 }
 
             }
@@ -237,6 +242,9 @@ public class Agent extends MovingObject {
             Command c = commands.get(i);
             int newAgentY = agentY + Command.dirToYChange(c.dir1);
             int newAgentX = agentX + Command.dirToXChange(c.dir1);
+
+            System.err.println("Agent to "+newAgentX+","+newAgentY);
+
             if(c.actType == type.Move) {
                 path.add(new Node(null, c, newAgentX, newAgentY));
             }
@@ -251,6 +259,8 @@ public class Agent extends MovingObject {
             else {
                 path.add(new Node(null, c, agentX, agentY));
             }
+            agentX = newAgentX;
+            agentY = newAgentY;
         }
         return true;
     }
