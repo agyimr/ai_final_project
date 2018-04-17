@@ -20,7 +20,7 @@ public class Conflicts {
 		Box box2;
 		BasicObject bob = getConflictPartners(agent1);
 		if(bob == null){
-			System.err.println("conflict caught but not detected");
+			System.err.println("conflict caught but not detected, replannning");
 			if(agent1.path != null){
 				agent1.path.clear();
 			}
