@@ -1,9 +1,7 @@
 package sampleclients;
 
-import java.io.*;
 import java.util.*;
 import static sampleclients.Command.dir;
-import static sampleclients.Command.type;
 
 public class Node {
     private final int x, y;
@@ -23,7 +21,7 @@ public class Node {
     public int getX() { return x;}
     public int getY() {return y;}
     public Command getAction() { return action;}
-    public Set<Node> getNeighbours() {
+    public Set<Node> getNeighbours(int instant) {
         Set<Node> neighbours = new HashSet<Node>();
 
         for (int i = x - 1; i <= x + 1; i++) {
@@ -35,9 +33,23 @@ public class Node {
                 {
                     continue;
                 }
-                else if (RandomWalkClient.isBox(RandomWalkClient.MainBoard[j][i])
-                        || RandomWalkClient.isWall(RandomWalkClient.MainBoard[j][i])) {
-                    continue;
+                else {
+
+                    boolean incomingConflict = false;
+
+                    //if(x == 11 && y == 7) {
+                    if(instant != -1) {
+                        incomingConflict = RandomWalkClient.globalPlanningBoard.wouldBeInConflict(x, y, instant);
+
+                    }
+//                        System.err.println("YAX from " + RandomWalkClient.globalPlanningBoard.getClock() + " to " + instant + " at " + x + "," + y);
+                    //}
+
+                    if (RandomWalkClient.isBox(RandomWalkClient.MainBoard[j][i])
+                        || RandomWalkClient.isWall(RandomWalkClient.MainBoard[j][i])
+                        || incomingConflict ) {
+                        continue;
+                    }
                 }
                 neighbours.add(new Node(i, j, new Command(getDirection(i, j))));
             }

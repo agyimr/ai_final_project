@@ -83,6 +83,12 @@ public class MovingObject extends BasicObject {
     }
 
     public LinkedList<Node> findPath(int xGoal, int yGoal) {
+//        System.err.println(this.toString() + " " + xGoal + " " + yGoal);
+//        try {
+//            Thread.sleep(500);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
         path = doAStar(new Node(getX(), getY(), new Command()), new Node(xGoal, yGoal, new Command()));
         if(path != null)
             path.removeFirst();
@@ -105,6 +111,8 @@ public class MovingObject extends BasicObject {
         fScore.put(start, start.getHeuristic(goal));
         open.offer(start);
 
+        int startInstant = RandomWalkClient.globalPlanningBoard.getClock();
+
         while (!open.isEmpty()) {
             Node current = open.poll();
             if (current.equals(goal)) {
@@ -116,7 +124,7 @@ public class MovingObject extends BasicObject {
                 return route;
             }
             closed.add(current);
-            for (Node neighbour : current.getNeighbours()) {
+            for (Node neighbour : current.getNeighbours(startInstant + gScore.get(current).intValue())) {
                 if (closed.contains(neighbour)) {
                     continue;
                 }

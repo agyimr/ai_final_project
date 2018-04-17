@@ -16,6 +16,7 @@ public class RandomWalkClient {
     public static int MainBoardYDomain = 0, MainBoardXDomain = 0;
     public static char[][] MainBoard; //every state change is seen on the main board TODO embed in a class
     public static char[][] NextMainBoard;
+    public static GlobalPlanningBoard globalPlanningBoard;
     public static boolean isAgent (char id) { return ( '0' <= id && id <= '9' );}
     public static boolean isBox (char id) { return ( 'A' <= id && id <= 'Z' );}
     public static boolean isGoal (char id) { return ( 'a' <= id && id <= 'z' ); }
@@ -83,6 +84,8 @@ public class RandomWalkClient {
         }
         Collections.sort(agents, (left, right) -> left.getID() - right.getID());
 
+        globalPlanningBoard = new GlobalPlanningBoard(MainBoardXDomain, MainBoardYDomain);
+
         MainBoard = new char[MainBoardYDomain][MainBoardXDomain];
         for(int row = 0; row < MainBoardYDomain; ++row) {
             MainBoard[row] = table.get(row).toCharArray();
@@ -110,7 +113,10 @@ public class RandomWalkClient {
         return result;
     }
 	public boolean update() throws IOException {
-		String jointAction = "[";
+
+        System.err.println("Clock " + globalPlanningBoard.getClock());
+
+        String jointAction = "[";
 
 		for ( int i = 0; i < agents.size() - 1; i++ ) {
             try {
@@ -148,6 +154,9 @@ public class RandomWalkClient {
                 agents.get(i).path = null;
             }
         }
+
+        globalPlanningBoard.incrementClock();
+
 		return true;
 	}
 

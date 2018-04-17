@@ -77,7 +77,11 @@ public class Agent extends MovingObject {
         else {
             //now you must make a move
             if (attachedBox.path == null) {
+
                 attachedBox.findPath(attachedBox.assignedGoal.getX(), attachedBox.assignedGoal.getY());
+                System.err.println("findPath for box " + getID() + ":" + getColor() + " " + attachedBox.getID() + ":" + attachedBox.getColor() + " " + attachedBox.getX() + "X" + attachedBox.getY() + "Y " + attachedBox.path);
+                RandomWalkClient.globalPlanningBoard.addPath(attachedBox.path, attachedBox.getX(), attachedBox.getY());
+
             }
             String result = executePathWithBox();
             if (result != null) return result;
@@ -97,6 +101,7 @@ public class Agent extends MovingObject {
             if(currentBox instanceof Box) {
                 newBox = (Box) currentBox;
                 if (!newBox.atGoalPosition && (newBox.assignedAgent == null) && !newBox.noGoalOntheMap) {
+
                     findPathToBox(newBox);
                     if(bestPath == null) {
                         bestPath = path;
@@ -120,6 +125,10 @@ public class Agent extends MovingObject {
             attachedBox = bestBox;
             path = bestPath;
             attachedBox.assignedAgent = this;
+
+            System.err.println("findPath for agent " + getID() + ":" + getColor() + " " + getX() + "X" + getY() + "Y " + path);
+            RandomWalkClient.globalPlanningBoard.addPath(path, getX(), getY());
+
             return true;
         }
         return false;
@@ -172,7 +181,7 @@ public class Agent extends MovingObject {
             if(x == getX() && y == getY()) {
                 pushing = false;
                 Node currentPos = new Node(getX(), getY(), new Command());
-                nextPullingPosition = currentPos.getNeighbours().iterator().next();
+                nextPullingPosition = currentPos.getNeighbours(-1).iterator().next();
                 if(nextPullingPosition != null) {
                     updateMap(nextPullingPosition.getX(), nextPullingPosition.getY(), RandomWalkClient.NextMainBoard);
                     attachedBox.updateMap(getX(), getY(), RandomWalkClient.NextMainBoard);
