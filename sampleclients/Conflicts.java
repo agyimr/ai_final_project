@@ -21,6 +21,9 @@ public class Conflicts {
 		BasicObject bob = getConflictPartners(agent1);
 		if(bob == null){
 			System.err.println("conflict caught but not detected");
+			if(agent1.path != null){
+				agent1.path.clear();
+			}
 			return;
 
 		}
@@ -93,7 +96,11 @@ public class Conflicts {
 				conflictPos = newPos.get(i);
 			}
 		}
+
 		BasicObject b = RandomWalkClient.nextStepGameBoard.getElement((int) conflictPos.getX(), (int) conflictPos.getY());
+		if(b == null){
+			b = RandomWalkClient.gameBoard.getElement((int) conflictPos.getX(), (int) conflictPos.getY());
+		}
 		return b;
 
 	}
