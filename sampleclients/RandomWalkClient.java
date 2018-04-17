@@ -49,11 +49,12 @@ public class RandomWalkClient {
                 System.err.println("path:");
                 System.err.println(MainBoard.agents.get(i).path.toString());
                 System.err.println("\nAgent acts after conflict:"+MainBoard.agents.get(i).getID());
-                //jointAction += MainBoard.agents.get( i ).act();
-
-
+                jointAction += MainBoard.agents.get( i ).act();
+                if (i != MainBoard.agents.size() -1){
+                    jointAction += ",";
+                }
                 System.err.println();
-                --i;
+                //--i;
                 //throw exc;
 
             }

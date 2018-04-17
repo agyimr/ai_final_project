@@ -159,10 +159,12 @@ public class Agent extends MovingObject {
             updateMap(nextStep, RandomWalkClient.nextStepGameBoard);
         }
         else {
+
                 updateMapWithBox(nextStep, RandomWalkClient.nextStepGameBoard);
         }
     }
     private void updateMap(Node nextStep, MainBoard board)  throws UnsupportedOperationException {
+        if(!RandomWalkClient.gameBoard.isFree(nextStep.agentX, nextStep.agentY)) throw new UnsupportedOperationException();
         board.changePositionOnMap(this, nextStep.agentX, nextStep.agentY);
     }
     private void updateMapWithBox (Node nextStep, MainBoard board) throws UnsupportedOperationException {
@@ -170,17 +172,17 @@ public class Agent extends MovingObject {
         Box movedObject = null;
         try {
             if(nextStep.action.actType ==  Command.type.Push) {
+                if(!RandomWalkClient.gameBoard.isFree(nextStep.boxX, nextStep.boxY)) throw new UnsupportedOperationException();
                 pushing = true;
                 System.err.println("Agent trying to move to "+nextStep.agentX+","+nextStep.agentY);
-                int bx = nextStep.boxX + Command.dirToXChange(nextStep.action.dir2);
-                int by = nextStep.boxY + Command.dirToYChange(nextStep.action.dir2);
-                System.err.println("Agent trying to move box from "+bx+","+by);
+                System.err.println("Agent trying to move box to "+nextStep.boxX+","+nextStep.boxY);
                 movedObject = (Box) board.getElement(nextStep.agentX, nextStep.agentY);
                 board.changePositionOnMap(movedObject, nextStep.boxX, nextStep.boxY);
                 board.changePositionOnMap(this, nextStep.agentX, nextStep.agentY);
 
             }
             else if(nextStep.action.actType ==  Command.type.Pull){
+                if(!RandomWalkClient.gameBoard.isFree(nextStep.agentX, nextStep.agentY)) throw new UnsupportedOperationException();
                 pushing = false;
                 System.err.println("Agent trying to move to "+nextStep.agentX+","+nextStep.agentY);
                 int bx = nextStep.boxX + Command.dirToXChange(nextStep.action.dir2);
