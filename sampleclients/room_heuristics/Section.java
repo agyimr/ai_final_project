@@ -57,5 +57,8 @@ public class Section {
         return s.id.equals(this.id);
     }
 
-
+    @Override
+    public String toString() {
+        return "P1: " + this.p1.x + ", " + this.p1.y + "   -   P2: " + this.p2.x + ", " + this.p2.y;
+    }
 }

@@ -15,6 +15,8 @@ public class Agent extends MovingObject {
     private LinkedList<sampleclients.room_heuristics.Node> roomPath;
     private Section currentRoom;
     private Section nextRoom;
+    private Point current_box_goal = new Point();
+    private Point current_goal = new Point();
     boolean isMovingBox = false;
     SearchClient pathFindingEngine;
     int waitingCounter = 0;
@@ -202,19 +204,31 @@ public class Agent extends MovingObject {
         }
     }
     private LinkedList<Node> findPathToBox(Box BoxToMoveTo) {
-        // First let's schedule a room path if we don't have any...
-        if (roomPath.isEmpty()) {
-            roomPath = RandomWalkClient.roomAStar.getRoomPath(new Point(getX(), getY()), new Point(BoxToMoveTo.getX(), BoxToMoveTo.getY()));
+        // if we didn't finish PathWithBox, set roomPath to null
+        if (current_box_goal != null) {
+            current_box_goal = null;
+            roomPath = null;
         }
+
+        Point goal = new Point(BoxToMoveTo.getX(), BoxToMoveTo.getY());
+
+        // First let's schedule a room path if we don't have any...
+        if (roomPath == null || roomPath.isEmpty()) {
+            Point current_position = new Point(getX(), getY());
+            roomPath = RandomWalkClient.roomAStar.getRoomPath(current_position, goal);
+            current_goal = goal;
+        }
+
+        // if path is impossible...
+        if (roomPath == null) return null;
 
         // Get the current room we are in
         sampleclients.room_heuristics.Node currentNode = roomPath.removeFirst();
         currentRoom = currentNode.through;
 
         // If we are not in the goal-room, find a path towards the next room.
-        // The goal state's parent is null.
-        if (currentNode.parent != null) {
-            nextRoom = currentNode.parent.through;
+        if (!currentRoom.contains(current_goal)) {
+            nextRoom = roomPath.getFirst().through;
             path = pathFindingEngine.FindPath(false, nextRoom);
             return path;
         }
@@ -226,29 +240,41 @@ public class Agent extends MovingObject {
         if(path != null) {
             path.pollLast();
         }
+        current_goal = null;
         return path;
     }
     private LinkedList<Node> findPathWithBox() {
-        // First let's schedule a room path if we don't have any...
-        if (roomPath.isEmpty()) {
-            Point goal = new Point(attachedBox.assignedGoal.getX(), attachedBox.assignedGoal.getY());
-            roomPath = RandomWalkClient.roomAStar.getRoomPath(new Point(getX(), getY()), goal);
+        // if we didn't finish the PathToBox, set roomPath to null
+        if (current_goal != null) {
+            current_goal = null;
+            roomPath = null;
         }
+
+        Point goal = new Point(attachedBox.assignedGoal.getX(), attachedBox.assignedGoal.getY());
+
+        // First let's schedule a room path if we don't have any...
+        if (roomPath == null || roomPath.isEmpty()) {
+            Point current_position = new Point(getX(), getY());
+            roomPath = RandomWalkClient.roomAStar.getRoomPath(current_position, goal);
+            current_box_goal = goal;
+        }
+
+        if (roomPath == null) return null;
 
         // Get the current room we are in
         sampleclients.room_heuristics.Node currentNode = roomPath.removeFirst();
         currentRoom = currentNode.through;
 
         // If we are not in the goal-room, find a path towards the next room.
-        // The goal state's parent is null.
-        if (currentNode.parent != null) {
-            nextRoom = currentNode.parent.through;
+        if (!currentRoom.contains(current_box_goal)) {
+            nextRoom = roomPath.getFirst().through;
             path = pathFindingEngine.FindPath(true, nextRoom);
             return path;
         }
 
         // But if we are in the goal-room, go straight to the box.
-        path = pathFindingEngine.FindPath(true, attachedBox.assignedGoal.getX(), attachedBox.assignedGoal.getY());
+        path = pathFindingEngine.FindPath(true, goal.x, goal.y);
+        current_box_goal = null;
         return path;
     }
 

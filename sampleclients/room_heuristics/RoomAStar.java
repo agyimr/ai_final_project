@@ -68,7 +68,7 @@ public class RoomAStar {
     }
 
     private LinkedList<Node> extractPlan(Node goal_node, Point to, Section goal_section) {
-        System.out.print(goal_node.g + this.getDistance(goal_node.position, to) + "\n");
+        // System.err.print(goal_node.g + this.getDistance(goal_node.position, to) + "\n");
         LinkedList<Node> plan = new LinkedList<>();
         Node goal = new Node(goal_node, this.passages.section_map[to.y][to.x], to, goal_section,
                 goal_node.g + this.getDistance(goal_node.position, to), 0);
