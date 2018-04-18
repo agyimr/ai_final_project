@@ -27,39 +27,32 @@ public class RandomWalkClient {
 		for ( int i = 0; i < MainBoard.agents.size(); i++ ) {
             try {
                 System.err.println("Update agent: "+MainBoard.agents.get(i).getID());
-                jointAction += MainBoard.agents.get( i ).act();
+                jointAction += MainBoard.agents.get( i ).act() + ',';
                 System.err.println("Agent has path:");
                 if(MainBoard.agents.get(i).path != null){
                     for (Node c : MainBoard.agents.get(i).path){
                         System.err.println(c.action.toString());
                     }
                 }
-
-
                 System.err.println();
-                if (i != MainBoard.agents.size() -1){
-                    jointAction += ",";
-                }
             }
             catch(UnsupportedOperationException exc) {
                 //printBoard(NextMainBoard);
                 System.err.println();
                 System.err.println("Conflict for agent: "+MainBoard.agents.get(i).getID()+" and action "+MainBoard.agents.get(i).path.get(0).action.toString());
-                Conflicts.delegateConflict(MainBoard.agents.get(i));
                 System.err.println("path:");
                 System.err.println(MainBoard.agents.get(i).path.toString());
+                System.err.println(MainBoard.agents.get(i).getAttachedBox());
+                Conflicts.delegateConflict(MainBoard.agents.get(i));
                 System.err.println("\nAgent acts after conflict:"+MainBoard.agents.get(i).getID());
-                jointAction += MainBoard.agents.get( i ).act();
-                if (i != MainBoard.agents.size() -1){
-                    jointAction += ",";
-                }
+                jointAction += MainBoard.agents.get( i ).act() + ',';
                 System.err.println();
                 //--i;
                 //throw exc;
 
             }
         }
-		jointAction +=  "]";
+		jointAction =  jointAction.substring(0,jointAction.length() - 1) +  "]";
 
 		// Place message in buffer
         System.err.println(jointAction);
@@ -71,13 +64,14 @@ public class RandomWalkClient {
         String percepts = in.readLine();
         if ( percepts == null )
             return false;
-//        System.err.println(percepts);
         String[] results = percepts.replace("[","")
                             .replace("]","")
                             .replace(",", "")
-                            .split(" "); //this is dumb but I don't know the simpler way to just read it into Array String in Java
+                            .split(" ");
         System.err.println("Results: "+ Arrays.toString(results));
         int i=0;
+        System.err.println(nextStepGameBoard);
+        System.err.println(gameBoard);
         try {
             for(i= 0;i<results.length; ++i) {
                 if(results[i].equals("true")) {
