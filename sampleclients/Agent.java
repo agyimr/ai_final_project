@@ -328,7 +328,7 @@ public class Agent extends MovingObject {
         return "NoOp";
     }
 
-    public void revertMoveintention(MainBoard board) {
+    public void revertMoveIntention(MainBoard board) {
         if (path != null) {
             Node nextStep = path.peek();
             if (nextStep != null) {
@@ -342,7 +342,7 @@ public class Agent extends MovingObject {
 
                 I guess it would be easiest to just store the commands of next action as a field of an agent and then in update loop create a joint action after each agent acts.
                 */
-                
+
                 if(nextStep.action.actType == type.Noop) return;
                 if(nextStep.action.actType == type.Push) {
                     board.revertPositionChange(this, nextStep.agentX, nextStep.agentY);
