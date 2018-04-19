@@ -18,10 +18,8 @@ public abstract class Heuristic implements Comparator<Node> {
     }
 	public int h(Node n) {
         if(pushingBox) {
-            //RandomWalkClient.printBoard(n.boxes);
             if(n.boxes[n.boxY][n.boxX] == owner.getAttachedBox().getID()) {
-                //System.err.println(n.agentX + " " + n.boxX + " " + n.agentY + " "+ n.boxY);
-                return 2 * ManhattanDistance(n.boxX, n.boxY, goalX, goalY);
+                return ManhattanDistance(n.boxX, n.boxY, goalX, goalY);
             }
             else{
                 return h(n.parent);

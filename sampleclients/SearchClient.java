@@ -1,6 +1,5 @@
 package sampleclients;
 
-import java.io.IOException;
 import java.util.LinkedList;
 import sampleclients.Strategy.*;
 import sampleclients.Heuristic.*;
@@ -16,14 +15,14 @@ public class SearchClient {
         //System.err.format("Search starting for agent at pos: %d, %d, goal: %d, %d.\n", owner.getX(), owner.getY(), goalX, goalY);
         strategy.clear();
         strategy.heuristic.initializeSearch(owner, pushingBox, goalX, goalY);
-        strategy.addToFrontier(new Node(pushingBox, owner));
+        strategy.addToFrontier(new Node(pushingBox, owner, owner.getColor()));
         int iterations = 0;
         while (true) {
             if (strategy.frontierIsEmpty()) {
                 return null;
             }
             Node leafNode = strategy.getAndRemoveLeaf();
-            if (!pushingBox && leafNode.agentX == goalX && leafNode.agentY == goalY) {
+            if (!pushingBox && Agent.nextTo(leafNode.agentX, leafNode.agentY, goalX, goalY)) {
                 return leafNode.extractPlan();
             }
             else if(pushingBox && leafNode.boxX == goalX && leafNode.boxY == goalY){
@@ -38,4 +37,5 @@ public class SearchClient {
             iterations++;
         }
     }
+
 }
