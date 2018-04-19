@@ -1,5 +1,7 @@
 package sampleclients;
 
+import sampleclients.room_heuristics.RoomAStar;
+
 import java.io.*;
 import java.util.*;
 
@@ -10,9 +12,12 @@ public class RandomWalkClient {
 
     public static MainBoard gameBoard;
     public static MainBoard nextStepGameBoard;
+    public static RoomAStar roomAStar;
+
 	public RandomWalkClient() throws IOException {
         gameBoard = new MainBoard(in); //map read in the constructor
         nextStepGameBoard = new MainBoard(gameBoard);
+        roomAStar = new RoomAStar(gameBoard);
 /*		Agent someAgent = agents.get(2);
         LinkedList<Node> path = someAgent.findPathToBox(BoxColorGroups.get(someAgent.getColor()).get(2));
         System.err.println(path + " for Agent: " + someAgent);*/
@@ -21,21 +26,35 @@ public class RandomWalkClient {
 
 
 	public boolean update() throws IOException {
-
 		String jointAction = "[";
-
-		for ( int i = 0; i < MainBoard.agents.size() - 1; i++ ) {
+		for ( int i = 0; i < MainBoard.agents.size(); i++ ) {
             try {
-                jointAction += MainBoard.agents.get( i ).act() + ",";
+                if (i != 0){
+                    jointAction += ",";
+                }
+                System.err.println("Update agent: "+MainBoard.agents.get(i).getID());
+                jointAction += MainBoard.agents.get( i ).act();
+                System.err.println();
             }
             catch(UnsupportedOperationException exc) {
                 //printBoard(NextMainBoard);
-                //Conflicts.delegateConflict(MainBoard.agents.get(i));
+                System.err.println();
+                System.err.println("Conflict");
+                Conflicts.delegateConflict(MainBoard.agents.get(i));
+                System.err.println("Agent acts after conflict:"+MainBoard.agents.get(i).getID());
+                jointAction += MainBoard.agents.get( i ).act();
+                System.err.println("path:");
+                for(Node n: MainBoard.agents.get(i).path){
+                    System.err.println(n.toString());
+                }
+
+                System.err.println();
                 //--i;
-                throw exc;
+                //throw exc;
+
             }
         }
-		jointAction += MainBoard.agents.get( MainBoard.agents.size() - 1 ).act() + "]";
+		jointAction +=  "]";
 
 		// Place message in buffer
 		System.out.println( jointAction );
@@ -86,4 +105,5 @@ public class RandomWalkClient {
 			// Got nowhere to write to probably
 		}
 	}
+
 }

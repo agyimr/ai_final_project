@@ -67,6 +67,9 @@ public class Command {
 		if ( actType == type.Move )
 			return actType.toString() + "(" + dir1 + ")";
 
+		if (actType == type.Noop){
+			return "NoOp";
+		}
 		return actType.toString() + "(" + dir1 + "," + dir2 + ")";
 	}
 	
@@ -173,6 +176,9 @@ public class Command {
 	}
 	public static int dirToYChange(dir d) {
 		// South is down one row (1), north is up one row (-1).
+		if(d == null){
+			return 0;
+		}
 		switch (d) {
 			case S:
 				return 1;
@@ -184,6 +190,9 @@ public class Command {
 	}
 	public static int dirToXChange(dir d) {
 		// East is right one column (1), west is left one column (-1).
+		if(d == null){
+			return 0;
+		}
 		switch (d) {
 			case E:
 				return 1;

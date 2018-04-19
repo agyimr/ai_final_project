@@ -1,9 +1,11 @@
 package sampleclients;
 
+import java.awt.*;
 import java.io.IOException;
 import java.util.LinkedList;
 import sampleclients.Strategy.*;
 import sampleclients.Heuristic.*;
+import sampleclients.room_heuristics.Section;
 
 public class SearchClient {
     StrategyBestFirst strategy;
@@ -12,6 +14,30 @@ public class SearchClient {
         this.owner = owner;
         strategy = new StrategyBestFirst(new AStar());
     }
+    public LinkedList<Node> FindPath(boolean pushingBox, Section to) {
+        //System.err.format("Search starting for agent at pos: %d, %d, goal: %d, %d.\n", owner.getX(), owner.getY(), goalX, goalY);
+        strategy.clear();
+        strategy.heuristic.initializeSearch(owner, pushingBox, to);
+        strategy.addToFrontier(new Node(pushingBox, owner));
+        int iterations = 0;
+        while (true) {
+            if (strategy.frontierIsEmpty()) {
+                return null;
+            }
+            Node leafNode = strategy.getAndRemoveLeaf();
+            if (to.contains(new Point(leafNode.agentX, leafNode.agentY))) {
+                return leafNode.extractPlan();
+            }
+            strategy.addToExplored(leafNode);
+            for (Node n : leafNode.getExpandedNodes()) { // The list of expanded nodes is shuffled randomly; see Node.java.
+                if (!strategy.isExplored(n) && !strategy.inFrontier(n)) {
+                    strategy.addToFrontier(n);
+                }
+            }
+            iterations++;
+        }
+    }
+
     public LinkedList<Node> FindPath(boolean pushingBox, int goalX, int goalY) {
         //System.err.format("Search starting for agent at pos: %d, %d, goal: %d, %d.\n", owner.getX(), owner.getY(), goalX, goalY);
         strategy.clear();
