@@ -8,8 +8,6 @@ import java.util.*;
 
 public class RandomWalkClient {
 
-    public static Debugger debugger = null;
-
 	private static Random rand = new Random();
 	private BufferedReader in = new BufferedReader( new InputStreamReader( System.in ) );
 
@@ -98,10 +96,10 @@ public class RandomWalkClient {
     }
 
 	public static void main( String[] args ) {
-		// Use stderr to print to console
 
-        //debugger = new Debugger(args[3]);
-        debugger = new Debugger("levels/MAthomasAppartment.lvl");
+        new Debugger("levels/MAthomasAppartment.lvl");
+
+        // Use stderr to print to console
 
         System.err.println( "Hello from NotSoRandomWalkClient. I am sending this using the error outputstream" );
 		try {

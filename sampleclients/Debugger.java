@@ -2,8 +2,10 @@ package sampleclients;
 
 
 import java.io.*;
+import java.lang.management.ManagementFactory;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.List;
 
 public class Debugger {
 
@@ -14,18 +16,21 @@ public class Debugger {
     private ServerSocket errServerSocket;
     private ServerSocket outServerSocket;
     private ServerSocket inServerSocket;
+    private ServerSocket ioServerSocket;
 
     private PrintStream oldOut = System.out;
     private PrintStream oldErr = System.err;
     private InputStream oldIn = System.in;
 
-    private  OutputStream newOut = null;
-    private  OutputStream newErr = null;
-    private  InputStream newIn = null;
-
     private String level;
 
     public Debugger(String level) {
+
+        List<String> args = ManagementFactory.getRuntimeMXBean().getInputArguments();
+
+        if(args.size() == 0 || (!args.get(0).contains("-agentlib:") && !args.get(0).contains("-javaagent:"))) {
+            return;
+        }
 
         this.level = level;
 
@@ -33,6 +38,7 @@ public class Debugger {
             errServerSocket = new ServerSocket(0);
             outServerSocket = new ServerSocket(0);
             inServerSocket = new ServerSocket(0);
+            ioServerSocket = new ServerSocket(0);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -41,16 +47,19 @@ public class Debugger {
         ErrServerThread errServerThread = new ErrServerThread(errServerSocket);
         OutServerThread outServerThread = new OutServerThread(outServerSocket);
         InServerThread inServerThread = new InServerThread(inServerSocket);
+        IoServerThread ioServerThread = new IoServerThread(ioServerSocket);
 
         errServerThread.start();
         outServerThread.start();
         inServerThread.start();
+        ioServerThread.start();
+
 
         ChildProcessThread childProcessThread = new ChildProcessThread();
 
         childProcessThread.start();
 
-        while(!errReady || !outReady || !inReady) {
+        while (!errReady || !outReady || !inReady) {
 
             try {
                 Thread.sleep(1000);
@@ -60,7 +69,7 @@ public class Debugger {
 
         }
 
-        oldErr.println("Let's debug now !");
+        oldErr.println("DEBUGGER : Let's go !");
     }
 
     private class ErrServerThread extends Thread {
@@ -83,6 +92,17 @@ public class Debugger {
                 System.setErr(new PrintStream(listenSocket.getOutputStream()));
 
                 errReady = true;
+
+                while (true) {
+
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                    System.err.flush();
+                }
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -113,11 +133,24 @@ public class Debugger {
 
                 outReady = true;
 
+                while (true) {
+
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                    System.out.flush();
+                }
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
         }
+
+
 
     }
 
@@ -150,9 +183,45 @@ public class Debugger {
 
     }
 
+    private class IoServerThread extends Thread {
+
+        ServerSocket socketServer;
+        Socket listenSocket;
+        InputStream in;
+        PrintWriter out;
+
+        public IoServerThread(ServerSocket socketServer) {
+            super();
+            this.socketServer = socketServer;
+        }
+
+        public void run() {
+
+            try {
+                listenSocket = socketServer.accept();
+
+                String inputLine;
+
+                in = listenSocket.getInputStream();
+
+                byte[] buffer = new byte[1024];
+                int read;
+                while((read = in.read(buffer)) != -1) {
+                    String output = new String(buffer, 0, read);
+                    oldErr.print(output);
+                    oldErr.flush();
+                };
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
+
+    }
+
 
     private class ChildProcessThread extends Thread {
-
 
         public ChildProcessThread() {
             super();
@@ -160,24 +229,14 @@ public class Debugger {
 
         public void run() {
 
-            ProcessBuilder pb = new ProcessBuilder("cmd", "/c node debugger.js --launcher " + level + " " + errServerSocket.getLocalPort() + " " + outServerSocket.getLocalPort() + " " + inServerSocket.getLocalPort());
-            System.out.println("Run echo command");
+            ProcessBuilder processBuilder = new ProcessBuilder("cmd", "/c node debugger.js --launcher " + level + " " + errServerSocket.getLocalPort() + " " + outServerSocket.getLocalPort() + " " + inServerSocket.getLocalPort() + " " + ioServerSocket.getLocalPort());
+
             Process process = null;
             try {
-                process = pb.start();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            int errCode = 0;
-            try {
-                errCode = process.waitFor();
-            } catch (InterruptedException e) {
+                processBuilder.start().waitFor();
 
+            } catch (InterruptedException e) {
                 e.printStackTrace();
-            }
-            System.out.println("Echo command executed, any errors? " + (errCode == 0 ? "No" : "Yes"));
-            try {
-                System.out.println("Echo Output:\n" + output(process.getInputStream()));
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -188,23 +247,8 @@ public class Debugger {
                 e.printStackTrace();
             }
 
-            oldErr.println(process.pid());
 
-        }
-
-        private String output(InputStream inputStream) throws IOException {
-            StringBuilder sb = new StringBuilder();
-            BufferedReader br = null;
-            try {
-                br = new BufferedReader(new InputStreamReader(inputStream));
-                String line = null;
-                while ((line = br.readLine()) != null) {
-                    sb.append(line + System.getProperty("line.separator"));
-                }
-            } finally {
-                br.close();
-            }
-            return sb.toString();
         }
     }
+
 }
