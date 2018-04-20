@@ -7,6 +7,7 @@ import java.util.*;
 
 
 public class RandomWalkClient {
+
 	private static Random rand = new Random();
 	private BufferedReader in = new BufferedReader( new InputStreamReader( System.in ) );
 
@@ -84,8 +85,6 @@ public class RandomWalkClient {
         }
         catch (UnsupportedOperationException exc) {
             System.err.println("------------ Update board failed -------");
-            System.err.println(gameBoard);
-            System.err.println(nextStepGameBoard);
             System.err.println(MainBoard.agents.get(i));
             System.err.println(MainBoard.agents.get(i).path);
             System.err.println("------------ Update board failed -------");
@@ -95,8 +94,12 @@ public class RandomWalkClient {
     }
 
 	public static void main( String[] args ) {
-		// Use stderr to print to console
-		System.err.println( "Hello from NotSoRandomWalkClient. I am sending this using the error outputstream" );
+
+        new Debugger("levels/MAthomasAppartment.lvl");
+
+        // Use stderr to print to console
+
+        System.err.println( "Hello from NotSoRandomWalkClient. I am sending this using the error outputstream" );
 		try {
 			RandomWalkClient client = new RandomWalkClient();
             System.out.flush();
