@@ -9,7 +9,9 @@ import sampleclients.Command.type;
 public class ConflictBFS {
 	private static MainBoard map;
 	private static MainBoard nextMap;
-	public static List<Command> doBFS(List<Point> locked, List<Point> pos){
+	private static boolean considerAgents = true;
+	public static List<Command> doBFS(List<Point> locked, List<Point> pos, boolean ca){
+		considerAgents = ca;
 		map = RandomWalkClient.gameBoard;
 		nextMap = RandomWalkClient.nextStepGameBoard;
 		List<ConflictNode> frontier = new ArrayList<ConflictNode>();
@@ -134,7 +136,7 @@ public class ConflictBFS {
 				System.err.println("cand point:"+cand.get(i).toString());
 				int x = cand.get(i).x;
 				int y = cand.get(i).y;
-				if(map.isWall(x,y) || map.isBox(x,y) || map.isAgent(x,y) || nextMap.isWall(x,y) || nextMap.isBox(x,y) || nextMap.isAgent(x,y)){
+				if(map.isWall(x,y) || map.isBox(x,y) || (map.isAgent(x,y) && considerAgents) || nextMap.isWall(x,y) || nextMap.isBox(x,y) || (nextMap.isAgent(x,y) && considerAgents)){
 						System.err.println("isAllowed: false");
 						return false;
 				}

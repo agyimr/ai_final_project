@@ -14,13 +14,12 @@ public class Agent extends MovingObject {
     SearchClient pathFindingEngine;
     int waitingCounter = 0;
     public int conflictSteps = 0;
-
+    public boolean hasMoved = false;
     public Agent( char id, String color, int y, int x ) {
         super(id, color, y, x, "Agent");
         pathFindingEngine = new SearchClient(this);
     }
     public String act() {
-
 
         if(attachedBox == null) {
             if(!findABox()) {
@@ -258,24 +257,26 @@ public class Agent extends MovingObject {
             int newAgentY = agentY + Command.dirToYChange(c.dir1);
             int newAgentX = agentX + Command.dirToXChange(c.dir1);
 
-            System.err.println("Agent to "+newAgentX+","+newAgentY);
-
             if(c.actType == type.Move) {
                 path.add(new Node(null, c, newAgentX, newAgentY));
+                waiting = false;
             }
             else if(c.actType == type.Push) {
                 int newBoxY = newAgentY + Command.dirToYChange(c.dir2);
                 int newBoxX = newAgentX + Command.dirToXChange(c.dir2);
                 path.add(new Node(null, c, newAgentX, newAgentY, newBoxX, newBoxY));
+                waiting = false;
             }
             else if ( c.actType == type.Pull ) {
                 path.add(new Node(null, c, newAgentX, newAgentY, agentX, agentY));
+                waiting = false;
             }
             else {
                 path.add(new Node(null, c, agentX, agentY));
             }
             agentX = newAgentX;
             agentY = newAgentY;
+
         }
         conflictSteps = commands.size();
         return true;
@@ -343,12 +344,19 @@ public class Agent extends MovingObject {
                 I guess it would be easiest to just store the commands of next action as a field of an agent and then in update loop create a joint action after each agent acts.
                 */
 
-                if(nextStep.action.actType == type.Noop) return;
-                if(nextStep.action.actType == type.Push) {
+                if(nextStep.action.actType == type.Noop) {
+                    hasMoved = false;
+                    System.err.println("Agent "+getID()+" has been reverted");
+                    return;
+                }
+
+
+                if(nextStep.action.actType == type.Move) {
                     board.revertPositionChange(this, nextStep.agentX, nextStep.agentY);
                     return;
                 }
                 Box movedObject = (Box) board.getElement(nextStep.boxX, nextStep.boxY);
+
                 if(nextStep.action.actType == type.Push){
                     board.revertPositionChange(this, nextStep.agentX, nextStep.agentY);
                     board.revertPositionChange(movedObject, nextStep.boxX, nextStep.boxY);
@@ -358,6 +366,8 @@ public class Agent extends MovingObject {
                     board.revertPositionChange(this, nextStep.agentX, nextStep.agentY);
                 }
             }
+            hasMoved = false;
+            System.err.println("Agent "+getID()+" has been reverted");
         }
     }
     public Box getAttachedBox() {

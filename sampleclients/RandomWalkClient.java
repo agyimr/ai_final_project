@@ -1,15 +1,14 @@
 package sampleclients;
 
 
-
 import java.io.*;
+import java.lang.management.ManagementFactory;
 import java.util.*;
 
 
 public class RandomWalkClient {
 	private static Random rand = new Random();
 	private BufferedReader in = new BufferedReader( new InputStreamReader( System.in ) );
-
     public static MainBoard gameBoard;
     public static MainBoard nextStepGameBoard;
 	public RandomWalkClient() throws IOException {
@@ -23,37 +22,58 @@ public class RandomWalkClient {
 
 
 	public boolean update() throws IOException {
-		String jointAction = "[";
-		for ( int i = 0; i < MainBoard.agents.size(); i++ ) {
-            try {
-                System.err.println("Update agent: "+MainBoard.agents.get(i).getID());
-                jointAction += MainBoard.agents.get( i ).act() + ',';
-                System.err.println("Agent has path:");
-                if(MainBoard.agents.get(i).path != null){
-                    for (Node c : MainBoard.agents.get(i).path){
-                        System.err.println(c.action.toString());
-                    }
-                }
-                System.err.println();
-            }
-            catch(UnsupportedOperationException exc) {
-                //printBoard(NextMainBoard);
-                System.err.println();
-                System.err.println("Conflict for agent: "+MainBoard.agents.get(i).getID()+" and action "+MainBoard.agents.get(i).path.get(0).action.toString());
-                System.err.println("path:");
-                System.err.println(MainBoard.agents.get(i).path.toString());
-                System.err.println(MainBoard.agents.get(i).getAttachedBox());
-                Conflicts.delegateConflict(MainBoard.agents.get(i));
-                System.err.println("\nAgent acts after conflict:"+MainBoard.agents.get(i).getID());
-                jointAction += MainBoard.agents.get( i ).act() + ',';
-                System.err.println();
-                //--i;
-                //throw exc;
-
-            }
+	    //reset hasMoved for all agents
+	    for (int i = 0; i < MainBoard.agents.size(); i++ ){
+	        MainBoard.agents.get(i).hasMoved = false;
         }
-		jointAction =  jointAction.substring(0,jointAction.length() - 1) +  "]";
+        boolean allHasMoved = false;
+	    String[] actions = new String[MainBoard.agents.size()];
 
+	    while(!allHasMoved) {
+            for (int i = 0; i < MainBoard.agents.size(); i++) {
+                try {
+                    if(!MainBoard.agents.get(i).hasMoved) {
+                        System.err.println("Update agent: " + MainBoard.agents.get(i).getID());
+                        actions[i] = MainBoard.agents.get(i).act();
+                        MainBoard.agents.get(i).hasMoved = true;
+                        System.err.println("Agent " + MainBoard.agents.get(i).getID() + " has moved");
+                        System.err.println("Agent has path:");
+                        if (MainBoard.agents.get(i).path != null) {
+                            for (Node c : MainBoard.agents.get(i).path) {
+                                System.err.println(c.action.toString());
+                            }
+                        }
+                        System.err.println();
+                    }
+                } catch (UnsupportedOperationException exc) {
+                    //printBoard(NextMainBoard);
+                    System.err.println();
+                    System.err.println("Conflict for agent: " + MainBoard.agents.get(i).getID() + " and action " + MainBoard.agents.get(i).path.get(0).action.toString());
+                    System.err.println("path:");
+                    System.err.println(MainBoard.agents.get(i).path.toString());
+                    System.err.println(MainBoard.agents.get(i).getAttachedBox());
+                    Conflicts.delegateConflict(MainBoard.agents.get(i));
+                    System.err.println();
+                    //--i;
+                    //throw exc;
+
+                }
+            }
+
+            allHasMoved=true;
+            for (int j = 0; j < MainBoard.agents.size(); j++){
+                System.err.println("Agent: "+ MainBoard.agents.get(j).getID()+" hasMoved: "+MainBoard.agents.get(j).hasMoved);
+                allHasMoved = allHasMoved && MainBoard.agents.get(j).hasMoved;
+            }
+            System.err.println("allhasmoved: "+allHasMoved);
+        }
+
+        String jointAction = "[";
+        // create joint actions
+        for(int i = 0; i < actions.length-1; i++){
+            jointAction+=actions[i]+",";
+        }
+        jointAction+=actions[actions.length-1]+"]";
 		// Place message in buffer
         System.err.println(jointAction);
 		System.out.println( jointAction );
