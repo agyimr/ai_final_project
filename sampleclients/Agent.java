@@ -1,8 +1,6 @@
 package sampleclients;
 
 
-import sun.applet.Main;
-
 import java.util.*;
 import java.awt.Point;
 
@@ -101,6 +99,7 @@ public class Agent extends MovingObject {
 
     }
     private boolean findABox() {
+        System.err.println("FindABox :)");
         Box newBox;
         Box bestBox = null;
         Goal goalCand = null;
@@ -108,23 +107,19 @@ public class Agent extends MovingObject {
         for(MovingObject currentBox : MainBoard.BoxColorGroups.get(getColor()).values()) {
             if(currentBox instanceof Box) {
                 newBox = (Box) currentBox;
-
-
-
-
                 if (!newBox.atGoalPosition && (newBox.assignedAgent == null) && !newBox.noGoalOnTheMap) {
                     //DEPENDENCY CALCULATION
                     Set<Goal> boxGoals = MainBoard.goals.get(Character.toLowerCase(newBox.getID()));
                     for(Goal g : boxGoals){
                         Set<Goal> tmp = MainBoard.Dep.get(g.getID());
-                        if(tmp.size()==0){
+                        if(tmp.isEmpty()){
                             if(!g.solved()){
                                 goalCand = g;
-                                break;
                             }
                         }
                     }
-
+                    //Ingen dependancies der IKKE er løst
+                    System.err.println("goalCand: "+goalCand);
                     if(goalCand != null){
                         findPathToBox(newBox);
                         if(bestPath == null) {

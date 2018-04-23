@@ -96,7 +96,14 @@ public class MainBoard {
                 else if(isGoal(id)) {
                     Goal goal = new Goal(id, MainBoardYDomain, currentX);
 
-                    goals.get(id).add(goal);
+                    Set<Goal> set = goals.get(id);
+
+                    if(set!=null){
+                        set.add(goal);
+                    } else{
+                        set = new HashSet<Goal>();
+                    }
+                    goals.put(id,set);
 
                     objects.add(i, goal);
                 }

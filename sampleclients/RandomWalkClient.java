@@ -1,8 +1,6 @@
 package sampleclients;
 
 
-import sun.applet.Main;
-
 import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.util.*;
@@ -18,6 +16,13 @@ public class RandomWalkClient {
         gameBoard = new MainBoard(in); //map read in the constructor
         nextStepGameBoard = new MainBoard(gameBoard);
         MainBoard.Dep = GoalDependency.getGoalDependency(MainBoard.goals);
+        System.err.println("-----------------------------------------------");
+        for (Goal key : MainBoard.Dep.keySet()) {//Loop through goalSet
+            for (Goal g : MainBoard.Dep.get(key)) {
+                System.err.println("key: " + key.getID() + "goal: " + g.getID());
+            }
+        }
+        System.err.println("_------------------------------------------------");
 /*		Agent someAgent = agents.get(2);
         LinkedList<Node> path = someAgent.findPathToBox(BoxColorGroups.get(someAgent.getColor()).get(2));
         System.err.println(path + " for Agent: " + someAgent);*/
