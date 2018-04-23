@@ -9,6 +9,7 @@ import java.util.*;
 
 
 public class RandomWalkClient {
+
 	private static Random rand = new Random();
 	private BufferedReader in = new BufferedReader( new InputStreamReader( System.in ) );
     public static MainBoard gameBoard;
@@ -39,7 +40,7 @@ public class RandomWalkClient {
                         System.err.println("Update agent: " + MainBoard.agents.get(i).getID());
                         actions[i] = MainBoard.agents.get(i).act();
                         MainBoard.agents.get(i).hasMoved = true;
-                        System.err.println("Agent " + MainBoard.agents.get(i).getID() + " has moved");
+                        System.err.println("Agent " + MainBoard.agents.get(i).getID() + " has moved with action: "+actions[i]);
                         System.err.println("Agent has path:");
                         if (MainBoard.agents.get(i).path != null) {
                             for (Node c : MainBoard.agents.get(i).path) {
@@ -107,8 +108,6 @@ public class RandomWalkClient {
         }
         catch (UnsupportedOperationException exc) {
             System.err.println("------------ Update board failed -------");
-            System.err.println(gameBoard);
-            System.err.println(nextStepGameBoard);
             System.err.println(MainBoard.agents.get(i));
             System.err.println(MainBoard.agents.get(i).path);
             System.err.println("------------ Update board failed -------");
@@ -118,8 +117,12 @@ public class RandomWalkClient {
     }
 
 	public static void main( String[] args ) {
-		// Use stderr to print to console
-		System.err.println( "Hello from NotSoRandomWalkClient. I am sending this using the error outputstream" );
+
+        new Debugger("levels/MAthomasAppartment.lvl");
+
+        // Use stderr to print to console
+
+        System.err.println( "Hello from NotSoRandomWalkClient. I am sending this using the error outputstream" );
 		try {
 			RandomWalkClient client = new RandomWalkClient();
             System.out.flush();

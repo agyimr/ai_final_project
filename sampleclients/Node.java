@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
+import java.util.*;
 import java.util.Random;
 
 import sampleclients.Command.type;
@@ -22,24 +23,37 @@ public class Node {
     private int g;
     private int _hash = 0;
 
-    public Node(boolean pushingBox, Agent owner, String color) {
+    public Node(int ownerX, int ownerY, String color, Collection<Box> consideredBoxes) {
         ownerColor = color;
-        agentX = owner.getX();
-        agentY = owner.getY();
+        agentX = ownerX;
+        agentY = ownerY;
         boxes = new char[MainBoard.MainBoardYDomain][MainBoard.MainBoardXDomain];
         this.g = 0;
         for (int y = 0; y < MainBoard.MainBoardYDomain; y ++)
             for (int x = 0; x < MainBoard.MainBoardXDomain; x++)
                 boxes[y][x] = 0;
 
-        for(Box current: MainBoard.boxes.values()) {
+        for(Box current: consideredBoxes) {
             boxes[current.getY()][current.getX()] = current.getID();
         }
-        if(pushingBox) {
-            boxX = owner.getAttachedBox().getX();
-            boxY = owner.getAttachedBox().getY();
-            action = new Command();
+    }
+    public Node(int ownerX, int ownerY, int boxX, int boxY, String color, Collection<Box> consideredBoxes) {
+        ownerColor = color;
+        agentX = ownerX;
+        agentY = ownerY;
+        boxes = new char[MainBoard.MainBoardYDomain][MainBoard.MainBoardXDomain];
+        this.g = 0;
+        for (int y = 0; y < MainBoard.MainBoardYDomain; y ++)
+            for (int x = 0; x < MainBoard.MainBoardXDomain; x++)
+                boxes[y][x] = 0;
+
+        for(Box current: consideredBoxes) {
+            boxes[current.getY()][current.getX()] = current.getID();
         }
+        this.boxX = boxX;
+        this.boxY = boxY;
+        action = new Command();
+
     }
     public Node(Node parent, Command action, int agentX, int agentY) {
         boxes = new char[MainBoard.MainBoardYDomain][MainBoard.MainBoardXDomain];
@@ -84,7 +98,7 @@ public class Node {
             if (c.actType == type.Move) {
                 // Check if there's a wall or box on the cell to which the agent is moving
                 if (this.cellIsFree(newAgentY, newAgentX)) {
-                    Node n = this.childNode(c, newAgentX, newAgentY, this.boxX, this.boxY);
+                    Node n = this.childNode(c, newAgentX, newAgentY, -1, -1);
                     expandedNodes.add(n);
                 }
             } else if (c.actType == type.Push) {
