@@ -1,6 +1,8 @@
 package sampleclients;
 
 
+import sun.applet.Main;
+
 import java.util.*;
 import java.awt.Point;
 
@@ -53,7 +55,11 @@ public class Agent extends MovingObject {
         if (attachedBox.assignedGoal == null) {
             System.err.println("No assigned goal: ");
             //try finding a goal
-            attachedBox.assignedGoal = MainBoard.goals.get(Character.toLowerCase(attachedBox.getID()));
+            Set<Goal> tmp = MainBoard.goals.get(Character.toLowerCase(attachedBox.getID()));
+            for(Goal g : tmp){
+                attachedBox.assignedGoal = g;
+            }
+
             if (attachedBox.assignedGoal == null) {
                 //no goal that satisfies the box on the map
                 attachedBox.noGoalOnTheMap = true;
@@ -96,28 +102,46 @@ public class Agent extends MovingObject {
     private boolean findABox() {
         Box newBox = null;
         Box bestBox = null;
+        Goal goalCand = null;
         LinkedList<Node> bestPath = null;
         for(MovingObject currentBox : MainBoard.BoxColorGroups.get(getColor()).values()) {
             if(currentBox instanceof Box) {
                 newBox = (Box) currentBox;
+
+
+
+
                 if (!newBox.atGoalPosition && (newBox.assignedAgent == null) && !newBox.noGoalOnTheMap) {
-                    findPathToBox(newBox);
-                    if(bestPath == null) {
-                        bestPath = path;
-                        bestBox = newBox;
-                        continue;
-                    }
-                    else if(nextToBox(newBox)) { // can find a path to box, or is next to!
-                        attachedBox = newBox;
-                        attachedBox.assignedAgent = this;
-                        isMovingBox = true;
-                        return true;
-                    }
-                    else if(path != null && path.size() < bestPath.size()) {
-                        bestPath = path;
-                        bestBox = newBox;
+                    //DEPENDENCY CALCULATION
+                    Set<Goal> boxGoals = MainBoard.goals.get(Character.toLowerCase(newBox.getID()));
+                    for(Goal g : boxGoals){
+                        Set<Goal> tmp = MainBoard.Dep.get(g.getID());
+                        if(tmp.size()==0){
+                            if(!g.solved()){
+                                goalCand = g;
+                                break;
+                            }
+                        }
                     }
 
+                    if(goalCand != null){
+                        findPathToBox(newBox);
+                        if(bestPath == null) {
+                            bestPath = path;
+                            bestBox = newBox;
+                            continue;
+                        }
+                        else if(nextToBox(newBox)) { // can find a path to box, or is next to!
+                            attachedBox = newBox;
+                            attachedBox.assignedAgent = this;
+                            isMovingBox = true;
+                            return true;
+                        }
+                        else if(path != null && path.size() < bestPath.size()) {
+                            bestPath = path;
+                            bestBox = newBox;
+                        }
+                    }
                 }
             }
         }

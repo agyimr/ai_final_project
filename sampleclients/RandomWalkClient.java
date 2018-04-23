@@ -1,6 +1,8 @@
 package sampleclients;
 
 
+import sun.applet.Main;
+
 import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.util.*;
@@ -14,6 +16,7 @@ public class RandomWalkClient {
 	public RandomWalkClient() throws IOException {
         gameBoard = new MainBoard(in); //map read in the constructor
         nextStepGameBoard = new MainBoard(gameBoard);
+        MainBoard.Dep = GoalDependency.getGoalDependency(MainBoard.goals);
 /*		Agent someAgent = agents.get(2);
         LinkedList<Node> path = someAgent.findPathToBox(BoxColorGroups.get(someAgent.getColor()).get(2));
         System.err.println(path + " for Agent: " + someAgent);*/

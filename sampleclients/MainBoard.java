@@ -10,7 +10,8 @@ public class MainBoard {
     public static List< Agent > agents = new ArrayList<>();
     public static Map<Character, Box > boxes = new HashMap<>();
     public static Map<String, Map<Character, Agent>> AgentColorGroups = new HashMap<>();
-    public static Map<Character, Goal> goals = new HashMap<>();
+    public static Map<Character, Set<Goal>> goals = new HashMap<>();
+    public static Map<Goal,Set<Goal>> Dep = new HashMap<>();
     public static int MainBoardYDomain = 0, MainBoardXDomain = 0;
     private Map<MovingObject, Goal> steppedOnGoals = new HashMap<>();
 
@@ -94,7 +95,9 @@ public class MainBoard {
                 }
                 else if(isGoal(id)) {
                     Goal goal = new Goal(id, MainBoardYDomain, currentX);
-                    goals.put(id, goal);
+
+                    goals.get(id).add(goal);
+
                     objects.add(i, goal);
                 }
                 else if(isWall(id)) {
