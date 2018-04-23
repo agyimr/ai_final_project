@@ -1,6 +1,6 @@
 package sampleclients.room_heuristics;
 
-import java.awt.*;
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -121,7 +121,7 @@ public class Passage {
                             });
                             this.passages.put(current_section.id, neighbours_so_far);
                         } else {
-                            this.passages.put(current_section.id, new ArrayList(new_neighbours));
+                            this.passages.put(current_section.id, new ArrayList<>(new_neighbours));
                         }
                     }
                 }
