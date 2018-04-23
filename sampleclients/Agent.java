@@ -7,7 +7,7 @@ import java.awt.Point;
 import static sampleclients.Command.type;
 
 public class Agent extends MovingObject {
-    private static final int WAITING_MAX = 2;
+    private static final int WAITING_MAX = 3;
     private boolean waiting = false;
     private Box attachedBox = null;
     boolean isMovingBox = false;
@@ -15,6 +15,7 @@ public class Agent extends MovingObject {
     int waitingCounter = 0;
     public int conflictSteps = 0;
     public boolean hasMoved = false;
+    public LinkedList<Node> path;
     public Agent( char id, String color, int y, int x ) {
         super(id, color, y, x, "Agent");
         pathFindingEngine = new SearchClient(this);
@@ -56,7 +57,7 @@ public class Agent extends MovingObject {
             attachedBox.assignedGoal = MainBoard.goals.get(Character.toLowerCase(attachedBox.getID()));
             if (attachedBox.assignedGoal == null) {
                 //no goal that satisfies the box on the map
-                attachedBox.noGoalOnTheMap = true;
+                //attachedBox.noGoalOnTheMap = true;
                 attachedBox.clearOwnerReferences();
                 attachedBox = null;
                 //try finding a box again
@@ -66,8 +67,8 @@ public class Agent extends MovingObject {
         //box at the goal position!
         if (attachedBox.assignedGoal.atGoalPosition(attachedBox)) {
             System.err.println("box at goal postion: ");
-            attachedBox.clearOwnerReferences();
             attachedBox.atGoalPosition = true;
+            attachedBox.clearOwnerReferences();
             attachedBox = null;
             isMovingBox = false;
             //try finding a box again
@@ -94,7 +95,7 @@ public class Agent extends MovingObject {
         }
     }
     private boolean findABox() {
-        Box newBox = null;
+        Box newBox;
         Box bestBox = null;
         LinkedList<Node> bestPath = null;
         for(MovingObject currentBox : MainBoard.BoxColorGroups.get(getColor()).values()) {
@@ -210,13 +211,11 @@ public class Agent extends MovingObject {
         }
     }
     private LinkedList<Node> findPathToBox(Box BoxToMoveTo) {
-        path = pathFindingEngine.FindPath(false, BoxToMoveTo.getX(), BoxToMoveTo.getY());
-        //findPath(BoxToMoveTo.getX(), BoxToMoveTo.getY());
+        path = pathFindingEngine.getPath(false, BoxToMoveTo.getX(), BoxToMoveTo.getY());
         return path;
     }
     private LinkedList<Node> findPathWithBox() {
-        path = pathFindingEngine.FindPath(true, attachedBox.assignedGoal.getX(), attachedBox.assignedGoal.getY());
-
+        path = pathFindingEngine.getPath(true, attachedBox.assignedGoal.getX(), attachedBox.assignedGoal.getY());
         return path;
     }
 
@@ -321,6 +320,7 @@ public class Agent extends MovingObject {
     private String waitingProcedure() {
         waiting = true;
         if(waitingCounter >= WAITING_MAX) {
+            waitingCounter = 0;
             if(attachedBox != null) {
                 attachedBox.clearOwnerReferences();
                 attachedBox = null;
