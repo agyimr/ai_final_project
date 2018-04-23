@@ -37,7 +37,7 @@ public class RandomWalkClient {
                         System.err.println("Update agent: " + MainBoard.agents.get(i).getID());
                         actions[i] = MainBoard.agents.get(i).act();
                         MainBoard.agents.get(i).hasMoved = true;
-                        System.err.println("Agent " + MainBoard.agents.get(i).getID() + " has moved");
+                        System.err.println("Agent " + MainBoard.agents.get(i).getID() + " has moved with action: "+actions[i]);
                         System.err.println("Agent has path:");
                         if (MainBoard.agents.get(i).path != null) {
                             for (Node c : MainBoard.agents.get(i).path) {

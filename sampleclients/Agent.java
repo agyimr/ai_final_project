@@ -14,6 +14,7 @@ public class Agent extends MovingObject {
     SearchClient pathFindingEngine;
     int waitingCounter = 0;
     public int conflictSteps = 0;
+    public boolean inConflict = false;
     public boolean hasMoved = false;
     public LinkedList<Node> path;
     public Agent( char id, String color, int y, int x ) {
@@ -21,21 +22,20 @@ public class Agent extends MovingObject {
         pathFindingEngine = new SearchClient(this);
     }
     public String act() {
-
+        System.err.println("InConflict: "+inConflict);
         if(attachedBox == null) {
+            if(inConflict && path!= null && !path.isEmpty()){
+                System.err.println("executing path to resolve conflict");
+                return executePath();
+            }
             if(!findABox()) {
-                if(conflictSteps > 0){
-                    conflictSteps--;
-                }
                 System.err.println("Cant find box: ");
                 return waitingProcedure();
+
             }
         }
         if(!isMovingBox) {//then move towards box
             System.err.println("Execute path");
-            if(conflictSteps > 0){
-                conflictSteps--;
-            }
             String result = executePath();
             if(result != null) return result;
             else if(nextToBox(attachedBox)) {
@@ -76,12 +76,10 @@ public class Agent extends MovingObject {
         }
         //box attached and not at the goal position
         else {
-            if(conflictSteps > 0){
-                conflictSteps--;
-            }
             System.err.println("Moving box towards goal: ");
             //now you must make a move
             if (path == null) {
+                inConflict = false;
                 path = findPathWithBox();
             }
             String result = executePath();
@@ -89,10 +87,12 @@ public class Agent extends MovingObject {
             else {
                 //path blocked?
                 path = null;
+                inConflict = false;
                 return waitingProcedure();
 
             }
         }
+
     }
     private boolean findABox() {
         Box newBox;
@@ -148,11 +148,12 @@ public class Agent extends MovingObject {
             }
         }
         path = null;
+        inConflict = false;
         return null;
     }
     public void tryToMove(Node nextStep)  throws UnsupportedOperationException {
         //return getMoveDirection(x, y);
-        System.err.println("action: "+nextStep.action.actType);
+        System.err.println("action: "+nextStep.action.toString());
         if(nextStep.action.actType == type.Noop) {
             System.err.println("Noop command");
             return;
@@ -381,5 +382,8 @@ public class Agent extends MovingObject {
         Point tmp = new Point(attachedBox.getX(),attachedBox.getY());
         return tmp;
     }
-
+    public void wake(){
+        waiting = false;
+        waitingCounter = WAITING_MAX;
+    }
 }
