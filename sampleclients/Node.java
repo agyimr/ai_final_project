@@ -184,9 +184,7 @@ public class Node {
         Node other = (Node) obj;
         if (this.agentY != other.agentY || this.agentX != other.agentX)
             return false;
-        if (!Arrays.deepEquals(this.boxes, other.boxes))
-            return false;
-        return true;
+        return Arrays.deepEquals(this.boxes, other.boxes);
     }
 
     @Override

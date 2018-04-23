@@ -78,9 +78,7 @@ public class ConflictNode {
             return false;
         if (pos.y != other.pos.y)
             return false;
-        if (!posLst.equals(other.posLst))
-            return false;
-        return true;
+        return posLst.equals(other.posLst);
     }
 
     @Override

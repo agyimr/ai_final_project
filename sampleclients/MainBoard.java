@@ -125,8 +125,8 @@ public class MainBoard {
         if(yOutOfBounds(y) || xOutOfBounds(x)) throw new UnsupportedOperationException();
         return gameBoard.get(y).get(x);
     }
-    //used only if you're reverting changes inside exception handler
-    void setElement(int x, int y, BasicObject obj) {
+    //used only internally, never expose this
+    private void setElement(int x, int y, BasicObject obj) {
         gameBoard.get(y).set(x, obj);
     }
     public boolean isAgent (int x, int y) {
@@ -151,7 +151,7 @@ public class MainBoard {
 
     //Function assumes that passed object is at its' getX and getY location on the map
     public void changePositionOnMap(MovingObject obj, int x, int y) {
-        if(!spaceEmpty(x,y)) throw new UnsupportedOperationException();
+        if(!spaceEmpty(x,y) || obj == null) throw new UnsupportedOperationException();
         manageMovingThroughGoal(obj, x, y);
         if(getElement(obj.getX(), obj.getY()) == obj) {
             setElement(obj.getX(), obj.getY(), null);

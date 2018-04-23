@@ -13,7 +13,7 @@ public class Conflicts {
 		System.err.println();
 		System.err.println( "Conflict Started for agent:"+agent1.getID() );
 		mainBoard = RandomWalkClient.gameBoard;
-		List<Agent> agents = mainBoard.agents;
+		List<Agent> agents = MainBoard.agents;
 		Agent agent2;
 		int priority1 =	calculatePriority(agent1);
 		int priority2;// = calculatePriority(agent2);
@@ -63,7 +63,7 @@ public class Conflicts {
 			if(box2.assignedAgent==null){
 				bid(box2,agent1);
 			} else{
-				if(box2.assignedAgent.isMovingBox){
+				if(box2.assignedAgent.currentState == Agent.possibleStates.movingBox){
 					agent2 = box2.assignedAgent;
 					priority2 = calculatePriority(agent2);
 					Agent pawnAgent = (priority1 < priority2) ? agent2 : agent1;
@@ -270,7 +270,7 @@ public class Conflicts {
 		solution.add(new Command());
 		pawnAgent.replacePath(solution);
 
-		pawnAgent.inConflict = true;
+		pawnAgent.currentState = Agent.possibleStates.inConflict;
 		//kingAgent.inConflict = true;
 		System.err.println("PlanMerge found solution with pawn agent "+pawnAgent.getID()+":");
 		for(Command c: solution){
@@ -285,7 +285,7 @@ public class Conflicts {
 	}
 	private static boolean bid(Box box,Agent a){
 		System.err.println(" bid NotDoneYet, just clearing path for replanning");
-		List<Agent> agents = mainBoard.agents;
+		List<Agent> agents = MainBoard.agents;
 		a.path.clear();
 		//getRelevantAgents(box,agents);
 		//attached?
