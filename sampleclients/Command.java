@@ -36,15 +36,15 @@ public class Command {
 	}
 
 	// Order of enum important for determining opposites
-	public static enum dir {
+	public enum dir {
 		N, W, E, S
-	};
-	
-	public static enum type {
-		Move, Push, Pull, Noop
-	};
+	}
 
-	public final type actType;
+    public enum type {
+		Move, Push, Pull, Noop
+	}
+
+    public final type actType;
 	public final dir dir1;
 	public final dir dir2;
 	public Command() {

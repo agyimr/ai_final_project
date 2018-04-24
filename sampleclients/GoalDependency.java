@@ -131,4 +131,14 @@ public class GoalDependency {
      public int compareTo(GDNode other) {
          return g.size() - other.getGoalSet().size();
      }
+
+     public void print(){
+         System.err.println("-----------------------------------------------");
+         for (Goal key : MainBoard.Dep.keySet()) {//Loop through goalSet
+             for (Goal g : MainBoard.Dep.get(key)) {
+                 System.err.println("key: " + key.getID() + "goal: " + g.getID());
+             }
+         }
+         System.err.println("-----------------------------------------------");
+     }
  }

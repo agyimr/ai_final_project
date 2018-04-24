@@ -1,8 +1,6 @@
 package sampleclients;
 
-import sampleclients.ConflictBFS;
 import java.awt.Point;
-import java.io.*;
 import java.util.*;
 
 public class Conflicts {
@@ -13,7 +11,7 @@ public class Conflicts {
 		System.err.println();
 		System.err.println( "Conflict Started for agent:"+agent1.getID() );
 		mainBoard = RandomWalkClient.gameBoard;
-		List<Agent> agents = mainBoard.agents;
+		List<Agent> agents = MainBoard.agents;
 		Agent agent2;
 		int priority1 =	calculatePriority(agent1);
 		int priority2;// = calculatePriority(agent2);
@@ -57,13 +55,12 @@ public class Conflicts {
 				}
 			}
 
-
 		} else if (bob instanceof Box){
 			box2 = (Box) bob;
 			if(box2.assignedAgent==null){
 				bid(box2,agent1);
 			} else{
-				if(box2.assignedAgent.isMovingBox){
+				if(box2.assignedAgent.currentState == Agent.possibleStates.movingBox){
 					agent2 = box2.assignedAgent;
 					priority2 = calculatePriority(agent2);
 					Agent pawnAgent = (priority1 < priority2) ? agent2 : agent1;
@@ -97,9 +94,9 @@ public class Conflicts {
 		System.err.println( "getConflictPartners" );
 		Command c = agent1.getCommand(0); //Find command for agent in path
 		List<Point> oldPos = new ArrayList<Point>(); //Pos array handles the positions of agent and maybe box
-		oldPos.add(agent1.getAgentPoint()); //add agent to pos
+		oldPos.add(agent1.getCoordinates()); //add agent to pos
 		if (agent1.isBoxAttached()) {
-			oldPos.add(agent1.getAttachedBoxPoint());
+			oldPos.add(agent1.getAttachedBox().getCoordinates());
 			System.err.println( "Agent has box attached" );
 		} //Add box if exists
 		List<Point> newPos = c.getNext(oldPos); //nextPos dependant on if box or not
@@ -128,7 +125,7 @@ public class Conflicts {
 		pawnArea.add(new Point(pawnAgent.getX(),pawnAgent.getY()));
 		
 		if(pawnAgent.isBoxAttached()){
-			pawnArea.add(pawnAgent.getAttachedBoxPoint()); //FIX
+			pawnArea.add(pawnAgent.getAttachedBox().getCoordinates()); //FIX
 		}
 		
 		List<Point> kingArea = new ArrayList<Point>();
@@ -137,7 +134,7 @@ public class Conflicts {
 		
 		kingArea.add(new Point(kingAgent.getX(),kingAgent.getY()));
 		if(kingAgent.isBoxAttached()){
-			kingArea.add(kingAgent.getAttachedBoxPoint());
+			kingArea.add(kingAgent.getAttachedBox().getCoordinates());
 		}
 		if(kingCommand != null){
 			kingArea.addAll(kingCommand.getNext(kingArea));
@@ -176,8 +173,11 @@ public class Conflicts {
 		int ID = agent1.getID();
 		int heuristicsToGoal = 0;
 		int prio = ID + heuristicsToGoal;
-		if(agent1.conflictSteps > 0){
+		if(agent1.currentState == Agent.possibleStates.inConflict){
 			prio = -1;
+		}
+		if(agent1.currentState == Agent.possibleStates.movingBox){
+			prio -= 100;
 		}
 		if(agent1.path == null || agent1.path.size() == 0 || agent1.path.peek().action.actType == Command.type.Noop){
 			prio = 1000;
@@ -195,14 +195,14 @@ public class Conflicts {
 		List<Point> pos = new ArrayList<Point>();
 		pos.add(posKing);
 		if (kingAgent.isBoxAttached()) {
-			Point posBox = kingAgent.getAttachedBoxPoint();
+			Point posBox = kingAgent.getAttachedBox().getCoordinates();
 			pos.add(posBox);
 		}
 
 		List<Point> pawnAgentPos = new LinkedList<Point>();
 		pawnAgentPos.add(new Point(pawnAgent.getX(), pawnAgent.getY()));
-		if (pawnAgent.isBoxAttached()) {
-			pawnAgentPos.add(pawnAgent.getAttachedBoxPoint());
+		if (pawnAgent.currentState == Agent.possibleStates.movingBox) {
+			pawnAgentPos.add(pawnAgent.getAttachedBox().getCoordinates());
 		}
 
 		System.err.println("planmerge pos: " + pos.toString());
@@ -257,21 +257,10 @@ public class Conflicts {
 		Node oldn = kingAgent.path.peek();
 		Node n = new Node(null, new Command(), kingAgent.getX(), kingAgent.getY());
 
-		if (kingAgent.hasMoved && Agent.nextTo(kingAgent.getX(),kingAgent.getY(),pawnAgent.getX(),pawnAgent.getY())) {
-			kingAgent.path.add(0,n);
-		} else{
-			if(Agent.nextTo(kingAgent.getX(),kingAgent.getY(),pawnAgent.getX(),pawnAgent.getY())){
-				kingAgent.path.add(0,n);
-			}
-		}
-
-		kingAgent.wake();
-		pawnAgent.wake();
+		kingAgent.path.add(0,n);
 		solution.add(new Command());
 		pawnAgent.replacePath(solution);
 
-		pawnAgent.inConflict = true;
-		//kingAgent.inConflict = true;
 		System.err.println("PlanMerge found solution with pawn agent "+pawnAgent.getID()+":");
 		for(Command c: solution){
 			System.err.println(c.toString());
@@ -280,12 +269,18 @@ public class Conflicts {
 		for(Node c: kingAgent.path){
 			System.err.println(c.action.toString());
 		}
+		System.err.println("CurrentKingAgentNextState = "+kingAgent.currentState);
+		System.err.println("CurrentPawnAgentNextState = "+pawnAgent.currentState);
+		kingAgent.nextState = kingAgent.currentState;
+		System.err.println("KingAgentNextState = "+kingAgent.nextState);
+		pawnAgent.nextState = Agent.possibleStates.inConflict;
+		System.err.println("PawnAgentNextState = "+pawnAgent.nextState);
 
 		return true;
 	}
 	private static boolean bid(Box box,Agent a){
 		System.err.println(" bid NotDoneYet, just clearing path for replanning");
-		List<Agent> agents = mainBoard.agents;
+		List<Agent> agents = MainBoard.agents;
 		a.path.clear();
 		//getRelevantAgents(box,agents);
 		//attached?

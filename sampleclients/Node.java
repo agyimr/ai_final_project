@@ -141,7 +141,7 @@ public class Node {
         return this.boxes[y][x] > 0;
     }
 
-    private boolean boxHasTheSameColor(int x, int y) { return MainBoard.boxes.get(boxes[y][x]).getColor().equals((ownerColor));}
+    private boolean boxHasTheSameColor(int x, int y) { return MainBoard.boxesByID.get(boxes[y][x]).get(0).getColor().equals((ownerColor));}
     private Node childNode(Command action, int agentX, int agentY, int boxX, int boxY) {
         Node copy = new Node(this, action, agentX, agentY, boxX, boxY);
         for (int y = 0; y < MainBoard.MainBoardYDomain; y++) {
@@ -184,9 +184,7 @@ public class Node {
         Node other = (Node) obj;
         if (this.agentY != other.agentY || this.agentX != other.agentX)
             return false;
-        if (!Arrays.deepEquals(this.boxes, other.boxes))
-            return false;
-        return true;
+        return Arrays.deepEquals(this.boxes, other.boxes);
     }
 
     @Override

@@ -1,6 +1,8 @@
 package sampleclients;
 
 
+import sampleclients.room_heuristics.RoomAStar;
+
 import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.util.*;
@@ -12,21 +14,17 @@ public class RandomWalkClient {
 	private BufferedReader in = new BufferedReader( new InputStreamReader( System.in ) );
     public static MainBoard gameBoard;
     public static MainBoard nextStepGameBoard;
-	public RandomWalkClient() throws IOException {
+    public static RoomAStar roomMaster;
+	public RandomWalkClient() {
         gameBoard = new MainBoard(in); //map read in the constructor
         nextStepGameBoard = new MainBoard(gameBoard);
-        MainBoard.Dep = GoalDependency.getGoalDependency(MainBoard.goals);
+        MainBoard.Dep = GoalDependency.getGoalDependency();
         System.err.println("Goaldep ended");
-        System.err.println("-----------------------------------------------");
-        for (Goal key : MainBoard.Dep.keySet()) {//Loop through goalSet
-            for (Goal g : MainBoard.Dep.get(key)) {
-                System.err.println("key: " + key.getID() + "goal: " + g.getID());
-            }
-        }
-        System.err.println("-----------------------------------------------");
+        roomMaster = new RoomAStar(gameBoard);
 /*		Agent someAgent = agents.get(2);
         LinkedList<Node> path = someAgent.findPathToBox(BoxColorGroups.get(someAgent.getColor()).get(2));
-        System.err.println(path + " for Agent: " + someAgent);*/
+        System.err.println(path + " for Agent: " + someAgent);
+        */
 	}
 
 
@@ -60,12 +58,13 @@ public class RandomWalkClient {
                     System.err.println();
                     System.err.println("Conflict for agent: " + MainBoard.agents.get(i).getID() + " and action " + MainBoard.agents.get(i).path.get(0).action.toString());
                     System.err.println("path:");
-                    System.err.println(MainBoard.agents.get(i).path.toString());
+                    System.err.println(MainBoard.agents.get(i).path);
                     System.err.println(MainBoard.agents.get(i).getAttachedBox());
+                    System.err.println(nextStepGameBoard);
+                    System.err.println(gameBoard);
                     Conflicts.delegateConflict(MainBoard.agents.get(i));
                     System.err.println();
                     //--i;
-                    //throw exc;
 
                 }
             }

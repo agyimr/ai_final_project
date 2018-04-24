@@ -210,7 +210,7 @@ public class Debugger {
                     String output = new String(buffer, 0, read);
                     oldErr.print(output);
                     oldErr.flush();
-                };
+                }
 
             } catch (IOException e) {
                 e.printStackTrace();
