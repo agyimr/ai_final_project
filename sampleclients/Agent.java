@@ -15,7 +15,8 @@ public class Agent extends MovingObject {
     public int conflictSteps = 0;
     public boolean hasMoved = false;
     public LinkedList<Node> path;
-    possibleStates currentState = unassigned;
+    public possibleStates nextState = unassigned;
+    public possibleStates currentState = unassigned;
     private possibleStates previousState = currentState;
     enum possibleStates {
         waiting,
@@ -69,7 +70,7 @@ public class Agent extends MovingObject {
             serverOutput = executePath();
         }
         else {
-            currentState = possibleStates.unassigned;
+            currentState = nextState;
         }
     }
     private void moveToTheBox() {
@@ -113,6 +114,7 @@ public class Agent extends MovingObject {
         Box newBox;
         Box bestBox = null;
         int bestPath = Integer.MAX_VALUE;
+        if(MainBoard.BoxColorGroups.get(getColor()) == null) return false;
         for(MovingObject currentBox : MainBoard.BoxColorGroups.get(getColor()).values()) {
             if(currentBox instanceof Box) {
                 newBox = (Box) currentBox;
@@ -122,6 +124,7 @@ public class Agent extends MovingObject {
                         attachedBox = newBox;
                         attachedBox.assignedAgent = this;
                         currentState = possibleStates.movingBox;
+                        findPathWithBox();
                         return true;
                     }
                     int currentPath = pathFindingEngine.getPathEstimate(getCoordinates(), newBox.getCoordinates());
