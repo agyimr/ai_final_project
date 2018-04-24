@@ -124,7 +124,6 @@ public class Agent extends MovingObject {
                         attachedBox = newBox;
                         attachedBox.assignedAgent = this;
                         currentState = possibleStates.movingBox;
-                        findPathWithBox();
                         return true;
                     }
                     int currentPath = pathFindingEngine.getPathEstimate(getCoordinates(), newBox.getCoordinates());
