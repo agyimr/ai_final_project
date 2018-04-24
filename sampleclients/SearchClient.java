@@ -103,6 +103,7 @@ public class SearchClient {
                 System.err.println("Hello find obstacles");
                 System.err.println("Hello find obstacles");
                 System.err.println(immovableObstacles);
+                owner.currentState = Agent.possibleStates.jobless;
                 return FindPath(pushingBox, beforeFirstImmovableObstacle.agentX, beforeFirstImmovableObstacle.agentY);
             }
             else {
