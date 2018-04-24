@@ -51,6 +51,8 @@ public class RoomAStar {
 
             // generating successor states
             ArrayList<Path> neighbour_sections = this.passages.getAllNeighbours(current_node.position);
+            if (neighbour_sections == null) return null; // beginning section doesn't have any neighbours AND goal is not in there.
+
             for(Path s : neighbour_sections) {
                 int travel_distance = s.to.getDistanceFromPoint(current_node.position);
                 Point p = s.to.getClosestPoint(current_node.position);
