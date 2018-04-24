@@ -55,7 +55,6 @@ public class Conflicts {
 				}
 			}
 
-
 		} else if (bob instanceof Box){
 			box2 = (Box) bob;
 			if(box2.assignedAgent==null){
@@ -202,7 +201,7 @@ public class Conflicts {
 
 		List<Point> pawnAgentPos = new LinkedList<Point>();
 		pawnAgentPos.add(new Point(pawnAgent.getX(), pawnAgent.getY()));
-		if (pawnAgent.isBoxAttached()) {
+		if (pawnAgent.currentState == Agent.possibleStates.movingBox) {
 			pawnAgentPos.add(pawnAgent.getAttachedBox().getCoordinates());
 		}
 
@@ -258,21 +257,13 @@ public class Conflicts {
 		Node oldn = kingAgent.path.peek();
 		Node n = new Node(null, new Command(), kingAgent.getX(), kingAgent.getY());
 
-		if (kingAgent.hasMoved && Agent.nextTo(kingAgent.getX(),kingAgent.getY(),pawnAgent.getX(),pawnAgent.getY())) {
-			kingAgent.path.add(0,n);
-		} else{
-			if(Agent.nextTo(kingAgent.getX(),kingAgent.getY(),pawnAgent.getX(),pawnAgent.getY())){
-				kingAgent.path.add(0,n);
-			}
-		}
-
+		kingAgent.path.add(0,n);
 		kingAgent.wake();
 		pawnAgent.wake();
 		solution.add(new Command());
 		pawnAgent.replacePath(solution);
 
 		pawnAgent.currentState = Agent.possibleStates.inConflict;
-		//kingAgent.inConflict = true;
 		System.err.println("PlanMerge found solution with pawn agent "+pawnAgent.getID()+":");
 		for(Command c: solution){
 			System.err.println(c.toString());
