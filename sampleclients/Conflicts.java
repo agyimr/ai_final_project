@@ -174,8 +174,11 @@ public class Conflicts {
 		int ID = agent1.getID();
 		int heuristicsToGoal = 0;
 		int prio = ID + heuristicsToGoal;
-		if(agent1.conflictSteps > 0){
+		if(agent1.currentState == Agent.possibleStates.inConflict){
 			prio = -1;
+		}
+		if(agent1.currentState == Agent.possibleStates.movingBox){
+			prio -= 100;
 		}
 		if(agent1.path == null || agent1.path.size() == 0 || agent1.path.peek().action.actType == Command.type.Noop){
 			prio = 1000;
