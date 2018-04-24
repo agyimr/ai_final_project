@@ -24,7 +24,8 @@ public class Agent extends MovingObject {
         jobless,
         inConflict,
         movingTowardsBox,
-        movingBox
+        movingBox,
+        pathBlocked
     }
     String serverOutput;
     public Agent( char id, String color, int y, int x ) {
@@ -52,10 +53,13 @@ public class Agent extends MovingObject {
             case movingBox:
                 moveWithTheBox();
                 break;
+            case pathBlocked:
+                serverOutput = "NoOp";
+                break;
         }
         if(serverOutput != null) return serverOutput;
         System.err.println(currentState);
-         return act();
+         return act(); // Temporary, just to cause stackOverflow instead of infinite loop, for better debugging
     }
     private void searchForJob() {
         if(!findClosestBox()) {
@@ -90,7 +94,8 @@ public class Agent extends MovingObject {
     }
     private void moveWithTheBox() {
         if ((attachedBox.unassignedGoal() && !attachedBox.tryToFindAGoal())
-                || attachedBox.SetGoalPosition()) {
+                || attachedBox.setGoalPosition()) {
+            dropTheBox();
             currentState = possibleStates.unassigned;
         }
         else {
@@ -105,8 +110,7 @@ public class Agent extends MovingObject {
             }
         }
     }
-    private void dropTheBox()
-    {
+    private void dropTheBox() {
         attachedBox.clearOwnerReferences();
         attachedBox = null;
     }
@@ -126,7 +130,7 @@ public class Agent extends MovingObject {
                         currentState = possibleStates.movingBox;
                         return true;
                     }
-                    int currentPath = pathFindingEngine.getPathEstimate(getCoordinates(), newBox.getCoordinates());
+                    int currentPath = RandomWalkClient.roomMaster.getPathEstimate(getCoordinates(), newBox.getCoordinates());
                     System.err.println(currentPath);
                     if(currentPath < bestPath) {
                         bestPath = currentPath;
@@ -203,6 +207,7 @@ public class Agent extends MovingObject {
                 System.err.println("Agent trying to move box to "+nextStep.boxX+","+nextStep.boxY);
                 movedObject = board.getElement(nextStep.agentX, nextStep.agentY);
                 if(movedObject instanceof Box) {
+                    ((Box)movedObject).setGoalPosition();
                     board.changePositionOnMap((Box) movedObject, nextStep.boxX, nextStep.boxY);
                     board.changePositionOnMap(this, nextStep.agentX, nextStep.agentY);
                 }
@@ -216,6 +221,7 @@ public class Agent extends MovingObject {
                 System.err.println("Agent trying to move box from "+bx+","+by);
                 movedObject = board.getElement(bx, by);
                 if(movedObject instanceof Box) {
+                    ((Box)movedObject).setGoalPosition();
                     board.changePositionOnMap(this, nextStep.agentX, nextStep.agentY);
                     board.changePositionOnMap((Box) movedObject, nextStep.boxX, nextStep.boxY);
                 }

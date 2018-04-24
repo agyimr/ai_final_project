@@ -17,7 +17,7 @@ public class Node {
     public int boxY = -1;
     public int boxX = -1;
     public static String ownerColor;
-    public char[][] boxes;
+    public Box[][] boxes;
     public Node parent;
     public Command action;
     private int g;
@@ -27,36 +27,34 @@ public class Node {
         ownerColor = color;
         agentX = ownerX;
         agentY = ownerY;
-        boxes = new char[MainBoard.MainBoardYDomain][MainBoard.MainBoardXDomain];
         this.g = 0;
+        initializeBoxes(consideredBoxes);
+    }
+
+    private void initializeBoxes(Collection<Box> consideredBoxes) {
+        boxes = new Box[MainBoard.MainBoardYDomain][MainBoard.MainBoardXDomain];
+
         for (int y = 0; y < MainBoard.MainBoardYDomain; y ++)
             for (int x = 0; x < MainBoard.MainBoardXDomain; x++)
-                boxes[y][x] = 0;
+                boxes[y][x] = null;
 
         for(Box current: consideredBoxes) {
-            boxes[current.getY()][current.getX()] = current.getID();
+            boxes[current.getY()][current.getX()] = current;
         }
     }
+
     public Node(int ownerX, int ownerY, int boxX, int boxY, String color, Collection<Box> consideredBoxes) {
         ownerColor = color;
         agentX = ownerX;
         agentY = ownerY;
-        boxes = new char[MainBoard.MainBoardYDomain][MainBoard.MainBoardXDomain];
         this.g = 0;
-        for (int y = 0; y < MainBoard.MainBoardYDomain; y ++)
-            for (int x = 0; x < MainBoard.MainBoardXDomain; x++)
-                boxes[y][x] = 0;
-
-        for(Box current: consideredBoxes) {
-            boxes[current.getY()][current.getX()] = current.getID();
-        }
+        initializeBoxes(consideredBoxes);
         this.boxX = boxX;
         this.boxY = boxY;
         action = new Command();
-
     }
     public Node(Node parent, Command action, int agentX, int agentY) {
-        boxes = new char[MainBoard.MainBoardYDomain][MainBoard.MainBoardXDomain];
+        boxes = new Box[MainBoard.MainBoardYDomain][MainBoard.MainBoardXDomain];
         this.parent = parent;
         this.action = action;
         this.agentX = agentX;
@@ -68,7 +66,7 @@ public class Node {
         }
     }
     public Node(Node parent, Command action, int agentX, int agentY, int boxX, int boxY) {
-        boxes = new char[MainBoard.MainBoardYDomain][MainBoard.MainBoardXDomain];
+        boxes = new Box[MainBoard.MainBoardYDomain][MainBoard.MainBoardXDomain];
         this.parent = parent;
         this.action = action;
         this.agentX = agentX;
@@ -110,7 +108,7 @@ public class Node {
                     if (this.cellIsFree(newBoxRow, newBoxCol)) {
                         Node n = this.childNode(c, newAgentX, newAgentY, newBoxCol, newBoxRow);
                         n.boxes[newBoxRow][newBoxCol] = this.boxes[newAgentY][newAgentX];
-                        n.boxes[newAgentY][newAgentX] = 0;
+                        n.boxes[newAgentY][newAgentX] = null;
                         expandedNodes.add(n);
                     }
                 }
@@ -123,7 +121,7 @@ public class Node {
                     if (this.boxAt(boxX, boxY) && boxHasTheSameColor(boxX, boxY)) {
                         Node n = this.childNode(c, newAgentX, newAgentY, this.agentX, this.agentY);
                         n.boxes[this.agentY][this.agentX] = this.boxes[boxY][boxX];
-                        n.boxes[boxY][boxX] = 0;
+                        n.boxes[boxY][boxX] = null;
                         expandedNodes.add(n);
                     }
                 }
@@ -134,14 +132,14 @@ public class Node {
     }
 
     private boolean cellIsFree(int y, int x) {
-        return (this.boxes[y][x] == 0) && !RandomWalkClient.gameBoard.isWall(x, y);
+        return (this.boxes[y][x] == null) && !RandomWalkClient.gameBoard.isWall(x, y);
     }
 
     private boolean boxAt(int x, int y) {
-        return this.boxes[y][x] > 0;
+        return this.boxes[y][x] != null;
     }
 
-    private boolean boxHasTheSameColor(int x, int y) { return MainBoard.boxesByID.get(boxes[y][x]).get(0).getColor().equals((ownerColor));}
+    private boolean boxHasTheSameColor(int x, int y) { return boxes[y][x].getColor().equals((ownerColor));}
     private Node childNode(Command action, int agentX, int agentY, int boxX, int boxY) {
         Node copy = new Node(this, action, agentX, agentY, boxX, boxY);
         for (int y = 0; y < MainBoard.MainBoardYDomain; y++) {
