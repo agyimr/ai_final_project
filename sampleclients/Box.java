@@ -1,8 +1,5 @@
 package sampleclients;
-
-import java.io.*;
 import java.util.*;
-
 
 public class Box extends MovingObject {
     public boolean atGoalPosition = false;
@@ -21,7 +18,7 @@ public class Box extends MovingObject {
         return assignedGoal == null;
     }
     boolean tryToFindAGoal() {
-        assignedGoal = MainBoard.goals.get(Character.toLowerCase(getID()));
+        assignedGoal = ((LinkedList<Goal>) MainBoard.goalsByID.get(Character.toLowerCase(getID()))).peek();
         if (assignedGoal == null) {
             noGoalOnTheMap = true;
             assignedAgent = null;

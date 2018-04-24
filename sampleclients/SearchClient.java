@@ -48,7 +48,7 @@ public class SearchClient {
         if(currentRoom.contains(new Point(goalX, goalY))) {
             return FindPath(pushingBox, goalX, goalY);
         }
-        else if(getNextRoom()) {
+        else if(!currentRoom.contains(owner.getCoordinates()) && getNextRoom()) {
             return FindRoomPath(pushingBox, nextRoom);
         }
         else {
@@ -61,7 +61,7 @@ public class SearchClient {
         this.goalY = goalY;
         roomPath = RandomWalkClient.roomMaster.getRoomPath(owner.getCoordinates(), new Point(goalX, goalY));
         System.err.println(roomPath);
-        if(roomPath == null) return FindPath(pushingBox, goalX, goalY);
+        if(roomPath == null) return FindPath(pushingBox, goalX, goalY); //TODO impossible to get there
         currentRoom = roomPath.poll().through;
         return continuePath();
     }
@@ -90,10 +90,10 @@ public class SearchClient {
         if(pushingBox) {
             strategy.addToFrontier(new Node(owner.getX(), owner.getY(),
                     owner.getAttachedBox().getX(), owner.getAttachedBox().getY(),
-                    owner.getColor(), MainBoard.boxes.values()));
+                    owner.getColor(), MainBoard.allBoxes));
         }
         else {
-            strategy.addToFrontier(new Node(owner.getX(), owner.getY(), owner.getColor(), MainBoard.boxes.values()));
+            strategy.addToFrontier(new Node(owner.getX(), owner.getY(), owner.getColor(), MainBoard.allBoxes));
         }
         LinkedList<Node> result = conductSearch(searchRange, goalX, goalY, pushingBox);
         if(result == null) {
@@ -193,10 +193,10 @@ public class SearchClient {
         if(pushingBox) {
             strategy.addToFrontier(new Node(owner.getX(), owner.getY(),
                     owner.getAttachedBox().getX(), owner.getAttachedBox().getY(),
-                    owner.getColor(), MainBoard.boxes.values()));
+                    owner.getColor(), MainBoard.allBoxes));
         }
         else {
-            strategy.addToFrontier(new Node(owner.getX(), owner.getY(), owner.getColor(), MainBoard.boxes.values()));
+            strategy.addToFrontier(new Node(owner.getX(), owner.getY(), owner.getColor(), MainBoard.allBoxes));
         }
         LinkedList<Node> result = conductRoomSearch(searchRange,goalRoom);
         if(result == null) {
