@@ -19,12 +19,12 @@ public class Agent extends MovingObject {
     public possibleStates currentState = unassigned;
     private possibleStates previousState = currentState;
     enum possibleStates {
-        waiting,
-        unassigned,
         jobless,
-        inConflict,
+        unassigned,
+        waiting,
         movingTowardsBox,
-        movingBox
+        movingBox,
+        inConflict
     }
     String serverOutput;
     public Agent( char id, String color, int y, int x ) {
@@ -359,15 +359,17 @@ public class Agent extends MovingObject {
                 I guess it would be easiest to just store the commands of next action as a field of an agent and then in update loop create a joint action after each agent acts.
                 */
 
+                System.err.println("Agent "+getID()+" has been reverted with action "+nextStep.action.toString());
+
                 if(nextStep.action.actType == type.Noop) {
                     hasMoved = false;
-                    System.err.println("Agent "+getID()+" has been reverted");
                     return;
                 }
 
 
                 if(nextStep.action.actType == type.Move) {
                     board.revertPositionChange(this, nextStep.agentX, nextStep.agentY);
+                    hasMoved = false;
                     return;
                 }
                 Box movedObject = (Box) board.getElement(nextStep.boxX, nextStep.boxY);
@@ -375,14 +377,17 @@ public class Agent extends MovingObject {
                 if(nextStep.action.actType == type.Push){
                     board.revertPositionChange(this, nextStep.agentX, nextStep.agentY);
                     board.revertPositionChange(movedObject, nextStep.boxX, nextStep.boxY);
+                    hasMoved = false;
                 }
                 else if(nextStep.action.actType == type.Pull){
                     board.revertPositionChange(movedObject, nextStep.boxX, nextStep.boxY);
                     board.revertPositionChange(this, nextStep.agentX, nextStep.agentY);
+                    hasMoved = false;
                 }
+
             }
-            hasMoved = false;
-            System.err.println("Agent "+getID()+" has been reverted");
+
+
         }
     }
     public Box getAttachedBox() {
