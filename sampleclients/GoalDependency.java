@@ -8,14 +8,8 @@ public class GoalDependency {
     public static MainBoard mainBoard = RandomWalkClient.gameBoard;
     public static Map<Goal,Set<Goal>> getGoalDependency(){
         System.err.println( "GoalDep started" );
-        List<Goal> goals = MainBoard.goals;
+        List<Goal> goals = MainBoard.allGoals;
         Map<Goal,Set<Goal>> obstructions = new HashMap<Goal,Set<Goal>>();
-        System.err.println("-----------Print goalSet--------------");
-        for (Goal g : goals) {//Loop through goalSet
-            System.err.println("Goal: "+g);
-        }
-        System.err.println("-------------End print--------------");
-
 
         for (Goal g : goals) {
             PriorityQueue<GDNode> explored = new PriorityQueue<GDNode>();
@@ -41,7 +35,15 @@ public class GoalDependency {
         }
         return generateDependencies(obstructions);
     }
-
+    public static void print(){
+        System.err.println("-----------------------------------------------");
+        for (Goal key : MainBoard.Dep.keySet()) {//Loop through goalSet
+            for (Goal g : MainBoard.Dep.get(key)) {
+                System.err.println("key: " + key.getID() + "goal: " + g.getID());
+            }
+        }
+        System.err.println("-----------------------------------------------");
+    }
 
     private <E> boolean containsList(List<E> l1, List<E> l2){
         //goes through two list and returns false if one element is in the other list and vice versa
@@ -67,23 +69,24 @@ public class GoalDependency {
                 pos = new Point(cur.getPos().x+1,cur.getPos().y);
             }
             BasicObject mapEntry = mainBoard.getElement(pos.x,pos.y);
-            int mapEntryX = mapEntry.getX();
-            int mapEntryY = mapEntry.getY();
-            if(!mainBoard.isWall(mapEntryX,mapEntryY)){
-                Set<Goal> s = cur.getGoalSet();
-                if(mainBoard.isGoal(mapEntryX,mapEntryY)){
-                    for(Goal g : goals){
-                        if (g.getX() == pos.x && g.getY() == pos.y){
-                            s.add(g);
+            if(mapEntry != null) {
+                int mapEntryX = mapEntry.getX();
+                int mapEntryY = mapEntry.getY();
+                if (!mainBoard.isWall(mapEntryX, mapEntryY)) {
+                    Set<Goal> s = cur.getGoalSet();
+                    if (mainBoard.isGoal(mapEntryX, mapEntryY)) {
+                        for (Goal g : goals) {
+                            if (g.getX() == pos.x && g.getY() == pos.y) {
+                                s.add(g);
+                            }
                         }
                     }
+                    neighbours.add(new GDNode(pos, cur, s));
                 }
-                neighbours.add(new GDNode(pos, cur, s));
             }
         }
         return neighbours;
     }
-
     private static Map<Goal,Set<Goal>> generateDependencies(Map<Goal,Set<Goal>> obs){
         Map<Goal,Set<Goal>> dep = new HashMap<Goal,Set<Goal>>();
         for (Goal key : obs.keySet()){
@@ -132,13 +135,5 @@ public class GoalDependency {
          return g.size() - other.getGoalSet().size();
      }
 
-     public void print(){
-         System.err.println("-----------------------------------------------");
-         for (Goal key : MainBoard.Dep.keySet()) {//Loop through goalSet
-             for (Goal g : MainBoard.Dep.get(key)) {
-                 System.err.println("key: " + key.getID() + "goal: " + g.getID());
-             }
-         }
-         System.err.println("-----------------------------------------------");
-     }
+
  }
