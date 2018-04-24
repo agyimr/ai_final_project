@@ -1,8 +1,6 @@
 package sampleclients;
 
-import sampleclients.ConflictBFS;
 import java.awt.Point;
-import java.io.*;
 import java.util.*;
 
 public class Conflicts {
@@ -97,9 +95,9 @@ public class Conflicts {
 		System.err.println( "getConflictPartners" );
 		Command c = agent1.getCommand(0); //Find command for agent in path
 		List<Point> oldPos = new ArrayList<Point>(); //Pos array handles the positions of agent and maybe box
-		oldPos.add(agent1.getAgentPoint()); //add agent to pos
+		oldPos.add(agent1.getCoordinates()); //add agent to pos
 		if (agent1.isBoxAttached()) {
-			oldPos.add(agent1.getAttachedBoxPoint());
+			oldPos.add(agent1.getAttachedBox().getCoordinates());
 			System.err.println( "Agent has box attached" );
 		} //Add box if exists
 		List<Point> newPos = c.getNext(oldPos); //nextPos dependant on if box or not
@@ -128,7 +126,7 @@ public class Conflicts {
 		pawnArea.add(new Point(pawnAgent.getX(),pawnAgent.getY()));
 		
 		if(pawnAgent.isBoxAttached()){
-			pawnArea.add(pawnAgent.getAttachedBoxPoint()); //FIX
+			pawnArea.add(pawnAgent.getAttachedBox().getCoordinates()); //FIX
 		}
 		
 		List<Point> kingArea = new ArrayList<Point>();
@@ -137,7 +135,7 @@ public class Conflicts {
 		
 		kingArea.add(new Point(kingAgent.getX(),kingAgent.getY()));
 		if(kingAgent.isBoxAttached()){
-			kingArea.add(kingAgent.getAttachedBoxPoint());
+			kingArea.add(kingAgent.getAttachedBox().getCoordinates());
 		}
 		if(kingCommand != null){
 			kingArea.addAll(kingCommand.getNext(kingArea));
@@ -195,14 +193,14 @@ public class Conflicts {
 		List<Point> pos = new ArrayList<Point>();
 		pos.add(posKing);
 		if (kingAgent.isBoxAttached()) {
-			Point posBox = kingAgent.getAttachedBoxPoint();
+			Point posBox = kingAgent.getAttachedBox().getCoordinates();
 			pos.add(posBox);
 		}
 
 		List<Point> pawnAgentPos = new LinkedList<Point>();
 		pawnAgentPos.add(new Point(pawnAgent.getX(), pawnAgent.getY()));
 		if (pawnAgent.isBoxAttached()) {
-			pawnAgentPos.add(pawnAgent.getAttachedBoxPoint());
+			pawnAgentPos.add(pawnAgent.getAttachedBox().getCoordinates());
 		}
 
 		System.err.println("planmerge pos: " + pos.toString());

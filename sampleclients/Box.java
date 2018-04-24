@@ -29,12 +29,13 @@ public class Box extends MovingObject {
         }
         return true;
     }
-    public boolean atGoalPosition() {
+    public boolean SetGoalPosition() {
+        if (assignedGoal == null) return false;
         if( Integer.compare(getX(), assignedGoal.getX()) == 0
                 && Integer.compare(getY(), assignedGoal.getY()) == 0 ) {
             assignedGoal.boxAtGoalPosition = this;
-            return true;
+            atGoalPosition = true;
         }
-        return false;
+        return atGoalPosition;
     }
 }

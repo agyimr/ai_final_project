@@ -1,6 +1,8 @@
 package sampleclients;
 
 
+import sampleclients.room_heuristics.RoomAStar;
+
 import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.util.*;
@@ -12,9 +14,11 @@ public class RandomWalkClient {
 	private BufferedReader in = new BufferedReader( new InputStreamReader( System.in ) );
     public static MainBoard gameBoard;
     public static MainBoard nextStepGameBoard;
+    public static RoomAStar roomMaster;
 	public RandomWalkClient() {
         gameBoard = new MainBoard(in); //map read in the constructor
         nextStepGameBoard = new MainBoard(gameBoard);
+        roomMaster = new RoomAStar(gameBoard);
 /*		Agent someAgent = agents.get(2);
         LinkedList<Node> path = someAgent.findPathToBox(BoxColorGroups.get(someAgent.getColor()).get(2));
         System.err.println(path + " for Agent: " + someAgent);

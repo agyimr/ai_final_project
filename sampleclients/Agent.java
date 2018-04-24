@@ -2,7 +2,6 @@ package sampleclients;
 
 
 import java.util.*;
-import java.awt.Point;
 
 import static sampleclients.Agent.possibleStates.*;
 import static sampleclients.Command.type;
@@ -93,8 +92,7 @@ public class Agent extends MovingObject {
     }
     void moveWithTheBox() {
         if ((attachedBox.unassignedGoal() && !attachedBox.tryToFindAGoal())
-                || attachedBox.atGoalPosition()) {
-            dropTheBox();
+                || attachedBox.SetGoalPosition()) {
             currentState = possibleStates.unassigned;
         }
         else {
@@ -109,14 +107,15 @@ public class Agent extends MovingObject {
             }
         }
     }
-    private void dropTheBox() {
+    private void dropTheBox()
+    {
         attachedBox.clearOwnerReferences();
         attachedBox = null;
     }
     private boolean findClosestBox() {
         Box newBox;
         Box bestBox = null;
-        LinkedList<Node> bestPath = null;
+        int bestPath = Integer.MAX_VALUE;
         for(MovingObject currentBox : MainBoard.BoxColorGroups.get(getColor()).values()) {
             if(currentBox instanceof Box) {
                 newBox = (Box) currentBox;
@@ -126,26 +125,20 @@ public class Agent extends MovingObject {
                         attachedBox.assignedAgent = this;
                         return true;
                     }
-                    findPathToBox(newBox);
-                    if(bestPath == null) {
-                        bestPath = path;
-                        bestBox = newBox;
-                        continue;
-                    }
-
-                    else if(path != null && path.size() < bestPath.size()) {
-                        bestPath = path;
+                    int currentPath = pathFindingEngine.getPathEstimate(getCoordinates(), newBox.getCoordinates());
+                    if(currentPath < bestPath) {
+                        bestPath = currentPath;
                         bestBox = newBox;
                     }
-
                 }
             }
         }
         if(bestBox != null) {
-            attachedBox = bestBox;
-            path = bestPath;
-            attachedBox.assignedAgent = this;
-            return true;
+            if(findPathToBox(bestBox) != null) {
+                attachedBox = bestBox;
+                attachedBox.assignedAgent = this;
+                return true;
+            }
         }
         return false;
     }
@@ -157,6 +150,7 @@ public class Agent extends MovingObject {
                 || (Math.abs(firstX - secondX) == 0) && (Math.abs(firstY - secondY) == 1);
     }
     private String executePath( ) {
+        if(path == null || path.isEmpty()) path = pathFindingEngine.continuePath();
         if (path != null) {
             Node nextStep = path.peek();
             if (nextStep != null) {
@@ -391,14 +385,7 @@ public class Agent extends MovingObject {
     public Box getAttachedBox() {
         return attachedBox;
     }
-    public Point getAgentPoint(){
-        return new Point(this.getX(),this.getY());
-    }
 
-    public Point getAttachedBoxPoint() {
-        Point tmp = new Point(attachedBox.getX(),attachedBox.getY());
-        return tmp;
-    }
     public void wake(){
         currentState = previousState;
         waitingCounter = 0;

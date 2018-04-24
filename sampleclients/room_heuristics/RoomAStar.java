@@ -72,10 +72,10 @@ public class RoomAStar {
         LinkedList<Node> plan = new LinkedList<>();
         Node goal = new Node(goal_node, this.passages.section_map[to.y][to.x], to, goal_section,
                 goal_node.g + this.getDistance(goal_node.position, to), 0);
-        plan.addFirst(goal);
+        plan.add(goal);
         Node n = goal_node;
         while (n.parent != null) {
-            plan.addFirst(n);
+            plan.add(n);
             n = n.parent;
         }
         return plan;

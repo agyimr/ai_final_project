@@ -1,5 +1,7 @@
 package sampleclients;
 
+import sampleclients.room_heuristics.Section;
+
 import java.util.Comparator;
 
 import static java.lang.Math.abs;
@@ -8,6 +10,7 @@ public abstract class Heuristic implements Comparator<Node> {
     boolean pushingBox;
     Agent owner;
     int goalX, goalY;
+    Section goalRoom = null;
     public Heuristic(Agent owner) {
         this.owner = owner;
     }
@@ -15,6 +18,13 @@ public abstract class Heuristic implements Comparator<Node> {
         this.pushingBox = pushingBox;
         this.goalX = goalX;
         this.goalY = goalY;
+        goalRoom = null;
+    }
+    public void initializeSearch(boolean pushingBox, Section goalRoom) {
+        this.pushingBox = pushingBox;
+        this.goalX = -1;
+        this.goalY = -1;
+        this.goalRoom = goalRoom;
     }
 	public int h(Node n) {
         if(pushingBox) {
@@ -23,7 +33,7 @@ public abstract class Heuristic implements Comparator<Node> {
                 return ManhattanDistance(n.boxX, n.boxY, goalX, goalY);
             }
             else{
-                return h(n.parent);
+                return h(n.parent) + 1;
             }
         }
         else {
