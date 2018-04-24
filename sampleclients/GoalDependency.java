@@ -6,7 +6,7 @@ import java.util.List;
 
 public class GoalDependency {
     public static MainBoard mainBoard = RandomWalkClient.gameBoard;
-    public static Map<Goal,Set<Goal>> getGoalDependency(Map<Character,Set<Goal>> goalSet){
+    public static Map<Goal,Set<Goal>> getGoalDependency(Map<Character,LinkedList<Goal>> goalSet){
         System.err.println( "GoalDep started" );
         Map<Goal,Set<Goal>> obstructions = new HashMap<Goal,Set<Goal>>();
         System.err.println("-----------Print goalSet--------------");
