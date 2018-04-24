@@ -263,7 +263,6 @@ public class Conflicts {
 		solution.add(new Command());
 		pawnAgent.replacePath(solution);
 
-		pawnAgent.currentState = Agent.possibleStates.inConflict;
 		System.err.println("PlanMerge found solution with pawn agent "+pawnAgent.getID()+":");
 		for(Command c: solution){
 			System.err.println(c.toString());
@@ -272,6 +271,10 @@ public class Conflicts {
 		for(Node c: kingAgent.path){
 			System.err.println(c.action.toString());
 		}
+		kingAgent.nextState = kingAgent.currentState;
+		System.err.println("KingAgentNextState = "+kingAgent.nextState);
+		pawnAgent.nextState = Agent.possibleStates.inConflict;
+		System.err.println("PawnAgentNextState = "+pawnAgent.nextState);
 
 		return true;
 	}
