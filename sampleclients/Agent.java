@@ -15,7 +15,8 @@ public class Agent extends MovingObject {
     public int conflictSteps = 0;
     public boolean hasMoved = false;
     public LinkedList<Node> path;
-    possibleStates currentState = unassigned;
+    public possibleStates nextState = unassigned;
+    public possibleStates currentState = unassigned;
     private possibleStates previousState = currentState;
     enum possibleStates {
         waiting,
@@ -56,26 +57,23 @@ public class Agent extends MovingObject {
         System.err.println(currentState);
          return act();
     }
-    void searchForJob() {
+    private void searchForJob() {
         if(!findClosestBox()) {
             System.err.println("Cant find box: ");
             currentState = possibleStates.jobless;
         }
-        else {
-            currentState = possibleStates.movingTowardsBox;
-        }
         //maybe some other job?
     }
-    void resolveConflict() {
+    private void resolveConflict() {
         if(path!= null && !path.isEmpty()){
             System.err.println("executing path to resolve conflict");
             serverOutput = executePath();
         }
         else {
-            currentState = possibleStates.unassigned;
+            currentState = nextState;
         }
     }
-    void moveToTheBox() {
+    private void moveToTheBox() {
         String result = executePath();
         if(result != null) serverOutput = result;
         else if(nextToBox(attachedBox)) {
@@ -90,7 +88,7 @@ public class Agent extends MovingObject {
             serverOutput = executePath();
         }
     }
-    void moveWithTheBox() {
+    private void moveWithTheBox() {
         if ((attachedBox.unassignedGoal() && !attachedBox.tryToFindAGoal())
                 || attachedBox.SetGoalPosition()) {
             currentState = possibleStates.unassigned;
@@ -116,16 +114,21 @@ public class Agent extends MovingObject {
         Box newBox;
         Box bestBox = null;
         int bestPath = Integer.MAX_VALUE;
+        if(MainBoard.BoxColorGroups.get(getColor()) == null) return false;
         for(MovingObject currentBox : MainBoard.BoxColorGroups.get(getColor()).values()) {
             if(currentBox instanceof Box) {
                 newBox = (Box) currentBox;
+                System.err.println(newBox);
                 if (!newBox.atGoalPosition && (newBox.assignedAgent == null) && !newBox.noGoalOnTheMap) {
                     if(nextToBox(newBox)) { // can find a path to box, or is next to!
                         attachedBox = newBox;
                         attachedBox.assignedAgent = this;
+                        currentState = possibleStates.movingBox;
+                        findPathWithBox();
                         return true;
                     }
                     int currentPath = pathFindingEngine.getPathEstimate(getCoordinates(), newBox.getCoordinates());
+                    System.err.println(currentPath);
                     if(currentPath < bestPath) {
                         bestPath = currentPath;
                         bestBox = newBox;
@@ -137,6 +140,7 @@ public class Agent extends MovingObject {
             if(findPathToBox(bestBox) != null) {
                 attachedBox = bestBox;
                 attachedBox.assignedAgent = this;
+                currentState = possibleStates.movingTowardsBox;
                 return true;
             }
         }
@@ -164,7 +168,7 @@ public class Agent extends MovingObject {
         path = null;
         return null;
     }
-    public void tryToMove(Node nextStep)  throws UnsupportedOperationException {
+    private void tryToMove(Node nextStep)  throws UnsupportedOperationException {
         //return getMoveDirection(x, y);
         System.err.println("action: "+nextStep.action.toString());
         if(nextStep.action.actType == type.Noop) {

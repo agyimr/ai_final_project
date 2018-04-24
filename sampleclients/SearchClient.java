@@ -21,8 +21,8 @@ public class SearchClient {
     private Node beforeFirstImmovableObstacle = null;
 
     private LinkedList<sampleclients.room_heuristics.Node> roomPath;
-    private Section currentRoom;
-    private Section nextRoom;
+    private Section currentRoom = null;
+    private Section nextRoom = null;
     public SearchClient(Agent owner) {
         this.owner = owner;
         strategy = new StrategyBestFirst(new AStar(owner));
@@ -36,6 +36,7 @@ public class SearchClient {
         strategy.heuristic.initializeSearch(pushing, goalRoom);
     }
     public LinkedList<Node> continuePath() {
+        if(currentRoom == null) return null;
         pathBlocked = false;
         beforeFirstImmovableObstacle = null;
         immovableObstacles.clear();
@@ -249,7 +250,7 @@ public class SearchClient {
         }
         else{
             if(pushingBox) {
-                owner.getAttachedBox().noGoalOnTheMap = true;
+                //owner.getAttachedBox().noGoalOnTheMap = true;
             }
             else {
                 //TODO box is inaccessible, handle accordingly
