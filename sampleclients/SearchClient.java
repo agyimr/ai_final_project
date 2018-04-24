@@ -18,6 +18,7 @@ public class SearchClient {
     private int searchRange =searchIncrement * 5;
     public LinkedList<LinkedList<Box>> immovableObstacles = new LinkedList<>();
     public boolean pathBlocked = false;
+    public boolean pathInaccessible = false;
     private Node beforeFirstImmovableObstacle = null;
 
     private LinkedList<sampleclients.room_heuristics.Node> roomPath;
@@ -37,9 +38,6 @@ public class SearchClient {
     }
     public LinkedList<Node> continuePath() {
         if(currentRoom == null) return null;
-        pathBlocked = false;
-        beforeFirstImmovableObstacle = null;
-        immovableObstacles.clear();
         //before scheduling any path, maybe you just advanced to a nwe room?
         if(nextRoom!= null && nextRoom.contains(owner.getCoordinates())) {
             currentRoom = nextRoom;
@@ -59,6 +57,10 @@ public class SearchClient {
         this.pushingBox = pushingBox;
         this.goalX = goalX;
         this.goalY = goalY;
+        pathInaccessible = false;
+        pathBlocked = false;
+        beforeFirstImmovableObstacle = null;
+        immovableObstacles.clear();
         roomPath = RandomWalkClient.roomMaster.getRoomPath(owner.getCoordinates(), new Point(goalX, goalY));
         System.err.println(roomPath);
         if(roomPath == null) return FindPath(pushingBox, goalX, goalY); //TODO impossible to get there
@@ -84,9 +86,7 @@ public class SearchClient {
     }
     private LinkedList<Node> FindPath(boolean pushingBox, int goalX, int goalY) {
         //System.err.format("Search starting for agent at pos: %d, %d, goal: %d, %d.\n", owner.getX(), owner.getY(), goalX, goalY);
-
         initializeSearch(pushingBox, goalX, goalY);
-
         if(pushingBox) {
             strategy.addToFrontier(new Node(owner.getX(), owner.getY(),
                     owner.getAttachedBox().getX(), owner.getAttachedBox().getY(),
@@ -103,7 +103,11 @@ public class SearchClient {
                 System.err.println("Hello find obstacles");
                 System.err.println("Hello find obstacles");
                 System.err.println(immovableObstacles);
+                owner.currentState = Agent.possibleStates.jobless;
                 return FindPath(pushingBox, beforeFirstImmovableObstacle.agentX, beforeFirstImmovableObstacle.agentY);
+            }
+            else if(pathInaccessible)  {
+                return null;
             }
             else {
                 int oldRange = searchRange;
@@ -249,6 +253,7 @@ public class SearchClient {
             examineBoxesOnPath(emptySearchResult, obstacles);
         }
         else{
+            pathInaccessible = true;
             if(pushingBox) {
                 //owner.getAttachedBox().noGoalOnTheMap = true;
             }

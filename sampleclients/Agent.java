@@ -158,7 +158,10 @@ public class Agent extends MovingObject {
             Node nextStep = path.peek();
             if (nextStep != null) {
                 System.err.println("try to move");
-                tryToMove(nextStep);
+                if(!tryToMove(nextStep)) {
+                    path = null;
+                    return "NoOp";
+                }
                 //serverOutput = nextStep.action.toString();
                 return nextStep.action.toString();
 
@@ -167,12 +170,11 @@ public class Agent extends MovingObject {
         path = null;
         return null;
     }
-    private void tryToMove(Node nextStep)  throws UnsupportedOperationException {
+    private boolean tryToMove(Node nextStep)  throws UnsupportedOperationException {
         //return getMoveDirection(x, y);
         System.err.println("action: "+nextStep.action.toString());
         if(nextStep.action.actType == type.Noop) {
             System.err.println("Noop command");
-            return;
         }
         else if(nextStep.action.actType == type.Move) {
             if(!RandomWalkClient.gameBoard.isFree(nextStep.agentX, nextStep.agentY)) throw new UnsupportedOperationException();
@@ -180,27 +182,31 @@ public class Agent extends MovingObject {
         }
         else if(nextStep.action.actType == type.Push){
             if(!RandomWalkClient.gameBoard.isFree(nextStep.boxX, nextStep.boxY)) throw new UnsupportedOperationException();
-            updateMapWithBox(nextStep, RandomWalkClient.nextStepGameBoard);
+            return updateMapWithBox(nextStep, RandomWalkClient.nextStepGameBoard);
         }
         else if(nextStep.action.actType == type.Pull){
             if(!RandomWalkClient.gameBoard.isFree(nextStep.agentX, nextStep.agentY)) throw new UnsupportedOperationException();
-            updateMapWithBox(nextStep, RandomWalkClient.nextStepGameBoard);
+            return updateMapWithBox(nextStep, RandomWalkClient.nextStepGameBoard);
         }
+        return true;
     }
     private void updateMap(Node nextStep, MainBoard board)  throws UnsupportedOperationException {
         board.changePositionOnMap(this, nextStep.agentX, nextStep.agentY);
     }
-    private void updateMapWithBox (Node nextStep, MainBoard board) throws UnsupportedOperationException {
+    private boolean updateMapWithBox (Node nextStep, MainBoard board) throws UnsupportedOperationException {
         boolean pushing = false;
-        Box movedObject = null;
+        BasicObject movedObject = null;
         try {
             if(nextStep.action.actType ==  Command.type.Push) {
                 pushing = true;
                 System.err.println("Agent trying to move to "+nextStep.agentX+","+nextStep.agentY);
                 System.err.println("Agent trying to move box to "+nextStep.boxX+","+nextStep.boxY);
-                movedObject = (Box) board.getElement(nextStep.agentX, nextStep.agentY);
-                board.changePositionOnMap(movedObject, nextStep.boxX, nextStep.boxY);
-                board.changePositionOnMap(this, nextStep.agentX, nextStep.agentY);
+                movedObject = board.getElement(nextStep.agentX, nextStep.agentY);
+                if(movedObject instanceof Box) {
+                    board.changePositionOnMap((Box) movedObject, nextStep.boxX, nextStep.boxY);
+                    board.changePositionOnMap(this, nextStep.agentX, nextStep.agentY);
+                }
+                else return false;
             }
             else if(nextStep.action.actType ==  Command.type.Pull){
                 pushing = false;
@@ -208,17 +214,18 @@ public class Agent extends MovingObject {
                 int bx = nextStep.boxX + Command.dirToXChange(nextStep.action.dir2);
                 int by = nextStep.boxY + Command.dirToYChange(nextStep.action.dir2);
                 System.err.println("Agent trying to move box from "+bx+","+by);
-                movedObject = (Box) board.getElement(bx, by);
-                board.changePositionOnMap(this, nextStep.agentX, nextStep.agentY);
-                System.err.println("agent moved");
-                board.changePositionOnMap(movedObject, nextStep.boxX, nextStep.boxY);
-                System.err.println("box moved");
+                movedObject = board.getElement(bx, by);
+                if(movedObject instanceof Box) {
+                    board.changePositionOnMap(this, nextStep.agentX, nextStep.agentY);
+                    board.changePositionOnMap((Box) movedObject, nextStep.boxX, nextStep.boxY);
+                }
+                else return false;
             }
         }
         catch(UnsupportedOperationException exc) {
             if(pushing) {
                 System.err.println("Pushing");
-                board.revertPositionChange(movedObject, nextStep.boxX, nextStep.boxY);
+                board.revertPositionChange((Box) movedObject, nextStep.boxX, nextStep.boxY);
             }
             else {
                 System.err.println("pulling");
@@ -226,6 +233,7 @@ public class Agent extends MovingObject {
             }
             throw exc;
         }
+        return true;
     }
     private LinkedList<Node> findPathToBox(Box BoxToMoveTo) {
         path = pathFindingEngine.getPath(false, BoxToMoveTo.getX(), BoxToMoveTo.getY());
@@ -301,6 +309,7 @@ public class Agent extends MovingObject {
 
     }
     void finalizeNextMove() {
+        if(path == null || path.isEmpty()) return;
         Node nextStep = path.pollFirst();
         switch(nextStep.action.actType) {
             case Noop:
@@ -311,7 +320,10 @@ public class Agent extends MovingObject {
                 return;
             case Pull:
             case Push:
-                updateMapWithBox(nextStep, RandomWalkClient.gameBoard);
+                if(!updateMapWithBox(nextStep, RandomWalkClient.gameBoard)) {
+                    path = null;
+                    return;
+                }
                 Box movedObject = (Box) RandomWalkClient.gameBoard.getElement(nextStep.boxX, nextStep.boxY);
                 setCoordinates(nextStep.agentX, nextStep.agentY);
                 movedObject.setCoordinates(nextStep.boxX, nextStep.boxY);
@@ -345,49 +357,30 @@ public class Agent extends MovingObject {
     }
 
     public void revertMoveIntention(MainBoard board) {
-        if (path != null) {
+        if (hasMoved && path != null) {
             Node nextStep = path.peek();
             if (nextStep != null) {
-                /*
-                If you decide that Agent should wait, then remember that not only you need to append NoOp to joint action,
-                but also set below field to true, so that gameBoard doesn't try to make that move!
-
-                If you want to handle it differently you need to append something to path of this agent
-
-                waiting=true
-
-                I guess it would be easiest to just store the commands of next action as a field of an agent and then in update loop create a joint action after each agent acts.
-                */
-
-                System.err.println("Agent "+getID()+" has been reverted with action "+nextStep.action.toString());
-
-                if(nextStep.action.actType == type.Noop) {
-                    hasMoved = false;
-                    return;
-                }
-
-
-                if(nextStep.action.actType == type.Move) {
-                    board.revertPositionChange(this, nextStep.agentX, nextStep.agentY);
-                    hasMoved = false;
-                    return;
-                }
-                Box movedObject = (Box) board.getElement(nextStep.boxX, nextStep.boxY);
-
-                if(nextStep.action.actType == type.Push){
-                    board.revertPositionChange(this, nextStep.agentX, nextStep.agentY);
-                    board.revertPositionChange(movedObject, nextStep.boxX, nextStep.boxY);
-                    hasMoved = false;
-                }
-                else if(nextStep.action.actType == type.Pull){
-                    board.revertPositionChange(movedObject, nextStep.boxX, nextStep.boxY);
-                    board.revertPositionChange(this, nextStep.agentX, nextStep.agentY);
-                    hasMoved = false;
+                hasMoved = false;
+                switch(nextStep.action.actType) {
+                    case Noop:
+                        break;
+                    case Move:
+                        board.revertPositionChange(this, nextStep.agentX, nextStep.agentY);
+                        break;
+                    case Push:
+                        Box movedObject = (Box) board.getElement(nextStep.boxX, nextStep.boxY);
+                        board.revertPositionChange(this, nextStep.agentX, nextStep.agentY);
+                        board.revertPositionChange(movedObject, nextStep.boxX, nextStep.boxY);
+                        break;
+                    case Pull:
+                        Box movedObject2 = (Box) board.getElement(nextStep.boxX, nextStep.boxY);
+                        board.revertPositionChange(movedObject2, nextStep.boxX, nextStep.boxY);
+                        board.revertPositionChange(this, nextStep.agentX, nextStep.agentY);
+                        break;
                 }
 
             }
-
-
+            System.err.println("Agent "+getID()+" has been reverted");
         }
     }
     public Box getAttachedBox() {
