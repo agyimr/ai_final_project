@@ -37,17 +37,25 @@ public class SearchClient {
         strategy.heuristic.initializeSearch(pushing, goalRoom);
     }
     public LinkedList<Node> continuePath() {
-        if(currentRoom == null) return null;
-        //before scheduling any path, maybe you just advanced to a nwe room?
-        if(nextRoom!= null && nextRoom.contains(owner.getCoordinates())) {
-            currentRoom = nextRoom;
+        if(pathBlocked) {
+            owner.currentState = Agent.possibleStates.pathBlocked;
+            LinkedList<Node> dummyPath = new LinkedList<>();
+            dummyPath.add(new Node(null, new Command(), owner.getX(), owner.getY()));
+            return dummyPath;
         }
-
-        if(currentRoom.contains(new Point(goalX, goalY))) {
+        if(currentRoom == null) return null;
+        else if(nextRoom == null && getNextRoom()) {
+                return FindRoomPath(pushingBox, nextRoom);
+        }
+        else if(currentRoom.contains(new Point(goalX, goalY))) {
             return FindPath(pushingBox, goalX, goalY);
         }
-        else if(!currentRoom.contains(owner.getCoordinates()) && getNextRoom()) {
-            return FindRoomPath(pushingBox, nextRoom);
+        else if(nextRoom!= null && nextRoom.contains(owner.getCoordinates())) {
+            currentRoom = nextRoom;
+            if(getNextRoom())
+                return FindRoomPath(pushingBox, nextRoom);
+            else
+                return FindPath(pushingBox, goalX, goalY);
         }
         else {
             return FindPath(pushingBox, goalX, goalY);
@@ -62,14 +70,13 @@ public class SearchClient {
         beforeFirstImmovableObstacle = null;
         immovableObstacles.clear();
         roomPath = RandomWalkClient.roomMaster.getRoomPath(owner.getCoordinates(), new Point(goalX, goalY));
-        System.err.println(roomPath);
-        if(roomPath == null) return FindPath(pushingBox, goalX, goalY); //TODO impossible to get there
+        if(roomPath == null) return null; //TODO impossible to get there
         currentRoom = roomPath.poll().through;
         return continuePath();
     }
 
     private boolean getNextRoom() {
-        if(!roomPath.isEmpty()) {
+        if(roomPath!= null && !roomPath.isEmpty()) {
             nextRoom = roomPath.poll().through;
             return true;
         }
@@ -78,12 +85,7 @@ public class SearchClient {
             return false;
         }
     }
-    public int getPathEstimate(Point originCoordinates, Point goalCoordinates) {
-        LinkedList<sampleclients.room_heuristics.Node> result = RandomWalkClient.roomMaster.getRoomPath(originCoordinates, goalCoordinates);
-        if(result == null) return Integer.MAX_VALUE;
-        else return result.poll().g;
 
-    }
     private LinkedList<Node> FindPath(boolean pushingBox, int goalX, int goalY) {
         //System.err.format("Search starting for agent at pos: %d, %d, goal: %d, %d.\n", owner.getX(), owner.getY(), goalX, goalY);
         initializeSearch(pushingBox, goalX, goalY);
@@ -99,11 +101,6 @@ public class SearchClient {
         if(result == null) {
             findObstacles();
             if(pathBlocked) {
-                System.err.println("Hello find obstacles");
-                System.err.println("Hello find obstacles");
-                System.err.println("Hello find obstacles");
-                System.err.println(immovableObstacles);
-                owner.currentState = Agent.possibleStates.jobless;
                 return FindPath(pushingBox, beforeFirstImmovableObstacle.agentX, beforeFirstImmovableObstacle.agentY);
             }
             else if(pathInaccessible)  {
@@ -168,7 +165,7 @@ public class SearchClient {
                 }
             }
             else if(workaroundBegin != null) {
-                initializeSearch(false, goalX, goalY);
+                initializeSearch(false, point.agentX, point.agentY);
                 strategy.addToFrontier(new Node(workaroundBegin.agentX, workaroundBegin.agentY, owner.getColor(), obstacles));
                 LinkedList<Node> partialSearchResult = conductSearch(100* workaroundLength, point.agentX, point.agentY, false);
                 if(partialSearchResult != null) {
@@ -191,8 +188,6 @@ public class SearchClient {
     }
 
     private LinkedList<Node> FindRoomPath(boolean pushingBox, Section goalRoom) {
-        //System.err.format("Search starting for agent at pos: %d, %d, goal: %d, %d.\n", owner.getX(), owner.getY(), goalX, goalY);
-
         initializeSearch(pushingBox, goalRoom);
         if(pushingBox) {
             strategy.addToFrontier(new Node(owner.getX(), owner.getY(),
@@ -202,7 +197,7 @@ public class SearchClient {
         else {
             strategy.addToFrontier(new Node(owner.getX(), owner.getY(), owner.getColor(), MainBoard.allBoxes));
         }
-        LinkedList<Node> result = conductRoomSearch(searchRange,goalRoom);
+        LinkedList<Node> result = conductRoomSearch(searchRange,goalRoom, pushingBox);
         if(result == null) {
             findRoomObstacles(goalRoom);
             if(pathBlocked) {
@@ -219,14 +214,17 @@ public class SearchClient {
         }
         return result;
     }
-    private LinkedList<Node> conductRoomSearch(int maxIterations, Section goalRoom) {//Callable (FUCK YOU JAVA)
+    private LinkedList<Node> conductRoomSearch(int maxIterations, Section goalRoom, boolean pushing) {//Callable (FUCK YOU JAVA)
         int iterations = 0;
         while (true) {
             if (strategy.frontierIsEmpty()) {
                 return null;
             }
             Node leafNode = strategy.getAndRemoveLeaf();
-            if (goalRoom.contains(new Point(leafNode.agentX, leafNode.agentY))) {
+            if (!pushing && goalRoom.contains(new Point(leafNode.agentX, leafNode.agentY))) {
+                return leafNode.extractPlan();
+            }
+            else if (pushing && goalRoom.contains(new Point(leafNode.boxX, leafNode.boxY))) {
                 return leafNode.extractPlan();
             }
             strategy.addToExplored(leafNode);
@@ -243,8 +241,9 @@ public class SearchClient {
     private void findRoomObstacles(Section goalRoom) {
         initializeSearch(false, goalRoom);
         strategy.addToFrontier(new Node(owner.getX(), owner.getY(), owner.getColor(), Collections.emptyList()));
-        LinkedList<Node> emptySearchResult = conductRoomSearch(searchRange,goalRoom);
+        LinkedList<Node> emptySearchResult = conductRoomSearch(searchRange,goalRoom, false);
         handleEmptyPathResults(emptySearchResult);
+
     }
 
     private void handleEmptyPathResults(LinkedList<Node> emptySearchResult) {
