@@ -4,7 +4,6 @@ package sampleclients;
 import sampleclients.room_heuristics.RoomAStar;
 
 import java.io.*;
-import java.lang.management.ManagementFactory;
 import java.util.*;
 
 
@@ -15,10 +14,13 @@ public class RandomWalkClient {
     public static MainBoard gameBoard;
     public static MainBoard nextStepGameBoard;
     public static RoomAStar roomMaster;
+    public static AnticipationPlanning anticipationPlanning;
+
 	public RandomWalkClient() {
         gameBoard = new MainBoard(in); //map read in the constructor
         nextStepGameBoard = new MainBoard(gameBoard);
         roomMaster = new RoomAStar(gameBoard);
+        anticipationPlanning = new AnticipationPlanning(gameBoard);
 /*		Agent someAgent = agents.get(2);
         LinkedList<Node> path = someAgent.findPathToBox(BoxColorGroups.get(someAgent.getColor()).get(2));
         System.err.println(path + " for Agent: " + someAgent);
@@ -75,6 +77,8 @@ public class RandomWalkClient {
             System.err.println("allhasmoved: "+allHasMoved);
         }
 
+        System.err.println("Clock " + anticipationPlanning.getClock());
+
         String jointAction = "[";
         // create joint actions
         for(int i = 0; i < actions.length-1; i++){
@@ -116,6 +120,9 @@ public class RandomWalkClient {
             System.err.println("------------ Update board failed -------");
             throw exc;
         }
+
+        anticipationPlanning.incrementClock();
+
         return true;
     }
 

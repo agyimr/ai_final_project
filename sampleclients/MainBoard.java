@@ -14,6 +14,13 @@ public class MainBoard {
     public static int MainBoardYDomain = 0, MainBoardXDomain = 0;
     private Map<MovingObject, Goal> steppedOnGoals = new HashMap<>();
 
+    public int getHeight() {
+        return gameBoard.size();
+    }
+
+    public int getWidth() {
+        return gameBoard.get(0).size();
+    }
 
     public List<List<BasicObject>> getGameBoard() {
         return gameBoard;
