@@ -9,6 +9,14 @@ public class GoalDependency {
     public static Map<Goal,Set<Goal>> getGoalDependency(Map<Character,Set<Goal>> goalSet){
         System.err.println( "GoalDep started" );
         Map<Goal,Set<Goal>> obstructions = new HashMap<Goal,Set<Goal>>();
+        System.err.println("-----------Print goalSet--------------");
+        for (Character key : goalSet.keySet()) {//Loop through goalSet
+            for (Goal g : goalSet.get(key)) {
+                System.err.println("key: " + key.toString() + "goal: " + g.getID());
+            }
+        }
+        System.err.println("-------------End print--------------");
+
 
         for (char key : goalSet.keySet()) {//Loop through goalSet
             for (Goal g : goalSet.get(key)) {
@@ -17,12 +25,10 @@ public class GoalDependency {
 
                 //add start to frontier
                 frontier.add(new GDNode(new Point(g.getX(), g.getY()), null, new HashSet<Goal>()));
-
                 while (!frontier.isEmpty()) {
                     GDNode cur = frontier.poll();
                     explored.add(cur);
-
-                    if (mainBoard.isGoal((int)cur.getPos().getX(),(int)cur.getPos().getY())) { //TODO: Change isGoal check (cur.isGoal(g, board))
+                    if (mainBoard.isGoal((int)cur.getPos().getX(),(int)cur.getPos().getY())) {
                         obstructions.put(g, cur.getGoalSet());
                     }
 
@@ -52,7 +58,6 @@ public class GoalDependency {
 
     private static LinkedList<GDNode> getNeighbours(GDNode cur, Map<Character,Set<Goal>> goalset){
         LinkedList<GDNode> neighbours = new LinkedList<GDNode>();
-
         for (int i=0; i<4;i++){
             Point pos = null;
             if(i==0){
