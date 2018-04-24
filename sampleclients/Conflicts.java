@@ -95,7 +95,7 @@ public class Conflicts {
 		Command c = agent1.getCommand(0); //Find command for agent in path
 		List<Point> oldPos = new ArrayList<Point>(); //Pos array handles the positions of agent and maybe box
 		oldPos.add(agent1.getCoordinates()); //add agent to pos
-		if (agent1.isBoxAttached()) {
+		if (agent1.currentState == Agent.possibleStates.movingBox) {
 			oldPos.add(agent1.getAttachedBox().getCoordinates());
 			System.err.println( "Agent has box attached" );
 		} //Add box if exists
