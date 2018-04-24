@@ -391,7 +391,7 @@ public class Agent extends MovingObject {
     }
 
     public void wake(){
-        currentState = previousState;
+        currentState = nextState;
         waitingCounter = 0;
     }
 }

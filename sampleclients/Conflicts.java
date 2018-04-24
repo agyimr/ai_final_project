@@ -258,8 +258,6 @@ public class Conflicts {
 		Node n = new Node(null, new Command(), kingAgent.getX(), kingAgent.getY());
 
 		kingAgent.path.add(0,n);
-		kingAgent.wake();
-		pawnAgent.wake();
 		solution.add(new Command());
 		pawnAgent.replacePath(solution);
 
@@ -271,6 +269,8 @@ public class Conflicts {
 		for(Node c: kingAgent.path){
 			System.err.println(c.action.toString());
 		}
+		System.err.println("CurrentKingAgentNextState = "+kingAgent.currentState);
+		System.err.println("CurrentPawnAgentNextState = "+pawnAgent.currentState);
 		kingAgent.nextState = kingAgent.currentState;
 		System.err.println("KingAgentNextState = "+kingAgent.nextState);
 		pawnAgent.nextState = Agent.possibleStates.inConflict;
