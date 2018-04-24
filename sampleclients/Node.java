@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
+import java.util.*;
 import java.util.Random;
 
 import sampleclients.Command.type;
@@ -15,30 +16,44 @@ public class Node {
     public int agentX;
     public int boxY = -1;
     public int boxX = -1;
-
+    public static String ownerColor;
     public char[][] boxes;
     public Node parent;
     public Command action;
     private int g;
     private int _hash = 0;
 
-    public Node(boolean pushingBox, Agent owner) {
-        agentX = owner.getX();
-        agentY = owner.getY();
+    public Node(int ownerX, int ownerY, String color, Collection<Box> consideredBoxes) {
+        ownerColor = color;
+        agentX = ownerX;
+        agentY = ownerY;
         boxes = new char[MainBoard.MainBoardYDomain][MainBoard.MainBoardXDomain];
         this.g = 0;
         for (int y = 0; y < MainBoard.MainBoardYDomain; y ++)
             for (int x = 0; x < MainBoard.MainBoardXDomain; x++)
                 boxes[y][x] = 0;
 
-        for(Box current: MainBoard.boxes) {
+        for(Box current: consideredBoxes) {
             boxes[current.getY()][current.getX()] = current.getID();
         }
-        if(pushingBox) {
-            boxX = owner.getAttachedBox().getX();
-            boxY = owner.getAttachedBox().getY();
-            action = new Command();
+    }
+    public Node(int ownerX, int ownerY, int boxX, int boxY, String color, Collection<Box> consideredBoxes) {
+        ownerColor = color;
+        agentX = ownerX;
+        agentY = ownerY;
+        boxes = new char[MainBoard.MainBoardYDomain][MainBoard.MainBoardXDomain];
+        this.g = 0;
+        for (int y = 0; y < MainBoard.MainBoardYDomain; y ++)
+            for (int x = 0; x < MainBoard.MainBoardXDomain; x++)
+                boxes[y][x] = 0;
+
+        for(Box current: consideredBoxes) {
+            boxes[current.getY()][current.getX()] = current.getID();
         }
+        this.boxX = boxX;
+        this.boxY = boxY;
+        action = new Command();
+
     }
     public Node(Node parent, Command action, int agentX, int agentY) {
         boxes = new char[MainBoard.MainBoardYDomain][MainBoard.MainBoardXDomain];
@@ -77,36 +92,36 @@ public class Node {
         ArrayList<Node> expandedNodes = new ArrayList<Node>(Command.every.length);
         for (Command c : Command.every) {
             // Determine applicability of action
-            int newAgentRow = this.agentY + Command.dirToYChange(c.dir1);
-            int newAgentCol = this.agentX + Command.dirToXChange(c.dir1);
+            int newAgentY = this.agentY + Command.dirToYChange(c.dir1);
+            int newAgentX = this.agentX + Command.dirToXChange(c.dir1);
 
             if (c.actType == type.Move) {
                 // Check if there's a wall or box on the cell to which the agent is moving
-                if (this.cellIsFree(newAgentRow, newAgentCol)) {
-                    Node n = this.childNode(c, newAgentCol, newAgentRow, this.boxX, this.boxY);
+                if (this.cellIsFree(newAgentY, newAgentX)) {
+                    Node n = this.childNode(c, newAgentX, newAgentY, -1, -1);
                     expandedNodes.add(n);
                 }
             } else if (c.actType == type.Push) {
                 // Make sure that there's actually a box to move
-                if (this.boxAt(newAgentRow, newAgentCol)) {
-                    int newBoxRow = newAgentRow + Command.dirToYChange(c.dir2);
-                    int newBoxCol = newAgentCol + Command.dirToXChange(c.dir2);
+                if (this.boxAt(newAgentX, newAgentY) && boxHasTheSameColor(newAgentX, newAgentY)) {
+                    int newBoxRow = newAgentY + Command.dirToYChange(c.dir2);
+                    int newBoxCol = newAgentX + Command.dirToXChange(c.dir2);
                     // .. and that new cell of box is free
                     if (this.cellIsFree(newBoxRow, newBoxCol)) {
-                        Node n = this.childNode(c, newAgentCol, newAgentRow, newBoxCol, newBoxRow);
-                        n.boxes[newBoxRow][newBoxCol] = this.boxes[newAgentRow][newAgentCol];
-                        n.boxes[newAgentRow][newAgentCol] = 0;
+                        Node n = this.childNode(c, newAgentX, newAgentY, newBoxCol, newBoxRow);
+                        n.boxes[newBoxRow][newBoxCol] = this.boxes[newAgentY][newAgentX];
+                        n.boxes[newAgentY][newAgentX] = 0;
                         expandedNodes.add(n);
                     }
                 }
             } else if (c.actType == type.Pull) {
                 // Cell is free where agent is going
-                if (this.cellIsFree(newAgentRow, newAgentCol)) {
+                if (this.cellIsFree(newAgentY, newAgentX)) {
                     int boxY = this.agentY + Command.dirToYChange(c.dir2);
                     int boxX = this.agentX + Command.dirToXChange(c.dir2);
                     // .. and there's a box in "dir2" of the agent
-                    if (this.boxAt(boxY, boxX)) {
-                        Node n = this.childNode(c, newAgentCol, newAgentRow, this.agentX, this.agentY);
+                    if (this.boxAt(boxX, boxY) && boxHasTheSameColor(boxX, boxY)) {
+                        Node n = this.childNode(c, newAgentX, newAgentY, this.agentX, this.agentY);
                         n.boxes[this.agentY][this.agentX] = this.boxes[boxY][boxX];
                         n.boxes[boxY][boxX] = 0;
                         expandedNodes.add(n);
@@ -122,10 +137,11 @@ public class Node {
         return (this.boxes[y][x] == 0) && !RandomWalkClient.gameBoard.isWall(x, y);
     }
 
-    private boolean boxAt(int y, int x) {
+    private boolean boxAt(int x, int y) {
         return this.boxes[y][x] > 0;
     }
 
+    private boolean boxHasTheSameColor(int x, int y) { return MainBoard.boxes.get(boxes[y][x]).getColor().equals((ownerColor));}
     private Node childNode(Command action, int agentX, int agentY, int boxX, int boxY) {
         Node copy = new Node(this, action, agentX, agentY, boxX, boxY);
         for (int y = 0; y < MainBoard.MainBoardYDomain; y++) {
@@ -168,9 +184,7 @@ public class Node {
         Node other = (Node) obj;
         if (this.agentY != other.agentY || this.agentX != other.agentX)
             return false;
-        if (!Arrays.deepEquals(this.boxes, other.boxes))
-            return false;
-        return true;
+        return Arrays.deepEquals(this.boxes, other.boxes);
     }
 
     @Override

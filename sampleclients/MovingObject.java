@@ -7,9 +7,6 @@ import static sampleclients.Command.type;
 
 public class MovingObject extends BasicObject {
     private String color;
-    public LinkedList<Node> path;
-    public LinkedList<Command> commandList;
-    Goal steppedOnGoal = null;
     public MovingObject ( char id, String color, int y, int x , String ObjectType) {
         super(y, x, id,  ObjectType);
         this.color = color;

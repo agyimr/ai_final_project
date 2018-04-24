@@ -2,7 +2,6 @@ package sampleclients;
 
 import sampleclients.room_heuristics.Section;
 
-import java.awt.*;
 import java.util.Comparator;
 
 import static java.lang.Math.abs;
@@ -11,52 +10,34 @@ public abstract class Heuristic implements Comparator<Node> {
     boolean pushingBox;
     Agent owner;
     int goalX, goalY;
-    Section nextRoom = null;
-
-    public Heuristic() {
-    }
-
-    public void initializeSearch(Agent owner, boolean pushingBox, int goalX, int goalY) {
-        this.pushingBox = pushingBox;
+    Section goalRoom = null;
+    public Heuristic(Agent owner) {
         this.owner = owner;
+    }
+    public void initializeSearch(boolean pushingBox, int goalX, int goalY) {
+        this.pushingBox = pushingBox;
         this.goalX = goalX;
         this.goalY = goalY;
-        this.nextRoom = null;
+        goalRoom = null;
     }
-
-	public void initializeSearch(Agent owner, boolean pushingBox, Section to) {
-		this.pushingBox = pushingBox;
-		this.owner = owner;
-		this.goalX = -1;
-		this.goalY = -1;
-		this.nextRoom = to;
-	}
-
+    public void initializeSearch(boolean pushingBox, Section goalRoom) {
+        this.pushingBox = pushingBox;
+        this.goalX = -1;
+        this.goalY = -1;
+        this.goalRoom = goalRoom;
+    }
 	public int h(Node n) {
         if(pushingBox) {
-            //RandomWalkClient.printBoard(n.boxes);
+            if(n.boxX == -1) return h(n.parent);
             if(n.boxes[n.boxY][n.boxX] == owner.getAttachedBox().getID()) {
-            	if (nextRoom != null) {
-            		return nextRoom.getDistanceFromPoint(new Point(n.agentX, n.agentY));
-				}
-                //System.err.println(n.agentX + " " + n.boxX + " " + n.agentY + " "+ n.boxY);
                 return ManhattanDistance(n.boxX, n.boxY, goalX, goalY);
             }
             else{
-                return h(n.parent);
+                return h(n.parent) + 1;
             }
         }
         else {
-            if (n.action.actType == Command.type.Move) {
-            	if (nextRoom != null) {
-					return nextRoom.getDistanceFromPoint(new Point(n.agentX, n.agentY));
-				}
-            	return ManhattanDistance(n.agentX, n.agentY,goalX,goalY);
-			} else {
-				if (nextRoom != null) {
-					return nextRoom.getDistanceFromPoint(new Point(n.agentX, n.agentY)) * 2;
-				}
-			}
+            if (n.action.actType == Command.type.Move ) return ManhattanDistance(n.agentX, n.agentY,goalX,goalY);
             return  2 * ManhattanDistance(n.agentX, n.agentY,goalX,goalY);
         }
 	}
@@ -72,9 +53,9 @@ public abstract class Heuristic implements Comparator<Node> {
 	}
 
 	public static class AStar extends Heuristic {
-		public AStar() {
-
-		}
+		public AStar(Agent owner) {
+		    super(owner);
+        }
 
 		@Override
 		public int f(Node n) {
@@ -90,8 +71,9 @@ public abstract class Heuristic implements Comparator<Node> {
 	public static class WeightedAStar extends Heuristic {
 		private int W;
 
-		public WeightedAStar( int W) {
-			this.W = W;
+		public WeightedAStar( int W, Agent owner) {
+            super(owner);
+            this.W = W;
 		}
 
 		@Override
@@ -106,8 +88,8 @@ public abstract class Heuristic implements Comparator<Node> {
 	}
 
 	public static class Greedy extends Heuristic {
-		public Greedy() {
-			super();
+		public Greedy(Agent owner) {
+			super(owner);
 		}
 
 		@Override

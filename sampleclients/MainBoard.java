@@ -8,10 +8,11 @@ public class MainBoard {
     private List< List<BasicObject>> gameBoard;
     public static Map<String, Map<Character, Box>> BoxColorGroups = new HashMap<>();
     public static List< Agent > agents = new ArrayList<>();
-    public static List< Box > boxes = new ArrayList<>();
+    public static Map<Character, Box > boxes = new HashMap<>();
     public static Map<String, Map<Character, Agent>> AgentColorGroups = new HashMap<>();
-    public static Map<Character, Goal> goals = new HashMap<Character, Goal>();
+    public static Map<Character, Goal> goals = new HashMap<>();
     public static int MainBoardYDomain = 0, MainBoardXDomain = 0;
+    private Map<MovingObject, Goal> steppedOnGoals = new HashMap<>();
 
 
     public List<List<BasicObject>> getGameBoard() {
@@ -79,7 +80,7 @@ public class MainBoard {
                     String currentColor = colors.get( id );
                     if(currentColor == null) currentColor = "blue";
                     Box newBox = new Box( id, currentColor, MainBoardYDomain, currentX);
-                    boxes.add( newBox );
+                    boxes.put(id, newBox );
                     objects.add(i, newBox);
                     Map<Character, Box> result = BoxColorGroups.get(currentColor);
                     if (result == null) {
@@ -118,14 +119,14 @@ public class MainBoard {
     public static boolean isBox (char id) { return ( 'A' <= id && id <= 'Z' );}
     public static boolean isGoal (char id) { return ( 'a' <= id && id <= 'z' ); }
     public static boolean isWall (char id) {return (id == '+');}
-    
+
     //returns object under given coordinates
     BasicObject getElement(int x, int y) {
         if(yOutOfBounds(y) || xOutOfBounds(x)) throw new UnsupportedOperationException();
         return gameBoard.get(y).get(x);
     }
-    //used only if you're reverting changes inside exception handler
-    void setElement(int x, int y, BasicObject obj) {
+    //used only internally, never expose this
+    private void setElement(int x, int y, BasicObject obj) {
         gameBoard.get(y).set(x, obj);
     }
     public boolean isAgent (int x, int y) {
@@ -145,30 +146,37 @@ public class MainBoard {
         return (isWall(getElement(x, y).getID()));
     }
     public boolean isFree (int x, int y) {
-        return getElement(x, y) == null;
+        return getElement(x, y) == null || isGoal(x,y);
     }
 
-    //These are used to change position!
+    //Function assumes that passed object is at its' getX and getY location on the map
     public void changePositionOnMap(MovingObject obj, int x, int y) {
-        if(!spaceEmpty(x,y)) throw new UnsupportedOperationException();
+        if(!spaceEmpty(x,y) || obj == null) throw new UnsupportedOperationException();
         manageMovingThroughGoal(obj, x, y);
         if(getElement(obj.getX(), obj.getY()) == obj) {
             setElement(obj.getX(), obj.getY(), null);
         }
         setElement(x, y, obj);
     }
-
+    public void revertPositionChange(MovingObject obj, int xFrom, int yFrom) {
+        if(!spaceEmpty(obj.getX(),obj.getY())) throw new UnsupportedOperationException();
+        manageMovingThroughGoal(obj, obj.getX(), obj.getY());
+        if(getElement(xFrom, yFrom) == obj) {
+            setElement(xFrom, yFrom, null);
+        }
+        setElement(obj.getX(), obj.getY(), obj);
+    }
     private boolean yOutOfBounds(int y) { return (y >= (MainBoardYDomain) || y < 0);}
     private boolean xOutOfBounds(int x) {return (x >= (MainBoardXDomain) || x < 0);}
     private boolean spaceEmpty(int x, int y) {return isGoal(x, y) || getElement(x, y) == null; }
     private void manageMovingThroughGoal(MovingObject obj, int x, int y) {
-        if(obj.steppedOnGoal != null) {
-            setElement(obj.steppedOnGoal.getX(), obj.steppedOnGoal.getY(), obj.steppedOnGoal);
-            obj.steppedOnGoal = null;
+        Goal steppedOnGoal = steppedOnGoals.get(obj);
+        if(steppedOnGoal  != null) {
+            setElement(steppedOnGoal.getX(), steppedOnGoal.getY(), steppedOnGoal);
+            steppedOnGoals.remove(obj);
         }
         if(isGoal(x,y)) {
-            obj.steppedOnGoal = (Goal) getElement(x,y);
-
+            steppedOnGoals.put(obj, (Goal) getElement(x,y));
         }
     }
 
@@ -187,10 +195,5 @@ public class MainBoard {
             table.append(System.getProperty("line.separator"));
         }
         return table.toString();
-    }
-    void printBoard(char board[][]) {
-        System.err.println();
-        System.err.println(this);
-        System.err.println();
     }
 }

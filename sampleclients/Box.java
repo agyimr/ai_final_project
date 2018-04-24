@@ -17,4 +17,25 @@ public class Box extends MovingObject {
         assignedGoal = null;
         assignedAgent = null;
     }
+    boolean unassignedGoal() {
+        return assignedGoal == null;
+    }
+    boolean tryToFindAGoal() {
+        assignedGoal = MainBoard.goals.get(Character.toLowerCase(getID()));
+        if (assignedGoal == null) {
+            noGoalOnTheMap = true;
+            assignedAgent = null;
+            return false;
+        }
+        return true;
+    }
+    public boolean SetGoalPosition() {
+        if (assignedGoal == null) return false;
+        if( Integer.compare(getX(), assignedGoal.getX()) == 0
+                && Integer.compare(getY(), assignedGoal.getY()) == 0 ) {
+            assignedGoal.boxAtGoalPosition = this;
+            atGoalPosition = true;
+        }
+        return atGoalPosition;
+    }
 }

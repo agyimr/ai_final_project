@@ -8,8 +8,12 @@ import sampleclients.Command.type;
 
 public class ConflictBFS {
 	private static MainBoard map;
-	public static List<Command> doBFS(List<Point> locked, List<Point> pos){
+	private static MainBoard nextMap;
+	private static boolean considerAgents = true;
+	public static List<Command> doBFS(List<Point> locked, List<Point> pos, boolean ca){
+		considerAgents = ca;
 		map = RandomWalkClient.gameBoard;
+		nextMap = RandomWalkClient.nextStepGameBoard;
 		List<ConflictNode> frontier = new ArrayList<ConflictNode>();
 		List<ConflictNode> explored = new ArrayList<ConflictNode>();
 		List<Command> path = new ArrayList<Command>();
@@ -24,12 +28,13 @@ public class ConflictBFS {
 			frontier.remove(0);
 			
 			
-//			System.out.println("Current ConflictNode: "+cur.toString());
-//			System.out.println();
+			System.err.println("Current ConflictNode: "+cur.toString());
+			System.err.println();
 			
 			//goal check - not in any locked points
 			if(!containsList(locked,cur.getPoints())){
 				path = generateGoalPath(cur);
+				System.err.println("final node:"+cur.toString());
 				break;
 			}
 			
@@ -41,12 +46,12 @@ public class ConflictBFS {
 			explored.add(cur);
 			
 			
-//			System.out.println();
-//			System.out.println("Explroed:");
-//			for(ConflictNode n : explored){
-//				System.out.println(n.toString());
-//			}
-//			System.out.println();
+			System.err.println();
+			System.err.println("Explroed:");
+			for(ConflictNode n : explored){
+				System.err.println(n.toString());
+			}
+			System.err.println();
 			
 			
 			
@@ -57,11 +62,11 @@ public class ConflictBFS {
 				}
 			}
 			
-//			System.out.println("Frontier");
-//			for(ConflictNode n : frontier){
-//				System.out.println(n.toString());
-//			}
-//			System.out.println();
+			System.err.println("Frontier");
+			for(ConflictNode n : frontier){
+				System.err.println(n.toString());
+			}
+			System.err.println();
 			
 		}
 	
@@ -72,11 +77,15 @@ public class ConflictBFS {
 		List<ConflictNode> n = new ArrayList<ConflictNode>();
 		dir boxdir = null;
 		Command[] allCommands = Command.every;
-		
+
 		//If box attached - get its direction from the agent
 		if(startPos.size() == 2){
+			System.err.println("Has box");
 			boxdir = getBoxDir(cur);
+		}else{
+			System.err.println("no box");
 		}
+
 		
 		// for all commands
 		for(int i = 0; i<allCommands.length;i++) {
@@ -112,23 +121,29 @@ public class ConflictBFS {
 				nodeCand.setParent(cur);
 				nodeCand.setCommand(allCommands[i]);
 				n.add(nodeCand);
+				System.err.println("Node candidate has action:"+nodeCand.getCommand().toString());
 			}
+
 		}
 		return n;
 	}
 	private static boolean isAllowed(List<Point> cand,List<Point> startPos){
+		System.err.println("Current ConflictNode: "+cand.toString());
 		//go through box and agent position. Check if they are free in the map
 		for(int i = 0; i < cand.size(); i++){
 			//disregard the starting position in the map
 			if(!startPos.contains(cand.get(i))){
-				if(map.isFree(cand.get(i).y,cand.get(i).x)){
-//					System.out.println("isAllowed: false");
-					return false;
+				System.err.println("cand point:"+cand.get(i).toString());
+				int x = cand.get(i).x;
+				int y = cand.get(i).y;
+				if(map.isWall(x,y) || map.isBox(x,y) || (map.isAgent(x,y) && considerAgents) || nextMap.isWall(x,y) || nextMap.isBox(x,y) || (nextMap.isAgent(x,y) && considerAgents)){
+						System.err.println("isAllowed: false");
+						return false;
 				}
 			}
 			
 		}
-//		System.out.println("isAllowed: true");
+		System.err.println("isAllowed: true");
 		return true;
 	}
 	private static List<Command> generateGoalPath(ConflictNode goal){
@@ -157,12 +172,14 @@ public class ConflictBFS {
 		dir boxdir = null;
 		Point agent =  cur.getPoints().get(0);
 		Point box = cur.getPoints().get(1);
-		
+		System.err.println("BOX"+box.toString());
+		System.err.println("agent "+agent.toString());
+
 		if(new Command(dir.N).getNext(agent).equals(box)){
 			boxdir = dir.N;
 		}
 		if(new Command(dir.S).getNext(agent).equals(box)){
-			boxdir = dir.S;			
+			boxdir = dir.S;
 		}
 		if(new Command(dir.W).getNext(agent).equals(box)){
 			boxdir = dir.W;
@@ -170,7 +187,7 @@ public class ConflictBFS {
 		if(new Command(dir.E).getNext(agent).equals(box)){
 			boxdir = dir.E;
 		}
-//		System.out.println("Boxdir: "+boxdir);
+		System.err.println("Boxdir: "+boxdir);
 		return boxdir;
 	}
 }

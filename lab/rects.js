@@ -128,7 +128,7 @@ for(var j = 0; j < level.length; j++) {
 
 // Display the rects
 
-console.log("")
+console.log("");
 
 var outputDisplay = "";
 
