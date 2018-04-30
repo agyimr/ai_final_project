@@ -38,7 +38,7 @@ public class SearchClient {
     }
     public LinkedList<Node> continuePath() {
         if(pathBlocked) {
-            owner.currentState = Agent.possibleStates.pathBlocked;
+            owner.waitForObstacleToBeRemoved();
             LinkedList<Node> dummyPath = new LinkedList<>();
             dummyPath.add(new Node(null, new Command(), owner.getX(), owner.getY()));
             return dummyPath;

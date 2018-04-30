@@ -24,7 +24,7 @@ public class Conflicts {
 			throw new UnsupportedOperationException();
 		}
 		System.err.println("Conflict partner:" + conflictPartner.toString() );
-		if(conflictPartner.currentState == possibleStates.movingBox){
+		if(conflictPartner.isMovingBox()){
             System.err.println("With box "+conflictPartner.getAttachedBox().toString());
         }
 
@@ -70,7 +70,7 @@ public class Conflicts {
 	private static Agent getConflictPartners(Agent agent1) {
 		List<Point> agentPos = new ArrayList<Point>();
 		agentPos.add(agent1.getCoordinates());
-		if (agent1.currentState == Agent.possibleStates.movingBox) {
+		if (agent1.isMovingBox()) {
 			agentPos.add(agent1.getAttachedBox().getCoordinates());
 		}
 		List<Point> nextAgentPos = agent1.path.peek().action.getNext(agentPos);
@@ -134,23 +134,16 @@ public class Conflicts {
 			}
 		}
 
-		LinkedList<Command> newC = new LinkedList<Command>();
 
-		if(kingAgent.isBoxAttached()){
-			newC.add(new Command());
-		}
-		newC.add(new Command());
-		newC.add(new Command());
-
-		pawnAgent.replacePath(newC);
+		pawnAgent.handleConflict(3);
 		return true;
 	}
 
 	
 	//For use in deciding who goes first in a simple conflict
 	private static Agent getKing(Agent cand1, Agent cand2){
-        int cand1Prio = cand1.currentState.ordinal();
-        int cand2Prio = cand2.currentState.ordinal();
+        int cand1Prio = cand1.getPriority();
+        int cand2Prio = cand2.getPriority();
 
         if(cand1Prio == cand2Prio){
             cand1Prio += cand1.getID();
@@ -177,7 +170,7 @@ public class Conflicts {
 
         List<Point> pawnAgentPos = new LinkedList<Point>();
         pawnAgentPos.add(new Point(pawnAgent.getX(), pawnAgent.getY()));
-        if (pawnAgent.currentState == Agent.possibleStates.movingBox) {
+        if (pawnAgent.isMovingBox()) {
             pawnAgentPos.add(pawnAgent.getAttachedBox().getCoordinates());
         }
 
@@ -226,9 +219,9 @@ public class Conflicts {
         Node oldn = kingAgent.path.peek();
         Node n = new Node(null, new Command(), kingAgent.getX(), kingAgent.getY());
 
-        kingAgent.path.add(0, n);
+        kingAgent.handleConflict(1);
         solution.add(new Command());
-        pawnAgent.replacePath(solution);
+        pawnAgent.handleConflict(solution);
 
         System.err.println("PlanMerge found solution with pawn agent " + pawnAgent.getID() + ":");
         for (Command c : solution) {
@@ -238,12 +231,8 @@ public class Conflicts {
         for (Node c : kingAgent.path) {
             System.err.println(c.action.toString());
         }
-        System.err.println("CurrentKingAgentNextState = " + kingAgent.currentState);
-        System.err.println("CurrentPawnAgentNextState = " + pawnAgent.currentState);
-        kingAgent.nextState = kingAgent.currentState;
-        System.err.println("KingAgentNextState = " + kingAgent.nextState);
-        pawnAgent.nextState = Agent.possibleStates.inConflict;
-        System.err.println("PawnAgentNextState = " + pawnAgent.nextState);
+        System.err.println("CurrentKingAgentNextState = " + kingAgent.getCurrentState());
+        System.err.println("CurrentPawnAgentNextState = " + pawnAgent.getCurrentState());
 
         return true;
     }

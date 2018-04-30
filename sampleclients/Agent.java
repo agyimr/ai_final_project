@@ -7,7 +7,6 @@ import static sampleclients.Agent.possibleStates.*;
 import static sampleclients.Command.type;
 
 public class Agent extends MovingObject {
-    private static final int WAITING_MAX = 3;
     private boolean alreadyWaited = false;
     private Box attachedBox = null;
     private SearchClient pathFindingEngine;
@@ -15,8 +14,7 @@ public class Agent extends MovingObject {
     public int conflictSteps = 0;
     public boolean hasMoved = false;
     public LinkedList<Node> path;
-    public possibleStates nextState = unassigned;
-    public possibleStates currentState = unassigned;
+    private possibleStates currentState = unassigned;
     private possibleStates previousState = currentState;
     enum possibleStates {
         jobless,
@@ -74,7 +72,7 @@ public class Agent extends MovingObject {
             serverOutput = executePath();
         }
         else {
-            currentState = nextState;
+            currentState = previousState;
         }
     }
     private void moveToTheBox() {
@@ -149,12 +147,23 @@ public class Agent extends MovingObject {
         }
         return false;
     }
+    private void enterWaitingState() {
+        previousState = currentState;
+        currentState = possibleStates.waiting;
+    }
+    private void waitingProcedure() {
+        waitForSomeMiracle();
+    }
+    private void waitForSomeMiracle() {
+        if(waitingCounter == 0) {
+            currentState = previousState;
+        }
+        else {
+            serverOutput = "NoOp";
+        }
+    }
     private boolean nextToBox(Box current) {
         return nextTo(getX(), getY(), current.getX(), current.getY());
-    }
-    public static boolean nextTo(int firstX, int firstY, int secondX, int secondY) {
-        return (Math.abs(firstX - secondX) == 1) && (Math.abs(firstY - secondY) == 0)
-                || (Math.abs(firstX - secondX) == 0) && (Math.abs(firstY - secondY) == 1);
     }
     private String executePath( ) {
         if(path == null || path.isEmpty()) path = pathFindingEngine.continuePath();
@@ -249,8 +258,7 @@ public class Agent extends MovingObject {
         path = pathFindingEngine.getPath(true, attachedBox.assignedGoal.getX(), attachedBox.assignedGoal.getY());
         return path;
     }
-
-    Command getCommand(int i) {
+    public Command getCommand(int i) {
         try{
             return path.get(i).action;
         }
@@ -258,13 +266,17 @@ public class Agent extends MovingObject {
             return null;
         }
     }
-    public boolean replacePath(List<Command> commands) {
+
+    public static boolean nextTo(int firstX, int firstY, int secondX, int secondY) {
+        return (Math.abs(firstX - secondX) == 1) && (Math.abs(firstY - secondY) == 0)
+                || (Math.abs(firstX - secondX) == 0) && (Math.abs(firstY - secondY) == 1);
+    }
+    public void replacePath(List<Command> commands) {
         if(path != null){
             path.clear();
         }else{
-            path = new LinkedList<Node>();
+            path = new LinkedList<>();
         }
-
         int agentY = getY();
         int agentX = getX();
         for(int i = 0; i< commands.size(); i++) {
@@ -291,17 +303,26 @@ public class Agent extends MovingObject {
 
         }
         conflictSteps = commands.size();
-        return true;
     }
-
+    public void handleConflict(List<Command> commands) {
+        replacePath(commands);
+    }
+    public void handleConflict(int waitingTime) {
+        waitingCounter = waitingTime;
+        previousState = currentState;
+        currentState = waiting;
+    }
+    public boolean isMovingBox() { return currentState == movingBox;}
+    public String getCurrentState() { return "" + currentState;}
     public boolean isBoxAttached() {
     	return !(attachedBox == null);
     }
-    void updatePosition() throws UnsupportedOperationException {
+    public int getPriority() {return currentState.ordinal();}
+    public void updatePosition() throws UnsupportedOperationException {
 
         switch (currentState) {
             case waiting:
-                waitingCounter++;
+                waitingCounter--;
                 waitingCounter = 0;
             case unassigned:
             case jobless:
@@ -314,7 +335,7 @@ public class Agent extends MovingObject {
         }
 
     }
-    void finalizeNextMove() {
+    public void finalizeNextMove() {
         if(path == null || path.isEmpty()) return;
         Node nextStep = path.pollFirst();
         switch(nextStep.action.actType) {
@@ -335,33 +356,10 @@ public class Agent extends MovingObject {
                 movedObject.setCoordinates(nextStep.boxX, nextStep.boxY);
         }
     }
-    private void enterWaitingState() {
+    public void waitForObstacleToBeRemoved() {
         previousState = currentState;
-        currentState = possibleStates.waiting;
+        currentState = pathBlocked;
     }
-    private void waitingProcedure() {
-        if(!alreadyWaited) {
-            waitForSomeMiracle();
-        }
-        else {
-            alreadyWaited = false;
-            currentState = possibleStates.unassigned;
-        }
-    }
-    private void waitForSomeMiracle() {
-        if(waitingCounter >= WAITING_MAX) {
-            waitingCounter = 0;
-            if(attachedBox != null) {
-                dropTheBox();
-            }
-            alreadyWaited = true;
-            currentState = previousState;
-        }
-        else {
-            serverOutput = "NoOp";
-        }
-    }
-
     public void revertMoveIntention(MainBoard board) {
         if (hasMoved && path != null) {
             Node nextStep = path.peek();
@@ -393,8 +391,4 @@ public class Agent extends MovingObject {
         return attachedBox;
     }
 
-    public void wake(){
-        currentState = nextState;
-        waitingCounter = 0;
-    }
 }
