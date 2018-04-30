@@ -18,6 +18,7 @@ public class RandomWalkClient {
 	public RandomWalkClient() {
         gameBoard = new MainBoard(in); //map read in the constructor
         nextStepGameBoard = new MainBoard(gameBoard);
+        GoalDependency.getGoalDependency();
         roomMaster = new RoomAStar(gameBoard);
 /*		Agent someAgent = agents.get(2);
         LinkedList<Node> path = someAgent.findPathToBox(BoxColorGroups.get(someAgent.getColor()).get(2));
