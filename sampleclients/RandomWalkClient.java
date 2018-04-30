@@ -18,9 +18,9 @@ public class RandomWalkClient {
 	public RandomWalkClient() {
         gameBoard = new MainBoard(in); //map read in the constructor
         nextStepGameBoard = new MainBoard(gameBoard);
-        MainBoard.Dep = GoalDependency.getGoalDependency();
-        GoalDependency.print();
-        System.err.println("Goaldep ended");
+        GoalDependency.getGoalDependency();
+        //GoalDependency.print();
+        //System.err.println("Goaldep ended");
 
         roomMaster = new RoomAStar(gameBoard);
 /*		Agent someAgent = agents.get(2);
