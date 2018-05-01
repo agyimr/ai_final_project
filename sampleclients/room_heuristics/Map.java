@@ -28,7 +28,6 @@ public class Map {
                     this.character_map[y][x] = ' ';
                 }
             }
-            System.err.println();
         }
     }
 

@@ -75,7 +75,7 @@ public class Agent extends MovingObject {
         return serverOutput;
     }
     private void checkPath() {
-        pathFindingEngine.pathBlocked = false;
+        //pathFindingEngine.pathBlocked = false;
         if(executePath() == null) {
             waitingProcedure(3);
         }
@@ -201,8 +201,9 @@ public class Agent extends MovingObject {
             if (nextStep != null) {
                 System.err.println("try to move");
                 if(!tryToMove(nextStep)) {
-                    path = null;
-                    return "NoOp";
+                    //path = null;
+                    //return "NoOp";
+                    System.err.println(path);
                 }
                 //serverOutput = nextStep.action.toString();
                 return nextStep.action.toString();
