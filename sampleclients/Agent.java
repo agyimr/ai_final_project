@@ -38,6 +38,7 @@ public class Agent extends MovingObject {
             currentState = unassigned;
             pendingHelp = false;
         }
+        System.err.println("Starting CurrentState: "+currentState);
         switch (currentState) {
             case waiting:
                 waitForSomeMiracle();
@@ -46,7 +47,8 @@ public class Agent extends MovingObject {
                 searchForJob();
                 break;
             case jobless:
-                serverOutput = "NoOp";
+                previousState=unassigned;
+                waitingProcedure(5);
                 break;
             case inConflict:
                 resolveConflict();
@@ -61,8 +63,11 @@ public class Agent extends MovingObject {
                 checkPath();
                 break;
         }
-        if(serverOutput != null) return serverOutput;
-        System.err.println(currentState);
+        if(serverOutput != null) {
+            System.err.println("Ending current state: "+currentState);
+            System.err.println("ServerOutput: "+serverOutput);
+            return serverOutput;
+        }
         return act(); // Temporary, just to cause stackOverflow instead of infinite loop, for better debugging
     }
     public String collectServerOutput() {

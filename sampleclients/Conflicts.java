@@ -13,6 +13,14 @@ public class Conflicts {
 		mainBoard = RandomWalkClient.gameBoard;
 		Agent conflictPartner = getConflictPartners(agent1);
 
+        if(conflictPartner == null){
+            System.err.println("conflict detected but no conflict partner found");
+            System.err.println("Replanning");
+            agent1.path.clear();
+            agent1.handleConflict(2);
+            agent1.act();
+            return;
+        }
 
 		if(conflictPartner.getID() == agent1.getID()){
 			System.err.println("Conflict detected with itself.");
@@ -22,13 +30,7 @@ public class Conflicts {
             return;
 		}
 
-		if(conflictPartner == null){
-			System.err.println("conflict detected but no conflict partner found");
-            System.err.println("Replanning");
-			agent1.path.clear();
-			agent1.act();
-			return;
-		}
+
 		System.err.println("Conflict partner:" + conflictPartner.toString() );
 		if(conflictPartner.isMovingBox()){
             System.err.println("With box "+conflictPartner.getAttachedBox().toString());
@@ -65,10 +67,26 @@ public class Conflicts {
 
         if(noopFix || planMerge){
             System.err.println("Agent act "+agent1.getID());
-            agent1.act();
+            try {
+                agent1.act();
+            }catch (UnsupportedOperationException exc){
+                System.err.println("Move cant be applied after conflict");
+                System.err.println("waiting and Replanning instead");
+                agent1.path.clear();
+                agent1.handleConflict(2);
+                agent1.act();
+            }
             if(conflictPartner.getID() == pawnAgent.getID() && pawnMove){
                 System.err.println("Agent act "+conflictPartner.getID());
-                conflictPartner.act();
+                try{
+                    conflictPartner.act();
+                }catch (UnsupportedOperationException exc){
+                    System.err.println("Move cant be applied after conflict");
+                    System.err.println("waiting and Replanning instead");
+                    conflictPartner.path.clear();
+                    conflictPartner.handleConflict(2);
+                    conflictPartner.act();
+                }
             }
             return;
         }else{

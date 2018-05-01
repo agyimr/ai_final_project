@@ -27,14 +27,9 @@ public class ConflictBFS {
 			ConflictNode cur = frontier.get(0);
 			frontier.remove(0);
 			
-			
-			System.err.println("Current ConflictNode: "+cur.toString());
-			System.err.println();
-			
 			//goal check - not in any locked points
 			if(!containsList(locked,cur.getPoints())){
 				path = generateGoalPath(cur);
-				System.err.println("final node:"+cur.toString());
 				break;
 			}
 			
@@ -46,14 +41,6 @@ public class ConflictBFS {
 			explored.add(cur);
 			
 			
-			System.err.println();
-			System.err.println("Explroed:");
-			for(ConflictNode n : explored){
-				System.err.println(n.toString());
-			}
-			System.err.println();
-			
-			
 			
 			for(ConflictNode n : neighbours){
 				//if point is not visited
@@ -61,13 +48,7 @@ public class ConflictBFS {
 					frontier.add(n);
 				}
 			}
-			
-			System.err.println("Frontier");
-			for(ConflictNode n : frontier){
-				System.err.println(n.toString());
-			}
-			System.err.println();
-			
+
 		}
 	
 		return path;
@@ -80,10 +61,8 @@ public class ConflictBFS {
 
 		//If box attached - get its direction from the agent
 		if(startPos.size() == 2){
-			System.err.println("Has box");
 			boxdir = getBoxDir(cur);
 		}else{
-			System.err.println("no box");
 		}
 
 		
@@ -121,29 +100,24 @@ public class ConflictBFS {
 				nodeCand.setParent(cur);
 				nodeCand.setCommand(allCommands[i]);
 				n.add(nodeCand);
-				System.err.println("Node candidate has action:"+nodeCand.getCommand().toString());
 			}
 
 		}
 		return n;
 	}
 	private static boolean isAllowed(List<Point> cand,List<Point> startPos){
-		System.err.println("Current ConflictNode: "+cand.toString());
 		//go through box and agent position. Check if they are free in the map
 		for(int i = 0; i < cand.size(); i++){
 			//disregard the starting position in the map
 			if(!startPos.contains(cand.get(i))){
-				System.err.println("cand point:"+cand.get(i).toString());
 				int x = cand.get(i).x;
 				int y = cand.get(i).y;
 				if(map.isWall(x,y) || map.isBox(x,y) || (map.isAgent(x,y) && considerAgents) || nextMap.isWall(x,y) || nextMap.isBox(x,y) || (nextMap.isAgent(x,y) && considerAgents)){
-						System.err.println("isAllowed: false");
 						return false;
 				}
 			}
 			
 		}
-		System.err.println("isAllowed: true");
 		return true;
 	}
 	private static List<Command> generateGoalPath(ConflictNode goal){
@@ -172,8 +146,6 @@ public class ConflictBFS {
 		dir boxdir = null;
 		Point agent =  cur.getPoints().get(0);
 		Point box = cur.getPoints().get(1);
-		System.err.println("BOX"+box.toString());
-		System.err.println("agent "+agent.toString());
 
 		if(new Command(dir.N).getNext(agent).equals(box)){
 			boxdir = dir.N;
@@ -187,7 +159,6 @@ public class ConflictBFS {
 		if(new Command(dir.E).getNext(agent).equals(box)){
 			boxdir = dir.E;
 		}
-		System.err.println("Boxdir: "+boxdir);
 		return boxdir;
 	}
 }
