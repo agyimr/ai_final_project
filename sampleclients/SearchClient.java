@@ -194,7 +194,6 @@ public class SearchClient {
         }
 
     }
-
     private LinkedList<Node> FindRoomPath(boolean pushingBox, Section goalRoom) {
         initializeSearch(pushingBox, goalRoom);
         if(pushingBox) {
