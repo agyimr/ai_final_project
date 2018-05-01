@@ -100,18 +100,21 @@ public class SearchClient {
             strategy.addToFrontier(new Node(owner.getX(), owner.getY(), owner.getColor(), MainBoard.allBoxes));
         }
         LinkedList<Node> result = conductSearch(searchRange, goalX, goalY, pushingBox);
+        System.err.println("Goal coordinates: " + goalX + ", " + goalY + result);
         if(result == null) {
             findObstacles();
             if(pathBlocked) {
-                if(beforeFirstImmovableObstacle.agentX == goalX && beforeFirstImmovableObstacle.agentY == goalY) return null;
+                System.err.println("Path Blocked");
                 return FindPath(pushingBox, beforeFirstImmovableObstacle.agentX, beforeFirstImmovableObstacle.agentY);
             }
             else if(pathInaccessible)  {
+                System.err.println("Path inaccessible");
                 return null;
             }
             else {
                 int oldRange = searchRange;
                 searchRange *= 20;
+                System.err.println("bigger range search: ");
                 LinkedList<Node> mustBeTrue = FindPath(pushingBox, goalX, goalY);
                 searchRange = oldRange;
                 return mustBeTrue;
@@ -170,6 +173,7 @@ public class SearchClient {
                 }
             }
             else if(workaroundBegin != null) {
+                System.err.println(workaroundBegin + " end: " + point);
                 initializeSearch(false, point.agentX, point.agentY);
                 strategy.addToFrontier(new Node(workaroundBegin.agentX, workaroundBegin.agentY, owner.getColor(), obstacles));
                 LinkedList<Node> partialSearchResult = conductSearch(100* workaroundLength, point.agentX, point.agentY, false);
@@ -177,6 +181,7 @@ public class SearchClient {
                     examineBoxesOnPath(partialSearchResult, obstacles, workaroundPaths);
                 }
                 else {
+
                     if(!pathBlocked) { // setting a flag
                         pathBlocked = true;
                         beforeFirstImmovableObstacle = workaroundBegin;
@@ -262,6 +267,7 @@ public class SearchClient {
             LinkedList<Box> obstacles = new LinkedList<>();
             LinkedList<LinkedList<Node>> workaroundPaths = new LinkedList<>();
             examineBoxesOnPath(emptySearchResult, obstacles, workaroundPaths);
+            System.err.println("obstacles: " + immovableObstacles);
             if(!immovableObstacles.isEmpty())
                 findSaviors();
         }

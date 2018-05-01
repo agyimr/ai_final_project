@@ -70,7 +70,7 @@ public class Agent extends MovingObject {
         return serverOutput;
     }
     private void checkPath() {
-        pathFindingEngine.pathBlocked = false;
+        //pathFindingEngine.pathBlocked = false;
         if(executePath() == null) {
             waitingProcedure(3);
         }
