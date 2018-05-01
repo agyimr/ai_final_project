@@ -4,8 +4,7 @@ import java.util.*;
 
 public class AnticipationPlanning {
 
-    //private HashSet<Booking>[][] board;
-    private HashMap<Cell, HashSet<Booking>> board;
+    private HashMap<Cell, HashMap<Booking, Booking>> board;
 
     private int clock = 0;
 
@@ -14,16 +13,29 @@ public class AnticipationPlanning {
     static private int width;
     private int height;
 
+    public AnticipationPlanning() {
+
+        this.width = 50;
+        this.height = 50;
+
+        this.initliaze();
+    }
+
     public AnticipationPlanning(MainBoard mainBoard) {
 
         this.width = mainBoard.getWidth();
         this.height = mainBoard.getHeight();
 
-        this.board = new HashMap<Cell, HashSet<Booking>>();
+        this.initliaze();
+    }
+
+    private void initliaze() {
+
+        this.board = new HashMap<Cell, HashMap<Booking, Booking>>();
 
         for(int y = 0; y < height; ++y) {
             for(int x = 0; x < width; ++x) {
-                this.board.put(new Cell(x, y), new HashSet<Booking>());
+                this.board.put(new Cell(x, y), new HashMap<Booking, Booking>());
             }
         }
 
@@ -31,7 +43,7 @@ public class AnticipationPlanning {
 
     }
 
-    private HashSet<Booking> getBoardCell(int x, int y) {
+    private HashMap<Booking, Booking> getBoardCell(int x, int y) {
         return this.board.get(new Cell(x, y));
     }
 
@@ -93,8 +105,8 @@ public class AnticipationPlanning {
                 System.err.println("There will be an agent-agent conflict at cell " + node.agentX + "," + node.agentY);
                 System.err.println("Conflict with agent : " + conflictAgent);
                 System.err.println(conflictAgent);
-                System.err.flush();
-                System.exit(1);
+                //System.err.flush();
+                //System.exit(1);
                 return conflictAgent;
             }
 
@@ -105,8 +117,8 @@ public class AnticipationPlanning {
                 if (conflictAgent != null) {
                     System.err.println("There will be an agent-box conflict at cell " + node.boxX + "," + node.boxY);
                     System.err.println("Conflict with agent : " + conflictAgent);
-                    System.err.flush();
-                    System.exit(2);
+                    //System.err.flush();
+                    //System.exit(2);
                     return conflictAgent;
                 }
 
@@ -176,7 +188,7 @@ public class AnticipationPlanning {
 
     public void bookCell(int x, int y, Agent agent, int clock) {
 
-        this.getBoardCell(x, y).add(new Booking(agent, clock));
+        this.getBoardCell(x, y).put(new Booking(agent, clock), new Booking(agent, clock));
 
         if(!this.cleanupBins.containsKey(clock)) {
             this.cleanupBins.put(clock, new HashSet<Cell>());
@@ -193,11 +205,11 @@ public class AnticipationPlanning {
 
             for(int x = 0; x < width; ++x) {
 
-                Iterator it = this.getBoardCell(x, y).iterator();
+                Iterator it = this.getBoardCell(x, y).keySet().iterator();
 
                 while(it.hasNext()) {
-                    int instant = (int) it.next();
-                    board += instant + " ";
+                    Booking booking = (Booking) it.next();
+                    board += booking.getInstant() + " ";
                 }
 
                 board += ";";
@@ -214,10 +226,17 @@ public class AnticipationPlanning {
 
     public Agent wouldBeInConflict(int x, int y, int oldX, int oldY, int instant) {
 
-        if(boardContains(x, y, instant)) {
+        if(boardContains(x, y, instant) != null) {
             return boardFindAgent(x, y, instant);
-        } else if(boardContains(x, y, instant-1) && boardContains(oldX, oldY, instant)) {
-            return boardFindAgent(x, y, instant-1);
+        } else {
+
+            Booking destinationCellCurrentBooking = boardContains(x, y, instant-1);
+            Booking sourceCellFuturBooking = boardContains(oldX, oldY, instant);
+
+            if(destinationCellCurrentBooking != null && sourceCellFuturBooking != null && destinationCellCurrentBooking.getAgent() == sourceCellFuturBooking.getAgent()) {
+                return sourceCellFuturBooking.getAgent();
+            }
+
         }
 
         return null;
@@ -241,10 +260,16 @@ public class AnticipationPlanning {
             newAgentX -= 1;
         }
 
-        if(boardContains(newAgentX, newAgentY, instant)) {
+        if(boardContains(newAgentX, newAgentY, instant) != null) {
             return true;
-        } else if(boardContains(newAgentX, newAgentY, instant-1) && boardContains(oldAgentX, oldAgentY, instant)) {
-            return true;
+        } else {
+
+            Booking destinationAgentCellCurrentBooking = boardContains(newAgentX, newAgentY, instant-1);
+            Booking sourceAgentCellFuturBooking = boardContains(oldAgentX, oldAgentY, instant);
+
+            if(destinationAgentCellCurrentBooking != null && sourceAgentCellFuturBooking != null && destinationAgentCellCurrentBooking.getAgent() == sourceAgentCellFuturBooking.getAgent()) {
+                return true;
+            }
         }
 
         int oldBoxX = node.boxX;
@@ -265,23 +290,29 @@ public class AnticipationPlanning {
                 newBoxX -= 1;
             }
 
-            if(boardContains(newBoxX, newBoxY, instant)) {
+            if(boardContains(newBoxX, newBoxY, instant) != null) {
                 return true;
-            } else if(boardContains(newBoxX, newBoxY, instant-1) && boardContains(oldBoxX, oldBoxY, instant)) {
-                return true;
+            } else {
+
+                Booking destinationBoxCellCurrentBooking = boardContains(newBoxX, newBoxY, instant-1);
+                Booking sourceCellBoxFuturBooking = boardContains(oldBoxX, oldBoxY, instant);
+
+                if(destinationBoxCellCurrentBooking != null && sourceCellBoxFuturBooking != null && destinationBoxCellCurrentBooking.getAgent() == sourceCellBoxFuturBooking.getAgent()) {
+                    return true;
+                }
             }
         }
 
         return false;
     }
 
-    private boolean boardContains(int x, int y, int instant) {
-        return this.getBoardCell(x, y).contains(new Booking(null, instant));
+    private Booking boardContains(int x, int y, int instant) {
+        return this.getBoardCell(x, y).get(new Booking(null, instant));
     }
 
     private Agent boardFindAgent(int x, int y, int instant) {
 
-        Iterator it = this.getBoardCell(x, y).iterator();
+        Iterator it = this.getBoardCell(x, y).keySet().iterator();
 
         while(it.hasNext()) {
             Booking booking = (Booking) it.next();
