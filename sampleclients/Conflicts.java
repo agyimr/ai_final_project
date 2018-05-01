@@ -15,8 +15,9 @@ public class Conflicts {
 
         if(conflictPartner == null){
             System.err.println("conflict detected but no conflict partner found");
-            System.err.println("Replanning");
-            agent1.path.clear();
+            System.err.println("reverting, Replanning and waiting");
+            agent1.revertMoveIntention(RandomWalkClient.nextStepGameBoard);
+            agent1.replan();
             agent1.handleConflict(2);
             agent1.act();
             return;
@@ -24,8 +25,10 @@ public class Conflicts {
 
 		if(conflictPartner.getID() == agent1.getID()){
 			System.err.println("Conflict detected with itself.");
-            System.err.println("Replanning");
-            agent1.path.clear();
+            System.err.println("reverting, Replanning and waiting");
+            agent1.revertMoveIntention(RandomWalkClient.nextStepGameBoard);
+            agent1.replan();
+            agent1.handleConflict(2);
             agent1.act();
             return;
 		}
@@ -72,18 +75,17 @@ public class Conflicts {
             }catch (UnsupportedOperationException exc){
                 System.err.println("Move cant be applied after conflict");
                 System.err.println("waiting and Replanning instead");
-                agent1.path.clear();
+                agent1.replan();
                 agent1.handleConflict(2);
                 agent1.act();
             }
-            if(conflictPartner.getID() == pawnAgent.getID() && pawnMove){
-                System.err.println("Agent act "+conflictPartner.getID());
-                try{
+            if(pawnMove && conflictPartner.getID() == pawnAgent.getID()) {
+                try {
                     conflictPartner.act();
-                }catch (UnsupportedOperationException exc){
+                } catch (UnsupportedOperationException exc) {
                     System.err.println("Move cant be applied after conflict");
                     System.err.println("waiting and Replanning instead");
-                    conflictPartner.path.clear();
+                    conflictPartner.replan();
                     conflictPartner.handleConflict(2);
                     conflictPartner.act();
                 }
@@ -129,6 +131,11 @@ public class Conflicts {
 	//This method is for detecting and delegating the type of conflict to the correct methods
 	private static boolean noopFix(Agent pawnAgent, Agent kingAgent){
 		//Find next two points for king, if intersects with pawnAgent pos, return false, else true.
+        if(kingAgent.isWaiting() || pawnAgent.isWaiting()){
+            return false;
+        }
+
+
 		List<Point> pawnArea = new ArrayList<Point>();		
 		pawnArea.add(new Point(pawnAgent.getX(),pawnAgent.getY()));
 		
@@ -244,14 +251,9 @@ public class Conflicts {
 
         }
 
-        List<Command> kp = new LinkedList<Command>();
-        Node oldn = kingAgent.path.peek();
-        Node n = new Node(null, new Command(), kingAgent.getX(), kingAgent.getY());
-
         kingAgent.handleConflict(1);
-        solution.add(new Command());
         pawnAgent.handleConflict(solution);
-
+        pawnAgent.handleConflict(1);
         System.err.println("PlanMerge found solution with pawn agent " + pawnAgent.getID() + ":");
         for (Command c : solution) {
             System.err.println(c.toString());
