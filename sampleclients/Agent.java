@@ -47,7 +47,7 @@ public class Agent extends MovingObject {
                 searchForJob();
                 break;
             case jobless:
-                previousState=unassigned;
+                //previousState=unassigned;
                 //waitingProcedure(5);
                 serverOutput = "NoOp";
                 break;
@@ -156,6 +156,9 @@ public class Agent extends MovingObject {
         for(MovingObject currentBox : MainBoard.BoxColorGroups.get(getColor()).values()) {
             if(currentBox instanceof Box) {
                 newBox = (Box) currentBox;
+                if(newBox.assignedGoal == null) {
+                    newBox.tryToFindAGoal();
+                }
                 System.err.println(newBox);
                 if (!newBox.atGoalPosition() && (newBox.assignedAgent == null) && !newBox.noGoalOnTheMap) {
                     if(nextToBox(newBox)) { // can find a path to box, or is next to!

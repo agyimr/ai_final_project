@@ -12,7 +12,12 @@ public class Goal extends BasicObject {
     }
     public boolean solved(){
         BasicObject el = RandomWalkClient.gameBoard.getElement(this.getX(),this.getY());
-        return !(Character.toLowerCase(el.getID())==this.getID());
+        if(el instanceof Box) {
+            return (Character.toLowerCase(el.getID())==this.getID());
+        }
+        else {
+            return false;
+        }
     }
     public boolean canBeSolved(){
         System.err.println("--------------CAN BE SOLVED:--------------------");
