@@ -129,6 +129,7 @@ public class Agent extends MovingObject {
                 enterWaitingState();
             }
             else {
+                RandomWalkClient.anticipationPlanning.addPath(path, this);
                 serverOutput = executePath();
             }
         }
@@ -167,6 +168,7 @@ public class Agent extends MovingObject {
                 attachedBox = bestBox;
                 attachedBox.assignedAgent = this;
                 currentState = possibleStates.movingTowardsBox;
+                RandomWalkClient.anticipationPlanning.addPath(path, this);
                 return true;
             }
         }
