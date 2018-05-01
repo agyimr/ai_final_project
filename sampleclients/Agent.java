@@ -27,7 +27,7 @@ public class Agent extends MovingObject {
         inConflict,
         pathBlocked
     }
-    String serverOutput;
+    String serverOutput = null;
     public Agent( char id, String color, int y, int x ) {
         super(id, color, y, x, "Agent");
         pathFindingEngine = new SearchClient(this);
@@ -65,6 +65,10 @@ public class Agent extends MovingObject {
         System.err.println(currentState);
          return act(); // Temporary, just to cause stackOverflow instead of infinite loop, for better debugging
     }
+    public String collectServerOutput() {
+        if(serverOutput == null) throw new NegativeArraySizeException();
+        return serverOutput;
+    }
     private void checkPath() {
         pathFindingEngine.pathBlocked = false;
         if(executePath() == null) {
@@ -93,6 +97,7 @@ public class Agent extends MovingObject {
         }
         else {
             currentState = previousState;
+            previousState = null;
         }
     }
     private void moveToTheBox() {
@@ -287,6 +292,10 @@ public class Agent extends MovingObject {
         else
             return false;
     }
+    public void replan() {
+        path = null;
+        currentState = unassigned;
+    }
     public Command getCommand(int i) {
         try{
             if(path == null) return null;
@@ -343,6 +352,8 @@ public class Agent extends MovingObject {
         conflictSteps = commands.size();
     }
     public void handleConflict(List<Command> commands) {
+        previousState = currentState;
+        currentState = inConflict;
         replacePath(commands);
     }
     public void handleConflict(int waitingTime) {
@@ -398,7 +409,7 @@ public class Agent extends MovingObject {
         waitingProcedure(3);
     }
     public void revertMoveIntention(MainBoard board) {
-        if (hasMoved && path != null) {
+        if (hasMoved && !serverOutput.equals("NoOp") && path != null && !path.isEmpty()) {
             Node nextStep = path.peek();
             if (nextStep != null) {
                 hasMoved = false;
@@ -423,9 +434,10 @@ public class Agent extends MovingObject {
             }
             System.err.println("Agent "+getID()+" has been reverted");
         }
+        serverOutput = null;
     }
     public Box getAttachedBox() {
         return attachedBox;
     }
-
+    public boolean hasMoved() { return serverOutput != null;}
 }
