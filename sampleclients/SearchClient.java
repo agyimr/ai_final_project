@@ -177,12 +177,14 @@ public class SearchClient {
                 initializeSearch(false, point.agentX, point.agentY);
                 strategy.addToFrontier(new Node(workaroundBegin.agentX, workaroundBegin.agentY, owner.getColor(), obstacles));
                 LinkedList<Node> partialSearchResult = conductSearch(100* workaroundLength, point.agentX, point.agentY, false);
+                System.err.println(obstacles);
                 System.err.println("Result: " + partialSearchResult);
                 if(partialSearchResult != null) {
                     examineBoxesOnPath(partialSearchResult, obstacles, workaroundPaths);
+                    System.err.println(obstacles);
                 }
                 else {
-
+                    System.err.println("Hello there gsdgds");
                     if(!pathBlocked) { // setting a flag
                         pathBlocked = true;
                         beforeFirstImmovableObstacle = workaroundBegin;
@@ -269,8 +271,8 @@ public class SearchClient {
             LinkedList<LinkedList<Node>> workaroundPaths = new LinkedList<>();
             examineBoxesOnPath(emptySearchResult, obstacles, workaroundPaths);
             System.err.println("obstacles: " + immovableObstacles);
-            if(!immovableObstacles.isEmpty())
-                findSaviors();
+//            if(!immovableObstacles.isEmpty())
+//                findSaviors();
         }
         else{
             pathInaccessible = true;

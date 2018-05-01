@@ -96,7 +96,7 @@ public class RandomWalkClient {
 			RandomWalkClient client = new RandomWalkClient();
             System.out.flush();
             System.err.println(client.in.readLine());
-			while ( client.update() ) {
+            while ( client.update() ) {
 			}
 		} catch ( IOException e ) {	
 			// Got nowhere to write to probably
