@@ -48,7 +48,8 @@ public class Agent extends MovingObject {
                 break;
             case jobless:
                 previousState=unassigned;
-                waitingProcedure(5);
+                //waitingProcedure(5);
+                serverOutput = "NoOp";
                 break;
             case inConflict:
                 resolveConflict();
@@ -121,8 +122,13 @@ public class Agent extends MovingObject {
         }
     }
     private void moveWithTheBox() {
-        if ((attachedBox.unassignedGoal() && !attachedBox.tryToFindAGoal())
-                || attachedBox.atGoalPosition()) {
+        if ((attachedBox.unassignedGoal() && !attachedBox.tryToFindAGoal())) {
+
+            dropTheBox();
+            currentState = possibleStates.unassigned;
+        }
+        else if(attachedBox.atGoalPosition()) {
+            attachedBox.resetDependencies();
             dropTheBox();
             currentState = possibleStates.unassigned;
         }
@@ -296,6 +302,10 @@ public class Agent extends MovingObject {
     }
     public void replan() {
         path = null;
+        if(attachedBox != null) {
+            attachedBox.clearOwnerReferences();
+            attachedBox = null;
+        }
         currentState = unassigned;
     }
     public Command getCommand(int i) {
@@ -441,4 +451,6 @@ public class Agent extends MovingObject {
         return attachedBox;
     }
     public boolean hasMoved() { return serverOutput != null;}
+    public boolean jobless() { return currentState == jobless;}
+    public void moveYourAss() { currentState = unassigned;}
 }

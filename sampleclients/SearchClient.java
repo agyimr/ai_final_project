@@ -289,10 +289,9 @@ public class SearchClient {
             for(Node point : list) {
                 if(gameBoard.getElement(point.agentX, point.agentY) instanceof Box) {
                     Box obstacle = (Box) gameBoard.getElement(point.agentX, point.agentY);
-                    Map<Character, Agent> agents = MainBoard.AgentColorGroups.get(obstacle.getColor());
                     Agent closestAgent = null;
                     int closestDistance = Integer.MAX_VALUE;
-                    for (Agent savior : agents.values()) {
+                    for (Agent savior : MainBoard.AgentColorGroups.get(obstacle.getColor())) {
                         int distance = RandomWalkClient.roomMaster.getPathEstimate(savior.getCoordinates(), obstacle.getCoordinates());
                         if(distance < closestDistance) {
                             closestAgent = savior;

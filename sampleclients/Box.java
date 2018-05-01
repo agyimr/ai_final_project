@@ -46,4 +46,16 @@ public class Box extends MovingObject {
             return false;
         }
     }
+    public void resetDependencies() {
+        System.err.println(assignedGoal.deps);
+
+        for(Box theCurrentID : MainBoard.allBoxes) {
+            theCurrentID.noGoalOnTheMap = false;
+        }
+        for(Agent sameColor : MainBoard.agents) {
+            if(sameColor.jobless()) sameColor.moveYourAss();
+        }
+
+
+    }
 }

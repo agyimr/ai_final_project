@@ -10,7 +10,7 @@ public class MainBoard {
     public static List< Agent > agents = new ArrayList<>();
     public static Map<Character, List<Box>> boxesByID = new HashMap<>();
     public static List<Box> allBoxes = new LinkedList<>();
-    public static Map<String, Map<Character, Agent>> AgentColorGroups = new HashMap<>();
+    public static Map<String, List<Agent>> AgentColorGroups = new HashMap<>();
     public static Map<Character, List<Goal>> goalsByID = new HashMap<>();
     public static List<Goal> allGoals = new LinkedList<>();
     public static int MainBoardYDomain = 0, MainBoardXDomain = 0;
@@ -67,14 +67,14 @@ public class MainBoard {
                     Agent newAgent = new Agent( id,currentColor, MainBoardYDomain, currentX);
                     objects.add(i, newAgent);
                     agents.add( newAgent );
-                    Map<Character, Agent> result = AgentColorGroups.get(currentColor);
+                    List<Agent> result = AgentColorGroups.get(currentColor);
                     if (result == null) {
-                        result = new HashMap<>();
-                        result.put(id, newAgent);
+                        result = new LinkedList<>();
+                        result.add(newAgent);
                         AgentColorGroups.put(currentColor, result);
                     }
                     else {
-                        result.put(id, newAgent);
+                        result.add(newAgent);
                     }
 
                 }
