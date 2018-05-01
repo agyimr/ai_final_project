@@ -8,6 +8,9 @@ public class AnticipationPlanning {
 
     private int clock = 0;
 
+    private final int cleanupFrequency = 10;
+    private HashMap<Integer, List<Set>> cleanupBins;
+
     private int width;
     private int height;
 
@@ -38,6 +41,7 @@ public class AnticipationPlanning {
 
     public void incrementClock() {
         this.clock++;
+
     }
 
     public Agent addPath(LinkedList<Node> path, Agent agent) {
@@ -168,6 +172,58 @@ public class AnticipationPlanning {
         */
 
         return null;
+    }
+
+    public boolean isConflicting(Node node, int instant) {
+
+        int oldAgentX = node.agentX;
+        int oldAgentY = node.agentY;
+
+        int newAgentX = node.agentX;
+        int newAgentY = node.agentY;
+
+        if(node.action.dir1 == Command.dir.N) {
+            newAgentY -= 1;
+        } else if(node.action.dir1 == Command.dir.S) {
+            newAgentY += 1;
+        } else if(node.action.dir1 == Command.dir.E) {
+            newAgentX += 1;
+        } else if(node.action.dir1 == Command.dir.W) {
+            newAgentX -= 1;
+        }
+
+        if(boardContains(newAgentX, newAgentY, instant)) {
+            return true;
+        } else if(boardContains(newAgentX, newAgentY, instant-1) && boardContains(oldAgentX, oldAgentY, instant)) {
+            return true;
+        }
+
+        int oldBoxX = node.boxX;
+        int oldBoxY = node.boxY;
+
+        if(oldAgentX != -1 && oldAgentY != -1) {
+
+            int newBoxX = node.boxX;
+            int newBoxY = node.boxY;
+
+            if (node.action.dir2 == Command.dir.N) {
+                newBoxY -= 1;
+            } else if (node.action.dir2 == Command.dir.S) {
+                newBoxY += 1;
+            } else if (node.action.dir2 == Command.dir.E) {
+                newBoxX += 1;
+            } else if (node.action.dir2 == Command.dir.W) {
+                newBoxX -= 1;
+            }
+
+            if(boardContains(newBoxX, newBoxY, instant)) {
+                return true;
+            } else if(boardContains(newBoxX, newBoxY, instant-1) && boardContains(oldBoxX, oldBoxY, instant)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private boolean boardContains(int x, int y, int instant) {
