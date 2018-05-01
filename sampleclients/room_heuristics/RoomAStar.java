@@ -2,6 +2,7 @@ package sampleclients.room_heuristics;
 
 import sampleclients.BasicObject;
 import sampleclients.MainBoard;
+import sampleclients.RandomWalkClient;
 
 import java.awt.Point;
 import java.util.ArrayList;
@@ -51,6 +52,8 @@ public class RoomAStar {
 
             // generating successor states
             ArrayList<Path> neighbour_sections = this.passages.getAllNeighbours(current_node.position);
+            if (neighbour_sections == null) return null; // beginning section doesn't have any neighbours AND goal is not in there.
+
             for(Path s : neighbour_sections) {
                 int travel_distance = s.to.getDistanceFromPoint(current_node.position);
                 Point p = s.to.getClosestPoint(current_node.position);
@@ -72,15 +75,20 @@ public class RoomAStar {
         LinkedList<Node> plan = new LinkedList<>();
         Node goal = new Node(goal_node, this.passages.section_map[to.y][to.x], to, goal_section,
                 goal_node.g + this.getDistance(goal_node.position, to), 0);
-        plan.add(goal);
+        plan.addFirst(goal);
         Node n = goal_node;
         while (n.parent != null) {
-            plan.add(n);
+            plan.addFirst(n);
             n = n.parent;
         }
         return plan;
     }
+    public int getPathEstimate(Point originCoordinates, Point goalCoordinates) {
+        LinkedList<sampleclients.room_heuristics.Node> result = getRoomPath(originCoordinates, goalCoordinates);
+        if(result == null) return Integer.MAX_VALUE;
+        else return result.	pollLast().g;
 
+    }
     private int getDistance(Point from, Point to) {
         return Math.abs(from.x - to.x) + Math.abs(from.y - to.y);
     }

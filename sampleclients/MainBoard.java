@@ -8,9 +8,11 @@ public class MainBoard {
     private List< List<BasicObject>> gameBoard;
     public static Map<String, Map<Character, Box>> BoxColorGroups = new HashMap<>();
     public static List< Agent > agents = new ArrayList<>();
-    public static Map<Character, Box > boxes = new HashMap<>();
+    public static Map<Character, List<Box>> boxesByID = new HashMap<>();
+    public static List<Box> allBoxes = new LinkedList<>();
     public static Map<String, Map<Character, Agent>> AgentColorGroups = new HashMap<>();
-    public static Map<Character, Goal> goals = new HashMap<>();
+    public static Map<Character, List<Goal>> goalsByID = new HashMap<>();
+    public static List<Goal> allGoals = new LinkedList<>();
     public static int MainBoardYDomain = 0, MainBoardXDomain = 0;
     private Map<MovingObject, Goal> steppedOnGoals = new HashMap<>();
 
@@ -80,10 +82,12 @@ public class MainBoard {
                     String currentColor = colors.get( id );
                     if(currentColor == null) currentColor = "blue";
                     Box newBox = new Box( id, currentColor, MainBoardYDomain, currentX);
-                    boxes.put(id, newBox );
+                    allBoxes.add(newBox);
+                    List<Box> boxResult = boxesByID.get(id);
                     objects.add(i, newBox);
                     Map<Character, Box> result = BoxColorGroups.get(currentColor);
                     if (result == null) {
+
                         result = new HashMap<>();
                         result.put(id, newBox);
                         BoxColorGroups.put(currentColor, result);
@@ -91,11 +95,28 @@ public class MainBoard {
                     else {
                         result.put(id, newBox);
                     }
+                    if(boxResult == null) {
+                        boxResult = new LinkedList<>();
+                        boxResult.add(newBox);
+                        boxesByID.put(id, boxResult);
+                    }
+                    else {
+                        boxResult.add(newBox);
+                    }
                 }
                 else if(isGoal(id)) {
                     Goal goal = new Goal(id, MainBoardYDomain, currentX);
-                    goals.put(id, goal);
+                    allGoals.add(goal);
                     objects.add(i, goal);
+                    List<Goal> goalRes = goalsByID.get(id);
+                    if(goalRes == null) {
+                        goalRes = new LinkedList<>();
+                        goalRes.add(goal);
+                        goalsByID.put(id, goalRes);
+                    }
+                    else {
+                        goalRes.add(goal);
+                    }
                 }
                 else if(isWall(id)) {
                     objects.add(i, new Wall(id, currentX, MainBoardYDomain));
