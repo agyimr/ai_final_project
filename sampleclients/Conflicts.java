@@ -45,7 +45,10 @@ public class Conflicts {
         System.err.println("pawn is:"+pawnAgent.getID());
         System.err.println("king is:"+kingAgent.getID());
 
+        boolean pawnMove = false;
         if(pawnAgent.getID() < kingAgent.getID()){
+            pawnMove = true;
+            System.err.println("trying to revert Agent "+pawnAgent.getID());
             pawnAgent.revertMoveIntention(RandomWalkClient.nextStepGameBoard);
         }
 
@@ -61,9 +64,11 @@ public class Conflicts {
         }
 
         if(noopFix || planMerge){
+            System.err.println("Agent act "+agent1.getID());
             agent1.act();
-            if(agent1.getID() > conflictPartner.getID()){
-                kingAgent.act();
+            if(conflictPartner.getID() == pawnAgent.getID() && pawnMove){
+                System.err.println("Agent act "+conflictPartner.getID());
+                conflictPartner.act();
             }
             return;
         }else{

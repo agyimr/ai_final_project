@@ -63,7 +63,7 @@ public class Agent extends MovingObject {
         }
         if(serverOutput != null) return serverOutput;
         System.err.println(currentState);
-         return act(); // Temporary, just to cause stackOverflow instead of infinite loop, for better debugging
+        return act(); // Temporary, just to cause stackOverflow instead of infinite loop, for better debugging
     }
     public String collectServerOutput() {
         if(serverOutput == null) throw new NegativeArraySizeException();
@@ -409,9 +409,10 @@ public class Agent extends MovingObject {
         waitingProcedure(3);
     }
     public void revertMoveIntention(MainBoard board) {
-        if (hasMoved && !serverOutput.equals("NoOp") && path != null && !path.isEmpty()) {
+        if (hasMoved() && path != null && !path.isEmpty()) {
             Node nextStep = path.peek();
-            if (nextStep != null) {
+            System.err.println(nextStep.toString());
+            if (nextStep != null && (currentState == movingBox || currentState == movingTowardsBox || currentState == inConflict)) {
                 hasMoved = false;
                 switch(nextStep.action.actType) {
                     case Noop:
