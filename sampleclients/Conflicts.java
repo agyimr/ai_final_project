@@ -15,13 +15,19 @@ public class Conflicts {
 
 
 		if(conflictPartner.getID() == agent1.getID()){
-			System.err.println("Conflict detected with itself. ----- BUG ----");
-			throw new UnsupportedOperationException();
+			System.err.println("Conflict detected with itself.");
+            System.err.println("Replanning");
+            agent1.path.clear();
+            agent1.act();
+            return;
 		}
 
 		if(conflictPartner == null){
-			System.err.println("conflict detected but no conflict partner found ---- BUG -----");
-			throw new UnsupportedOperationException();
+			System.err.println("conflict detected but no conflict partner found");
+            System.err.println("Replanning");
+			agent1.path.clear();
+			agent1.act();
+			return;
 		}
 		System.err.println("Conflict partner:" + conflictPartner.toString() );
 		if(conflictPartner.isMovingBox()){
@@ -36,14 +42,10 @@ public class Conflicts {
 		    pawnAgent = agent1;
         }
 
-
-
-
-
         System.err.println("pawn is:"+pawnAgent.getID());
         System.err.println("king is:"+kingAgent.getID());
 
-        if(pawnAgent.hasMoved){
+        if(pawnAgent.getID() < kingAgent.getID()){
             pawnAgent.revertMoveIntention(RandomWalkClient.nextStepGameBoard);
         }
 
@@ -59,6 +61,10 @@ public class Conflicts {
         }
 
         if(noopFix || planMerge){
+            agent1.act();
+            if(agent1.getID() > conflictPartner.getID()){
+                kingAgent.act();
+            }
             return;
         }else{
             System.err.println("Conflict resolution have not been able to resovle the conflict -> throwing exception");
@@ -75,7 +81,7 @@ public class Conflicts {
 		}
 		List<Point> nextAgentPos = agent1.path.peek().action.getNext(agentPos);
 		Point conflictPos = null;
-		for (int i = 0; i < agentPos.size(); i++) {
+		for (int i = 0; i < nextAgentPos.size(); i++) {
 
 			if (!agentPos.contains(nextAgentPos.get(i))) {
 				conflictPos = nextAgentPos.get(i);
