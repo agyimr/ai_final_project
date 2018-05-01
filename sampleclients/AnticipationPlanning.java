@@ -4,13 +4,14 @@ import java.util.*;
 
 public class AnticipationPlanning {
 
-    private Set[][] board;
+    //private HashSet<Booking>[][] board;
+    private HashMap<Cell, HashSet<Booking>> board;
 
     private int clock = 0;
 
-    private HashMap<Integer, Set> cleanupBins;
+    private HashMap<Integer, HashSet<Cell>> cleanupBins;
 
-    private int width;
+    static private int width;
     private int height;
 
     public AnticipationPlanning(MainBoard mainBoard) {
@@ -18,21 +19,25 @@ public class AnticipationPlanning {
         this.width = mainBoard.getWidth();
         this.height = mainBoard.getHeight();
 
-        this.board = new Set[height][width];
+        this.board = new HashMap<Cell, HashSet<Booking>>();
 
         for(int y = 0; y < height; ++y) {
             for(int x = 0; x < width; ++x) {
-                this.board[y][x] = new HashSet();
+                this.board.put(new Cell(x, y), new HashSet<Booking>());
             }
         }
 
-        this.cleanupBins = new HashMap<>();
+        this.cleanupBins = new HashMap<Integer, HashSet<Cell>>();
 
+    }
+
+    private HashSet<Booking> getBoardCell(int x, int y) {
+        return this.board.get(new Cell(x, y));
     }
 
     private void cleanup() {
 
-        if(!cleanupBins.containsKey(this.clock)) {
+        if(!this.cleanupBins.containsKey(this.clock)) {
             return;
         }
 
@@ -42,11 +47,11 @@ public class AnticipationPlanning {
 
             Cell cell = (Cell) binIterator.next();
 
-            this.board[cell.getY()][cell.getX()].remove(new Booking(null, this.clock));
-        
+            this.getBoardCell(cell.getX(), cell.getY()).remove(new Booking(null, this.clock));
+
         }
 
-        cleanupBins.remove(this.clock);
+        this.cleanupBins.remove(this.clock);
 
     }
 
@@ -123,7 +128,7 @@ public class AnticipationPlanning {
 
             Node node = (Node) it.next();
 
-            board[node.agentY][node.agentX].add(new Booking(agent, localClock));
+            bookCell(node.agentX, node.agentY, agent, localClock);
 
             if (node.boxY != -1 && node.boxX != -1) {
 
@@ -148,7 +153,7 @@ public class AnticipationPlanning {
 
         @Override
         public int hashCode() {
-            return y * 50 + x;
+            return y * AnticipationPlanning.width + x;
         }
 
         public boolean is(int x, int y) {
@@ -171,13 +176,13 @@ public class AnticipationPlanning {
 
     public void bookCell(int x, int y, Agent agent, int clock) {
 
-        board[y][x].add(new Booking(agent, clock));
+        this.getBoardCell(x, y).add(new Booking(agent, clock));
 
-        if(!cleanupBins.containsKey(clock)) {
-            cleanupBins.put(clock, new HashSet());
+        if(!this.cleanupBins.containsKey(clock)) {
+            this.cleanupBins.put(clock, new HashSet<Cell>());
         }
 
-        cleanupBins.get(clock).add(new Cell(x, y));
+        this.cleanupBins.get(clock).add(new Cell(x, y));
     }
 
     public void displayBoard() {
@@ -188,7 +193,7 @@ public class AnticipationPlanning {
 
             for(int x = 0; x < width; ++x) {
 
-                Iterator it = this.board[y][x].iterator();
+                Iterator it = this.getBoardCell(x, y).iterator();
 
                 while(it.hasNext()) {
                     int instant = (int) it.next();
@@ -214,23 +219,6 @@ public class AnticipationPlanning {
         } else if(boardContains(x, y, instant-1) && boardContains(oldX, oldY, instant)) {
             return boardFindAgent(x, y, instant-1);
         }
-        /* else if(boardContains(x, y, instant-1)){ //if target was previously occuped
-
-            if(x+1 < width && oldX == x+1 && boardContains(x+1, y, instant)) {
-                return boardFindAgent(x, y, instant-1);
-            }
-            if(x-1 >= 0 && oldX == x-1 && boardContains(x-1, y, instant)) {
-                return boardFindAgent(x, y, instant-1);
-            }
-            if(y+1 < height && oldY == y+1 && boardContains(x, y+1, instant)) {
-                return boardFindAgent(x, y, instant-1);
-            }
-            if(y-1 >= 0 && oldY == y-1 && boardContains(x, y-1, instant)) {
-                return boardFindAgent(x, y, instant-1);
-            }
-
-        }
-        */
 
         return null;
     }
@@ -288,12 +276,12 @@ public class AnticipationPlanning {
     }
 
     private boolean boardContains(int x, int y, int instant) {
-        return board[y][x].contains(new Booking(null, instant));
+        return this.getBoardCell(x, y).contains(new Booking(null, instant));
     }
 
     private Agent boardFindAgent(int x, int y, int instant) {
 
-        Iterator it = board[y][x].iterator();
+        Iterator it = this.getBoardCell(x, y).iterator();
 
         while(it.hasNext()) {
             Booking booking = (Booking) it.next();
