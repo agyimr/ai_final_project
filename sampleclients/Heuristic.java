@@ -8,10 +8,10 @@ import java.util.Comparator;
 import static java.lang.Math.abs;
 
 public abstract class Heuristic implements Comparator<Node> {
-    boolean pushingBox;
-    Agent owner;
-    int goalX, goalY;
-    Section goalRoom = null;
+    private boolean pushingBox;
+    private Agent owner;
+    private int goalX, goalY;
+    private Section goalRoom = null;
     public Heuristic(Agent owner) {
         this.owner = owner;
     }

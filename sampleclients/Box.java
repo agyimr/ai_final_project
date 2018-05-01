@@ -2,7 +2,6 @@ package sampleclients;
 import java.util.*;
 
 public class Box extends MovingObject {
-    public boolean atGoalPosition = false;
     public Goal assignedGoal = null;
     public Agent assignedAgent = null;
     boolean noGoalOnTheMap = false;
@@ -21,7 +20,7 @@ public class Box extends MovingObject {
         Goal bestGoal = null;
         for(Goal current : MainBoard.goalsByID.get(Character.toLowerCase(getID()))) {
             int currentDistance = RandomWalkClient.roomMaster.getPathEstimate(getCoordinates(), current.getCoordinates());
-            if(current.assignedBox == null && currentDistance < bestDistance) {
+            if(current.assignedBox == null && current.canBeSolved() && currentDistance < bestDistance) {
                 bestDistance = currentDistance;
                 bestGoal = current;
             }
@@ -37,16 +36,14 @@ public class Box extends MovingObject {
             return true;
         }
     }
-    public boolean setGoalPosition() {
+    public boolean atGoalPosition() {
         if (assignedGoal == null) return false;
         if( Integer.compare(getX(), assignedGoal.getX()) == 0
                 && Integer.compare(getY(), assignedGoal.getY()) == 0 ) {
-            assignedGoal.boxAtGoalPosition = true;
-            atGoalPosition = true;
+            return true;
         }
         else {
-            atGoalPosition = false;
+            return false;
         }
-        return atGoalPosition;
     }
 }

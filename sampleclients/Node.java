@@ -16,6 +16,7 @@ public class Node {
     public int agentX;
     public int boxY = -1;
     public int boxX = -1;
+    public int timeFrame = -1;
     public static String ownerColor;
     public Box[][] boxes;
     public Node parent;
@@ -28,6 +29,7 @@ public class Node {
         agentX = ownerX;
         agentY = ownerY;
         this.g = 0;
+        timeFrame = 0;
         initializeBoxes(consideredBoxes);
     }
 
@@ -52,6 +54,7 @@ public class Node {
         this.boxX = boxX;
         this.boxY = boxY;
         action = new Command();
+        timeFrame = 0;
     }
     public Node(Node parent, Command action, int agentX, int agentY) {
         boxes = new Box[MainBoard.MainBoardYDomain][MainBoard.MainBoardXDomain];
@@ -62,6 +65,7 @@ public class Node {
         if (parent == null) {
             this.g = 0;
         } else {
+            this.timeFrame = parent.timeFrame + 1;
             this.g = parent.g() + 1;
         }
     }
@@ -76,6 +80,7 @@ public class Node {
         if (parent == null) {
             this.g = 0;
         } else {
+            this.timeFrame = parent.timeFrame + 1;
             this.g = parent.g() + 1;
         }
     }
