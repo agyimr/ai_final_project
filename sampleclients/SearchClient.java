@@ -177,6 +177,7 @@ public class SearchClient {
                 initializeSearch(false, point.agentX, point.agentY);
                 strategy.addToFrontier(new Node(workaroundBegin.agentX, workaroundBegin.agentY, owner.getColor(), obstacles));
                 LinkedList<Node> partialSearchResult = conductSearch(100* workaroundLength, point.agentX, point.agentY, false);
+                System.err.println("Result: " + partialSearchResult);
                 if(partialSearchResult != null) {
                     examineBoxesOnPath(partialSearchResult, obstacles, workaroundPaths);
                 }
