@@ -420,10 +420,12 @@ public class Agent extends MovingObject {
         waitingProcedure(3);
     }
     public void revertMoveIntention(MainBoard board) {
+        System.err.println("reverting Agent "+getID());
         if (hasMoved() && path != null && !path.isEmpty()) {
             Node nextStep = path.peek();
             System.err.println(nextStep.toString());
             if (nextStep != null && (currentState == movingBox || currentState == movingTowardsBox || currentState == inConflict)) {
+
                 switch(nextStep.action.actType) {
                     case Noop:
                         break;
@@ -453,4 +455,7 @@ public class Agent extends MovingObject {
     public boolean hasMoved() { return serverOutput != null;}
     public boolean jobless() { return currentState == jobless;}
     public void moveYourAss() { currentState = unassigned;}
+    public boolean isWaiting(){
+        return currentState == waiting || currentState == jobless || currentState == pathBlocked;
+    }
 }
