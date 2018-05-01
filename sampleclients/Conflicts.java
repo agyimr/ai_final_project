@@ -93,7 +93,13 @@ public class Conflicts {
             return;
         }else{
             System.err.println("Conflict resolution have not been able to resovle the conflict -> throwing exception");
-            throw new UnsupportedOperationException();
+            System.err.println("waiting and Replanning instead");
+            conflictPartner.replan();
+            conflictPartner.handleConflict(2);
+            conflictPartner.act();
+            agent1.replan();
+            agent1.handleConflict(2);
+            agent1.act();
         }
 
 	}
@@ -253,7 +259,6 @@ public class Conflicts {
 
         kingAgent.handleConflict(1);
         pawnAgent.handleConflict(solution);
-        pawnAgent.handleConflict(1);
         System.err.println("PlanMerge found solution with pawn agent " + pawnAgent.getID() + ":");
         for (Command c : solution) {
             System.err.println(c.toString());
