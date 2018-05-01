@@ -201,7 +201,7 @@ public class AnticipationPlanning {
         int oldBoxX = node.boxX;
         int oldBoxY = node.boxY;
 
-        if(oldAgentX != -1 && oldAgentY != -1) {
+        if(oldBoxX != -1 && oldBoxY != -1) {
 
             int newBoxX = node.boxX;
             int newBoxY = node.boxY;
