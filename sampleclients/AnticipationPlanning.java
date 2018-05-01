@@ -8,8 +8,7 @@ public class AnticipationPlanning {
 
     private int clock = 0;
 
-    private final int cleanupFrequency = 10;
-    private HashMap<Integer, List<Set>> cleanupBins;
+    private HashMap<Integer, Set> cleanupBins;
 
     private int width;
     private int height;
@@ -27,11 +26,27 @@ public class AnticipationPlanning {
             }
         }
 
+        this.cleanupBins = new HashMap<>();
+
     }
 
     private void cleanup() {
 
+        if(!cleanupBins.containsKey(this.clock)) {
+            return;
+        }
 
+        Iterator binIterator = cleanupBins.get(this.clock).iterator();
+
+        while(binIterator.hasNext()) {
+
+            Cell cell = (Cell) binIterator.next();
+
+            this.board[cell.getY()][cell.getX()].remove(new Booking(null, this.clock));
+        
+        }
+
+        cleanupBins.remove(this.clock);
 
     }
 
@@ -40,8 +55,10 @@ public class AnticipationPlanning {
     }
 
     public void incrementClock() {
-        this.clock++;
 
+        this.cleanup();
+
+        this.clock++;
     }
 
     public Agent addPath(LinkedList<Node> path, Agent agent) {
@@ -110,13 +127,57 @@ public class AnticipationPlanning {
 
             if (node.boxY != -1 && node.boxX != -1) {
 
-                board[node.boxY][node.boxX].add(new Booking(agent, localClock));
+                bookCell(node.boxX, node.boxY, agent, localClock);
 
             }
         }
 
         return null;
 
+    }
+
+    private class Cell {
+
+        private int x;
+        private int y;
+
+        public Cell(int x, int y) {
+            this.x = x;
+            this.y = y;
+        }
+
+        @Override
+        public int hashCode() {
+            return y * 50 + x;
+        }
+
+        public boolean is(int x, int y) {
+            return this.x == x && this.y == y;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return ((Cell) obj).is(x, y);
+        }
+
+        public int getY() {
+            return y;
+        }
+
+        public int getX() {
+            return x;
+        }
+    }
+
+    public void bookCell(int x, int y, Agent agent, int clock) {
+
+        board[y][x].add(new Booking(agent, clock));
+
+        if(!cleanupBins.containsKey(clock)) {
+            cleanupBins.put(clock, new HashSet());
+        }
+
+        cleanupBins.get(clock).add(new Cell(x, y));
     }
 
     public void displayBoard() {
