@@ -103,6 +103,7 @@ public class SearchClient {
         if(result == null) {
             findObstacles();
             if(pathBlocked) {
+                if(beforeFirstImmovableObstacle.agentX == goalX && beforeFirstImmovableObstacle.agentY == goalY) return null;
                 return FindPath(pushingBox, beforeFirstImmovableObstacle.agentX, beforeFirstImmovableObstacle.agentY);
             }
             else if(pathInaccessible)  {

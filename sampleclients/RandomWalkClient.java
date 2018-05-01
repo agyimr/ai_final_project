@@ -27,11 +27,9 @@ public class RandomWalkClient {
 	    //reset hasMoved for all agents
         for (int i = 0; i < MainBoard.agents.size(); i++) {
             try {
-                if(!MainBoard.agents.get(i).hasMoved) {
-                    System.err.println("Update agent: " + MainBoard.agents.get(i).getID());
-                    MainBoard.agents.get(i).act();
-                    System.err.println();
-                }
+                System.err.println("Update agent: " + MainBoard.agents.get(i).getID());
+                MainBoard.agents.get(i).act();
+                System.err.println();
             } catch (UnsupportedOperationException exc) {
                 System.err.println();
                 System.err.println("Conflict for agent: " + MainBoard.agents.get(i).getID() + " and action " + MainBoard.agents.get(i).path.get(0).action.toString());
@@ -46,9 +44,9 @@ public class RandomWalkClient {
         String jointAction = "[";
         // create joint actions
         for(int i = 0; i < MainBoard.agents.size()-1; i++){
-            jointAction+=MainBoard.agents.get(i).serverOutput+",";
+            jointAction+=MainBoard.agents.get(i).collectServerOutput()+",";
         }
-        jointAction+=MainBoard.agents.get(MainBoard.agents.size()-1).serverOutput+"]";
+        jointAction+=MainBoard.agents.get(MainBoard.agents.size()-1).collectServerOutput()+"]";
 		// Place message in buffer
         System.err.println(jointAction);
 		System.out.println( jointAction );

@@ -11,7 +11,6 @@ public class Agent extends MovingObject {
     private SearchClient pathFindingEngine;
     private int waitingCounter = 0;
     public int conflictSteps = 0;
-    public boolean hasMoved = false;
     private Box nextBoxToPush = null;
     private boolean pendingHelp = false;
     public LinkedList<Node> path;
@@ -35,6 +34,7 @@ public class Agent extends MovingObject {
     public String act(){
         serverOutput = null;
         if(pendingHelp) {
+            //previousState = currentState;
             currentState = unassigned;
             pendingHelp = false;
         }
@@ -97,7 +97,7 @@ public class Agent extends MovingObject {
         }
         else {
             currentState = previousState;
-            previousState = null;
+            previousState = unassigned;
         }
     }
     private void moveToTheBox() {
@@ -108,7 +108,7 @@ public class Agent extends MovingObject {
             currentState = possibleStates.movingBox;
         }
         else if(!findPathToBox(attachedBox)) {
-            enterWaitingState();
+            waitingProcedure(3);
         }
         else {
             System.err.println("Moving towards box: ");
@@ -126,7 +126,7 @@ public class Agent extends MovingObject {
             String result = executePath();
             if (result != null) serverOutput = result;
             else if (!findPathWithBox()) {
-                enterWaitingState();
+                waitingProcedure(3);
             }
             else {
                 serverOutput = executePath();
@@ -171,10 +171,6 @@ public class Agent extends MovingObject {
             }
         }
         return false;
-    }
-    private void enterWaitingState() {
-        previousState = currentState;
-        currentState = possibleStates.waiting;
     }
     private void waitingProcedure(int counter) {
         waitingCounter = counter;
@@ -366,7 +362,6 @@ public class Agent extends MovingObject {
     }
     public int getPriority() {return currentState.ordinal();}
     public void updatePosition() throws UnsupportedOperationException {
-
         switch (currentState) {
             case waiting:
                 waitingCounter--;
@@ -380,7 +375,7 @@ public class Agent extends MovingObject {
                 finalizeNextMove();
                 return;
         }
-
+        serverOutput = null;
     }
     public void finalizeNextMove() {
         if(path == null || path.isEmpty()) return;
@@ -413,7 +408,6 @@ public class Agent extends MovingObject {
             Node nextStep = path.peek();
             System.err.println(nextStep.toString());
             if (nextStep != null && (currentState == movingBox || currentState == movingTowardsBox || currentState == inConflict)) {
-                hasMoved = false;
                 switch(nextStep.action.actType) {
                     case Noop:
                         break;
