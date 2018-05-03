@@ -6,7 +6,7 @@ import java.util.*;
 
 public class MainBoard {
     private List< List<BasicObject>> gameBoard;
-    public static Map<String, Map<Character, Box>> BoxColorGroups = new HashMap<>();
+    public static Map<String, List<Box>> BoxColorGroups = new HashMap<>();
     public static List< Agent > agents = new ArrayList<>();
     public static Map<Character, List<Box>> boxesByID = new HashMap<>();
     public static List<Box> allBoxes = new LinkedList<>();
@@ -85,15 +85,14 @@ public class MainBoard {
                     allBoxes.add(newBox);
                     List<Box> boxResult = boxesByID.get(id);
                     objects.add(i, newBox);
-                    Map<Character, Box> result = BoxColorGroups.get(currentColor);
+                    List<Box> result = BoxColorGroups.get(currentColor);
                     if (result == null) {
-
-                        result = new HashMap<>();
-                        result.put(id, newBox);
+                        result = new LinkedList<>();
+                        result.add(newBox);
                         BoxColorGroups.put(currentColor, result);
                     }
                     else {
-                        result.put(id, newBox);
+                        result.add(newBox);
                     }
                     if(boxResult == null) {
                         boxResult = new LinkedList<>();

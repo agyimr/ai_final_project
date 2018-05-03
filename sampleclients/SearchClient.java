@@ -17,7 +17,8 @@ public class SearchClient {
     private int goalX;
     private int goalY;
     private final int searchIncrement = MainBoard.MainBoardYDomain * MainBoard.MainBoardXDomain ;
-    private int searchRange =searchIncrement * 5;
+    private int searchRange =searchIncrement * 10;
+    private boolean biggerRangeTriggered = false;
     public LinkedList<LinkedList<Node>> immovableObstacles = new LinkedList<>();
     public boolean pathBlocked = false;
     public boolean pathInaccessible = false;
@@ -40,6 +41,7 @@ public class SearchClient {
     }
     public LinkedList<Node> continuePath() {
         if(pathBlocked) {
+            pathBlocked = false;
             owner.waitForObstacleToBeRemoved();
             LinkedList<Node> dummyPath = new LinkedList<>();
             dummyPath.add(new Node(null, new Command(), owner.getX(), owner.getY()));
@@ -102,6 +104,9 @@ public class SearchClient {
         LinkedList<Node> result = conductSearch(searchRange, goalX, goalY, pushingBox);
         System.err.println("Goal coordinates: " + goalX + ", " + goalY + result);
         if(result == null) {
+            if(biggerRangeTriggered || pathBlocked) {
+                return null;
+            }
             findObstacles();
             if(pathBlocked) {
                 System.err.println("Path Blocked");
@@ -113,10 +118,12 @@ public class SearchClient {
             }
             else {
                 int oldRange = searchRange;
-                searchRange *= 20;
+                searchRange *= 10;
+                biggerRangeTriggered = true;
                 System.err.println("bigger range search: ");
                 LinkedList<Node> mustBeTrue = FindPath(pushingBox, goalX, goalY);
                 searchRange = oldRange;
+                biggerRangeTriggered = false;
                 return mustBeTrue;
             }
         }
@@ -147,6 +154,8 @@ public class SearchClient {
         }
     }
     private void findObstacles() {
+        pathBlocked = false;
+        beforeFirstImmovableObstacle = null;
         initializeSearch(false, goalX, goalY);
         strategy.addToFrontier(new Node(owner.getX(), owner.getY(), owner.getColor(), Collections.emptyList()));
         LinkedList<Node> emptySearchResult = conductSearch(searchRange, goalX, goalY, false);
@@ -172,19 +181,15 @@ public class SearchClient {
                     workaroundPaths.peek().add(point);
                 }
             }
-            else if(workaroundBegin != null) {
+            else if(workaroundBegin != null && !obstacles.isEmpty()) {
                 System.err.println(workaroundBegin + " end: " + point);
                 initializeSearch(false, point.agentX, point.agentY);
                 strategy.addToFrontier(new Node(workaroundBegin.agentX, workaroundBegin.agentY, owner.getColor(), obstacles));
                 LinkedList<Node> partialSearchResult = conductSearch(100* workaroundLength, point.agentX, point.agentY, false);
-                System.err.println(obstacles);
-                System.err.println("Result: " + partialSearchResult);
                 if(partialSearchResult != null) {
                     examineBoxesOnPath(partialSearchResult, obstacles, workaroundPaths);
-                    System.err.println(obstacles);
                 }
                 else {
-                    System.err.println("Hello there gsdgds");
                     if(!pathBlocked) { // setting a flag
                         pathBlocked = true;
                         beforeFirstImmovableObstacle = workaroundBegin;
@@ -270,9 +275,13 @@ public class SearchClient {
             LinkedList<Box> obstacles = new LinkedList<>();
             LinkedList<LinkedList<Node>> workaroundPaths = new LinkedList<>();
             examineBoxesOnPath(emptySearchResult, obstacles, workaroundPaths);
-            System.err.println("obstacles: " + immovableObstacles);
-//            if(!immovableObstacles.isEmpty())
+            if(!immovableObstacles.isEmpty()) {
+                System.err.println(immovableObstacles);
+                System.err.println(beforeFirstImmovableObstacle);
+                System.err.println(owner);
+                //throw new NegativeArraySizeException();
 //                findSaviors();
+            }
         }
         else{
             pathInaccessible = true;

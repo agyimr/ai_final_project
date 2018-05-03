@@ -45,12 +45,12 @@ public abstract class Heuristic implements Comparator<Node> {
                 return h(n.parent) + 16;
             }
             else{
-                return h(n.parent) + 2;
+                return h(n.parent) + 4;
             }
         }
         else {
             if (n.action.actType == Command.type.Move ) return goalRoom.getDistanceFromPoint(new Point(n.agentX, n.agentY));
-            return goalRoom.getDistanceFromPoint(new Point(n.agentX, n.agentY)) + 8;
+            else return goalRoom.getDistanceFromPoint(new Point(n.agentX, n.agentY)) + 2;
         }
     }
     private int getPointHeuristic(Node n) {

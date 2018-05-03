@@ -47,10 +47,10 @@ public class Box extends MovingObject {
         }
     }
     public void resetDependencies() {
-        System.err.println(assignedGoal.deps);
 
         for(Box theCurrentID : MainBoard.allBoxes) {
             theCurrentID.noGoalOnTheMap = false;
+            theCurrentID.assignedAgent = null;
         }
         for(Agent sameColor : MainBoard.agents) {
             if(sameColor.jobless()) sameColor.moveYourAss();
