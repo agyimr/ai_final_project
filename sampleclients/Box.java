@@ -38,8 +38,8 @@ public class Box extends MovingObject {
     }
     public boolean atGoalPosition() {
         if (assignedGoal == null) return false;
-        if( Integer.compare(getX(), assignedGoal.getX()) == 0
-                && Integer.compare(getY(), assignedGoal.getY()) == 0 ) {
+        if( getX() - assignedGoal.getX() == 0
+                && getY() - assignedGoal.getY() == 0 ) {
             return true;
         }
         else {
@@ -50,7 +50,6 @@ public class Box extends MovingObject {
 
         for(Box theCurrentID : MainBoard.allBoxes) {
             theCurrentID.noGoalOnTheMap = false;
-            theCurrentID.assignedAgent = null;
         }
         for(Agent sameColor : MainBoard.agents) {
             if(sameColor.jobless()) sameColor.moveYourAss();

@@ -157,7 +157,6 @@ public class Agent extends MovingObject {
                 if(newBox.assignedGoal == null) {
                     newBox.tryToFindAGoal();
                 }
-                System.err.println(newBox);
                 if (!newBox.atGoalPosition() && (newBox.assignedAgent == null) && !newBox.noGoalOnTheMap) {
                     if(nextToBox(newBox)) { // can find a path to box, or is next to!
                         attachedBox = newBox;
@@ -167,7 +166,6 @@ public class Agent extends MovingObject {
                         return true;
                     }
                     int currentPath = RandomWalkClient.roomMaster.getPathEstimate(getCoordinates(), newBox.getCoordinates());
-                    System.err.println(currentPath);
                     if(currentPath < bestPath) {
                         bestPath = currentPath;
                         bestBox = newBox;
@@ -219,9 +217,10 @@ public class Agent extends MovingObject {
             if (nextStep != null) {
                 System.err.println("try to move");
                 if(!tryToMove(nextStep)) {
-                    //path = null;
-                    //return "NoOp";
                     System.err.println(path);
+                    path = null;
+                    throw new NegativeArraySizeException();
+                    // return "NoOp";
                 }
                 //serverOutput = nextStep.action.toString();
                 return nextStep.action.toString();
@@ -375,10 +374,12 @@ public class Agent extends MovingObject {
         conflictSteps = commands.size();
     }
     public void handleConflict(List<Command> commands) {
+        if(hasMoved()) return;
         changeState(inConflict);
         replacePath(commands);
     }
     public void handleConflict(int waitingTime) {
+        if(hasMoved()) return;
         waitingProcedure(waitingTime);
     }
     public boolean isMovingBox() { return currentState == movingBox;}

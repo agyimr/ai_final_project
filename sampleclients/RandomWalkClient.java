@@ -71,8 +71,8 @@ public class RandomWalkClient {
                     MainBoard.agents.get(i).updatePosition();
                 }
                 else {
-                    MainBoard.agents.get(i).path = null;
-                }
+                    System.err.println( MainBoard.agents.get(i));
+                    throw new NumberFormatException();                }
             }
         }
         catch (UnsupportedOperationException exc) {
