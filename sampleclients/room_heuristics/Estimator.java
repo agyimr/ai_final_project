@@ -13,12 +13,18 @@ public class Estimator {
         if (!containsBoxes(through) && !RandomWalkClient.gameBoard.isBox(closest_point.x, closest_point.y)) {
             return to.getDistanceFromPoint(from);
         }
-        int length = search(from, to, through);
-        //System.err.println("From " + from.toString() + ", to " + to.id.charAt(0) + ", through " + through.id.charAt(0) + " :   " + length);
-        return length;
+        RoomNode goal_node = search(from, to, through);
+        if (goal_node == null) return -1;
+        return goal_node.g;
     }
 
-    private static int search(Point from, Section to, Section through) {
+    public static ArrayList<Box> getObstacles(Point from, Section to, Section through) {
+        RoomNode goal_node = search(from, to, through);
+        if (goal_node == null) return null;
+        return goal_node.boxList;
+    }
+
+    private static RoomNode search(Point from, Section to, Section through) {
         MainBoard map = RandomWalkClient.gameBoard;
         ArrayList<RoomNode> closed_set = new ArrayList<>();
         PriorityQueue<RoomNode> open_set = new PriorityQueue<>(10, Comparator.comparingInt((n) -> n.f));
@@ -36,7 +42,7 @@ public class Estimator {
 
             // leave search only if all the possible open set nodes are worse than our solution
             if (goalNode != null && current_node.g > goalNode.g) {
-                return goalNode.g;
+                return goalNode;
             }
 
             // if a solution found, check whether it's better than our current one
@@ -76,8 +82,8 @@ public class Estimator {
             }
         }
 
-        if (goalNode != null) return goalNode.g;
-        return -1;
+        if (goalNode != null) return goalNode;
+        return null;
     }
 
     private static ArrayList<Point> getValidNeighbours(Point position, Section through, Section to) {
