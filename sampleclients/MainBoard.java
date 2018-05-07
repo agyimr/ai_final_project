@@ -141,7 +141,7 @@ public class MainBoard {
     public static boolean isWall (char id) {return (id == '+');}
 
     //returns object under given coordinates
-    BasicObject getElement(int x, int y) {
+    public BasicObject getElement(int x, int y) {
         if(yOutOfBounds(y) || xOutOfBounds(x)) throw new UnsupportedOperationException();
         return gameBoard.get(y).get(x);
     }

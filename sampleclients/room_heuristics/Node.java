@@ -26,14 +26,14 @@ public class Node {
         if (o == this) return true;
         if (!(o instanceof Node)) return false;
         Node n = (Node) o;
-        return n.position.equals(this.position);
+        return n.position.equals(this.position) && n.g == g;
     }
 
     @Override
     public String toString() {
         if (this.through != null ) {
-            return "X: " + position.x + ", Y: " + position.y + "\n" + "Room: " + this.through.id.charAt(0) + "\n" ;
+            return "X: " + position.x + ", Y: " + position.y + "; " + "Room: " + this.through.id.charAt(0) + ", g: " + g + ", h: " + h + ", f: " + f;
         }
-        return "X: " + position.x + ", Y: " + position.y + "\n" + "Room: start" + "\n";
+        return "X: " + position.x + ", Y: " + position.y + "\n" + "Room: start";
     }
 }

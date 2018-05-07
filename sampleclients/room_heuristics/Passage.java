@@ -129,23 +129,23 @@ public class Passage {
         }
     }
 
-    void PrintMap() {
+    public void PrintMap() {
         for (int dim = 0; dim <= 1; ++dim) {
             for (int row = 0; row < this.height; ++row) {
                 for (int col = 0; col < this.width; ++col) {
                     if (this.map.character_map[row][col] == '+') {
-                        System.out.print('+');
+                        System.err.print('+');
                     } else {
                         if (this.section_map[row][col][dim] != null) {
-                            System.out.print(this.section_map[row][col][dim].id.charAt(0));
+                            System.err.print(this.section_map[row][col][dim].id.charAt(0));
                         } else {
-                            System.out.print(' ');
+                            System.err.print(' ');
                         }
                     }
                 }
-                System.out.print('\n');
+                System.err.print('\n');
             }
-            System.out.print('\n');
+            System.err.print('\n');
         }
     }
 }

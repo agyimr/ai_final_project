@@ -1,8 +1,6 @@
 package sampleclients.room_heuristics;
 
-import sampleclients.BasicObject;
 import sampleclients.MainBoard;
-import sampleclients.RandomWalkClient;
 
 import java.awt.Point;
 import java.util.ArrayList;
@@ -33,16 +31,32 @@ public class RoomAStar {
         Node init_node = new Node(null, passages.section_map[from.y][from.x], from, null, 0, passages.getDistanceFrom(from, to));
         open_set.add(init_node);
 
+        boolean explore;
+        LinkedList<Node> solution = new LinkedList<>();
         // main loop
         while(!open_set.isEmpty()) {
+            explore = true;
 
             Node current_node = open_set.poll();
+
+            if (!solution.isEmpty() && current_node.g > solution.getLast().g) {
+                return solution;
+            }
 
             // checking for goal state
             for (Section s : current_node.sections) {
                 if (s != null) {
                     if (s.contains(to)) {
-                        return extractPlan(current_node, to, s);
+                        LinkedList<Node> path = extractPlan(current_node, to, s);
+                        // if first time we find a solution
+                        if (solution.isEmpty()) {
+                            solution = path;
+                        }
+                        // if we find a better solution than we already have...
+                        if (!solution.isEmpty() && !path.isEmpty() && path.getLast().g < solution.getLast().g) {
+                            solution = path;
+                        }
+                        explore = false;
                     }
                 }
             }
@@ -50,23 +64,29 @@ public class RoomAStar {
             // putting current state to the closed set
             closed_set.add(current_node);
 
-            // generating successor states
-            ArrayList<Path> neighbour_sections = this.passages.getAllNeighbours(current_node.position);
-            if (neighbour_sections == null) return null; // beginning section doesn't have any neighbours AND goal is not in there.
+            if (explore) {
+                // generating successor states
+                ArrayList<Path> neighbour_sections = this.passages.getAllNeighbours(current_node.position);
+                if (neighbour_sections == null) return null; // beginning section doesn't have any neighbours AND goal is not in there.
 
-            for(Path s : neighbour_sections) {
-                int travel_distance = s.to.getDistanceFromPoint(current_node.position);
-                Point p = s.to.getClosestPoint(current_node.position);
-                Node n = new Node(current_node, passages.section_map[p.y][p.x], p, s.through,
-                        current_node.g + travel_distance, passages.getDistanceFrom(p, to));
+                for(Path s : neighbour_sections) {
+                    int distance = Estimator.estimatePathLength(current_node.position, s.to, s.through);
+                    if (distance != -1) { // if path exists...
+                        Point p = s.to.getClosestPoint(current_node.position);
+                        //System.err.println(distance);
+                        Node n = new Node(current_node, passages.section_map[p.y][p.x], p, s.through,
+                                current_node.g + distance, passages.getDistanceFrom(p, to));
 
-                // if not in frontier yet or not explored yet...
-                if (!open_set.contains(n) && !closed_set.contains(n)) {
-                    open_set.add(n);
+                        // if not in frontier yet or not explored yet...
+                        if (!open_set.contains(n) && !closed_set.contains(n)) {
+                            open_set.add(n);
+                        }
+                    }
                 }
             }
         }
 
+        if (!solution.isEmpty()) return solution;
         return null;
     }
 
