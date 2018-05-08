@@ -20,15 +20,11 @@ public class Goal extends BasicObject {
         }
     }
     public boolean canBeSolved(){
-        System.err.println("--------------CAN BE SOLVED:--------------------");
         for (Goal g : deps){
-            System.err.println("getID(): "+getID()+" !g.solved():"+!g.solved());
             if(!g.solved()){
-                System.err.println("REACHED?");
                 return false;
             }
         }
-        System.err.println("-------------------------------------------2222222");
         return true;
 
     }
