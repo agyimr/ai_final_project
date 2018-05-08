@@ -81,7 +81,8 @@ public class Agent extends MovingObject {
     }
     private void checkPath() {
         pathFindingEngine.immovableObstacles.clear();
-        if(executePath() == null) {
+        clearPath();
+        if(!executePath()) {
             waitingProcedure(3);
         }
         else {
@@ -93,6 +94,7 @@ public class Agent extends MovingObject {
         if(nextBoxToPush != null) {
             attachedBox = nextBoxToPush;
             nextBoxToPush = null;
+            changeState(removingObstacle);
         }
         else if(isBoxAttached()) {
             changeState(movingTowardsBox);
@@ -104,17 +106,12 @@ public class Agent extends MovingObject {
         //maybe some other job?
     }
     private void resolveConflict() {
-        if(path!= null && !path.isEmpty()){
-            System.err.println("executing path to resolve conflict");
-            serverOutput = executePath();
-        }
-        else {
+        if(path.isEmpty() || !executePath()){
             revertState();
         }
     }
     private void moveToTheBox() {
-        String result = executePath();
-        if(result != null) serverOutput = result;
+        if(executePath()) return;
         else if(nextToBox(attachedBox)) {
             System.err.println("isNext to box: ");
             changeState(movingBox);
@@ -124,7 +121,7 @@ public class Agent extends MovingObject {
         }
         else {
             System.err.println("Moving towards box: ");
-            serverOutput = executePath();
+            executePath();
         }
     }
     private void moveWithTheBox() {
@@ -137,13 +134,12 @@ public class Agent extends MovingObject {
         }
         else {
             System.err.println("Moving box towards goal: ");
-            String result = executePath();
-            if (result != null) serverOutput = result;
+            if ( executePath()) return;
             else if (!findPathWithBox()) {
                 waitingProcedure(3);
             }
             else {
-                serverOutput = executePath();
+                executePath();
             }
         }
     }
@@ -215,7 +211,7 @@ public class Agent extends MovingObject {
     private boolean nextToBox(Box current) {
         return nextTo(getX(), getY(), current.getX(), current.getY());
     }
-    private String executePath( ) {
+    private boolean executePath( ) {
         if(path == null || path.isEmpty()) path = pathFindingEngine.continuePath();
         if (path != null) {
             Node nextStep = path.peek();
@@ -224,15 +220,16 @@ public class Agent extends MovingObject {
                 if(!tryToMove(nextStep)) {
                     System.err.println(path);
                     clearPath();
-                    return "NoOp";
+                    serverOutput = "NoOp";
+                    return true;
                 }
                 //serverOutput = nextStep.action.toString();
-                return nextStep.action.toString();
-
+                serverOutput = nextStep.action.toString();
+                return true;
             }
         }
         clearPath();
-        return null;
+        return false;
     }
     private boolean tryToMove(Node nextStep)  throws UnsupportedOperationException {
         //return getMoveDirection(x, y);
@@ -321,7 +318,9 @@ public class Agent extends MovingObject {
         path = null;
     }
     private void removeObstacle() {
-        String result = executePath();
+        if(!executePath()) {
+
+        }
 
     }
     //external handlers
@@ -476,7 +475,10 @@ public class Agent extends MovingObject {
     }
     public boolean hasMoved() { return serverOutput != null;}
     public boolean jobless() { return currentState == jobless;}
-    public void moveYourAss() { changeState(unassigned);}
+    public void moveYourAss() {
+        changeState(unassigned);
+        previousState = unassigned;
+    }
     public boolean isWaiting(){
         return currentState == waiting || currentState == jobless || currentState == pathBlocked;
     }
