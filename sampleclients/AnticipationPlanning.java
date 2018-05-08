@@ -19,7 +19,7 @@ public class AnticipationPlanning {
         this.width = 50;
         this.height = 50;
 
-        this.initliaze();
+        this.initialize();
     }
 
     public AnticipationPlanning(MainBoard mainBoard) {
@@ -27,10 +27,10 @@ public class AnticipationPlanning {
         this.width = mainBoard.getWidth();
         this.height = mainBoard.getHeight();
 
-        this.initliaze();
+        this.initialize();
     }
 
-    private void initliaze() {
+    private void initialize() {
 
         this.board = new HashMap<Cell, TreeMap<Integer, Booking>>();
 
@@ -195,7 +195,7 @@ public class AnticipationPlanning {
         Iterator iterator = this.getBoardCell((int) target.getX(), (int) target.getY()).keySet().iterator();
 
         if(iterator.hasNext()) {
-            return ((Integer) iterator.next());
+            return (Integer) iterator.next();
         } else {
             return -1;
         }
@@ -267,8 +267,8 @@ public class AnticipationPlanning {
                 Iterator it = this.getBoardCell(x, y).keySet().iterator();
 
                 while(it.hasNext()) {
-                    Booking booking = (Booking) it.next();
-                    board += booking.getInstant() + " ";
+                    int bookingInstant = (Integer) it.next();
+                    board += bookingInstant + " ";
                 }
 
                 board += ";";
@@ -363,7 +363,7 @@ public class AnticipationPlanning {
         return null;
     }
 
-    private class Booking implements Comparable {
+    private class Booking implements Comparable<Booking> {
 
         private Agent agent;
         private int instant;
@@ -392,8 +392,8 @@ public class AnticipationPlanning {
         }
 
         @Override
-        public int compareTo(Object o) {
-            return ((Booking) o).getInstant() - this.getInstant();
+        public int compareTo(Booking o) {
+            return o.getInstant() - this.getInstant();
         }
     }
 
