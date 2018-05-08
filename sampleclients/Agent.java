@@ -478,6 +478,6 @@ public class Agent extends MovingObject {
     public boolean jobless() { return currentState == jobless;}
     public void moveYourAss() { changeState(unassigned);}
     public boolean isWaiting(){
-        return currentState == waiting || currentState == jobless || currentState == pathBlocked;
+        return currentState == waiting || currentState == jobless || currentState == pathBlocked || currentState == unassigned;
     }
 }
