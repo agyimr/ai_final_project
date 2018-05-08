@@ -318,6 +318,7 @@ public class Agent extends MovingObject {
     }
     private void clearPath() {
         //TODO clear anticipation board
+        RandomWalkClient.anticipationPlanning.removePath(path, this, RandomWalkClient.anticipationPlanning.getClock());
         path = null;
     }
     private void removeObstacle() {

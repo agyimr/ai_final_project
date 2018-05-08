@@ -89,6 +89,7 @@ public class RandomWalkClient {
 
         System.err.println("Clock " + anticipationPlanning.getClock());
         anticipationPlanning.incrementClock();
+        anticipationPlanning.displayBoard();
         return true;
     }
 
