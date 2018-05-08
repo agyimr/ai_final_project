@@ -21,7 +21,7 @@ public class ObstacleArbitrator {
                             closestDistance = distance;
                         }
                     }
-                    closestAgent.removeObstacle(obstacle, closestDistance - point.timeFrame);
+                    closestAgent.scheduleObstacleRemoval(obstacle, closestDistance - point.timeFrame);
                 }
 
             }
