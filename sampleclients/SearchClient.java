@@ -61,7 +61,7 @@ public class SearchClient {
         else if(currentRoom.contains(new Point(goalX, goalY))) {
             return FindPath(pushingBox, goalX, goalY);
         }
-        else if(nextRoom != null && nextRoom.contains(owner.getCoordinates())) {
+        else if(nextRoom != null && (nextRoom.contains(owner.getCoordinates()) || nextRoom.contains(owner.getAttachedBox().getCoordinates()))) {
             currentRoom = nextRoom;
             if(getNextRoom())
                 return FindRoomPath(pushingBox, nextRoom);
@@ -69,8 +69,12 @@ public class SearchClient {
                 return FindPath(pushingBox, goalX, goalY);
         }
         else {
-            //return FindPath(pushingBox, goalX, goalY);
-            return null;
+            return FindPath(pushingBox, goalX, goalY);
+//            RandomWalkClient.roomMaster.passages.PrintMap();
+//            System.err.println(roomPath);
+//            System.err.println(currentRoom);
+//            System.err.println(nextRoom);
+//            throw new NegativeArraySizeException();
         }
     }
     public boolean getPath(boolean pushingBox, int goalX, int goalY) {
@@ -256,7 +260,7 @@ public class SearchClient {
             if (!pushing && goalRoom.contains(new Point(leafNode.agentX, leafNode.agentY))) {
                 return leafNode.extractPlan();
             }
-            else if (pushing && goalRoom.contains(new Point(leafNode.agentX, leafNode.agentY))) {
+            else if (pushing && goalRoom.contains(new Point(leafNode.boxX, leafNode.boxY))) {
                 return leafNode.extractPlan();
             }
             strategy.addToExplored(leafNode);
