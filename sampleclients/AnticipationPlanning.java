@@ -92,8 +92,6 @@ public class AnticipationPlanning {
         int oldX = agent.getX();
         int oldY = agent.getY();
 
-        getEarliestOccupation(new Point(oldX, oldY));
-
         Agent conflictAgent = null;
 
         while(it.hasNext()) {
