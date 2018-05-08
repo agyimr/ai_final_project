@@ -316,10 +316,26 @@ public class Agent extends MovingObject {
         path = null;
     }
     private void removeObstacle() {
-        throw new NegativeArraySizeException();
-/*        if(!executePath()) {
-
-        }*/
+        if(!executePath()) {
+            if(isBoxAttached()) {
+                if(nextToBox(attachedBox)) {
+                    if(attachedBox.assignedGoal == null && !attachedBox.tryToFindAGoal()) {
+                        //TODO find some free place
+                    }
+                    else {
+                        if(!findPathWithBox()) {
+                            //TODO then just get safe spot
+                        }
+                    }
+                }
+                else {
+                    findPathToBox(attachedBox);
+                }
+            }
+            else {
+                //TODO find free space
+            }
+        }
 
     }
     //external handlers
