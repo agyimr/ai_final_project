@@ -32,7 +32,7 @@ public class Agent extends MovingObject {
         pathFindingEngine = new SearchClient(this);
     }
     public String act(){
-        serverOutput = null;
+        //serverOutput = null;
         if(pendingHelp) {
 
             pendingHelp = false;
@@ -218,7 +218,7 @@ public class Agent extends MovingObject {
                 System.err.println("try to move");
                 if(!tryToMove(nextStep)) {
                     System.err.println(path);
-                    path = null;
+                    clearPath();
                     throw new NegativeArraySizeException();
                     // return "NoOp";
                 }
@@ -227,7 +227,7 @@ public class Agent extends MovingObject {
 
             }
         }
-        path = null;
+        clearPath();
         return null;
     }
     private boolean tryToMove(Node nextStep)  throws UnsupportedOperationException {
@@ -311,8 +311,14 @@ public class Agent extends MovingObject {
         else
             return false;
     }
-    public void replan() {
+    private void clearPath() {
+        //TODO clear anticipation board
         path = null;
+    }
+
+    //external handlers
+    public void replan() {
+        clearPath();
         if(isBoxAttached()) {
             dropTheBox();
         }
@@ -327,7 +333,7 @@ public class Agent extends MovingObject {
             return null;
         }
     }
-    public void helpYourFriend(Box issue, int offset) {
+    public void removeObstacle(Box issue, int offset) {
         nextBoxToPush = issue;
         if(this.isMovingBox() && path.size() < offset) {
             //just finish the job
@@ -374,12 +380,10 @@ public class Agent extends MovingObject {
         conflictSteps = commands.size();
     }
     public void handleConflict(List<Command> commands) {
-        if(hasMoved()) return;
         changeState(inConflict);
         replacePath(commands);
     }
     public void handleConflict(int waitingTime) {
-        if(hasMoved()) return;
         waitingProcedure(waitingTime);
     }
     public boolean isMovingBox() { return currentState == movingBox;}
@@ -389,6 +393,7 @@ public class Agent extends MovingObject {
     }
     public int getPriority() {return currentState.ordinal();}
     public void updatePosition() throws UnsupportedOperationException {
+        serverOutput = null;
         switch (currentState) {
             case waiting:
                 waitingCounter--;
@@ -401,7 +406,6 @@ public class Agent extends MovingObject {
                 finalizeNextMove();
                 return;
         }
-        serverOutput = null;
     }
     private void finalizeNextMove() {
         if(path == null || path.isEmpty()) return;
@@ -416,7 +420,7 @@ public class Agent extends MovingObject {
             case Pull:
             case Push:
                 if(!updateMapWithBox(nextStep, RandomWalkClient.gameBoard)) {
-                    path = null;
+                    clearPath();
                     return;
                 }
                 Box movedObject = (Box) RandomWalkClient.gameBoard.getElement(nextStep.boxX, nextStep.boxY);
@@ -436,6 +440,7 @@ public class Agent extends MovingObject {
                 serverOutput = null;
                 return;
             }
+            serverOutput = null;
             Node nextStep = path.peek();
             System.err.println(nextStep.toString());
             switch(nextStep.action.actType) {
@@ -455,11 +460,8 @@ public class Agent extends MovingObject {
                     board.revertPositionChange(this, nextStep.agentX, nextStep.agentY);
                     break;
             }
-
-
             System.err.println("Agent "+getID()+" has been reverted");
         }
-        serverOutput = null;
     }
     public Box getAttachedBox() {
         return attachedBox;
