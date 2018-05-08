@@ -18,7 +18,7 @@ public class Conflicts {
             System.err.println("reverting, Replanning and waiting");
             agent1.revertMoveIntention(RandomWalkClient.nextStepGameBoard);
             agent1.replan();
-            agent1.handleConflict(2);
+            agent1.handleConflict(1);
             agent1.act();
             return;
         }
@@ -28,7 +28,7 @@ public class Conflicts {
             System.err.println("reverting, Replanning and waiting");
             agent1.revertMoveIntention(RandomWalkClient.nextStepGameBoard);
             agent1.replan();
-            agent1.handleConflict(2);
+            agent1.handleConflict(1);
             agent1.act();
             return;
 		}
@@ -76,7 +76,7 @@ public class Conflicts {
                 System.err.println("Move cant be applied after conflict");
                 System.err.println("waiting and Replanning instead");
                 agent1.replan();
-                agent1.handleConflict(2);
+                agent1.handleConflict(1);
                 agent1.act();
             }
             if(pawnMove && conflictPartner.getID() == pawnAgent.getID()) {
@@ -86,7 +86,7 @@ public class Conflicts {
                     System.err.println("Move cant be applied after conflict");
                     System.err.println("waiting and Replanning instead");
                     conflictPartner.replan();
-                    conflictPartner.handleConflict(2);
+                    conflictPartner.handleConflict(1);
                     conflictPartner.act();
                 }
             }
@@ -95,10 +95,10 @@ public class Conflicts {
             System.err.println("Conflict resolution have not been able to resovle the conflict -> throwing exception");
             System.err.println("waiting and Replanning instead");
             conflictPartner.replan();
-            conflictPartner.handleConflict(2);
+            conflictPartner.handleConflict(1);
             conflictPartner.act();
             agent1.replan();
-            agent1.handleConflict(2);
+            agent1.handleConflict(1);
             agent1.act();
         }
 
@@ -257,7 +257,10 @@ public class Conflicts {
 
         }
 
-        kingAgent.handleConflict(1);
+        if(kingNoop){
+            kingAgent.handleConflict(1);
+        }
+
         pawnAgent.handleConflict(solution);
         System.err.println("PlanMerge found solution with pawn agent " + pawnAgent.getID() + ":");
         for (Command c : solution) {
