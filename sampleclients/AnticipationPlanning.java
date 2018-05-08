@@ -1,10 +1,11 @@
 package sampleclients;
 
+import java.awt.*;
 import java.util.*;
 
 public class AnticipationPlanning {
 
-    private HashMap<Cell, HashMap<Booking, Booking>> board;
+    private HashMap<Cell, TreeMap<Integer, Booking>> board;
 
     private int clock = 0;
 
@@ -18,7 +19,7 @@ public class AnticipationPlanning {
         this.width = 50;
         this.height = 50;
 
-        this.initliaze();
+        this.initialize();
     }
 
     public AnticipationPlanning(MainBoard mainBoard) {
@@ -26,16 +27,16 @@ public class AnticipationPlanning {
         this.width = mainBoard.getWidth();
         this.height = mainBoard.getHeight();
 
-        this.initliaze();
+        this.initialize();
     }
 
-    private void initliaze() {
+    private void initialize() {
 
-        this.board = new HashMap<Cell, HashMap<Booking, Booking>>();
+        this.board = new HashMap<Cell, TreeMap<Integer, Booking>>();
 
         for(int y = 0; y < height; ++y) {
             for(int x = 0; x < width; ++x) {
-                this.board.put(new Cell(x, y), new HashMap<Booking, Booking>());
+                this.board.put(new Cell(x, y), new TreeMap<Integer, Booking>());
             }
         }
 
@@ -43,7 +44,7 @@ public class AnticipationPlanning {
 
     }
 
-    private HashMap<Booking, Booking> getBoardCell(int x, int y) {
+    private TreeMap<Integer, Booking> getBoardCell(int x, int y) {
         return this.board.get(new Cell(x, y));
     }
 
@@ -59,7 +60,7 @@ public class AnticipationPlanning {
 
             Cell cell = (Cell) binIterator.next();
 
-            this.getBoardCell(cell.getX(), cell.getY()).remove(new Booking(null, this.clock));
+            this.getBoardCell(cell.getX(), cell.getY()).remove(this.clock);
 
         }
 
@@ -172,7 +173,6 @@ public class AnticipationPlanning {
 
             Node node = (Node) it.next();
 
-
             unbookCell(node.agentX, node.agentY, agent, localClock);
 
             if (node.boxY != -1 && node.boxX != -1) {
@@ -187,6 +187,18 @@ public class AnticipationPlanning {
         }
 
         return null;
+
+    }
+
+    private int getEarliestOccupation(Point target) {
+
+        Iterator iterator = this.getBoardCell((int) target.getX(), (int) target.getY()).keySet().iterator();
+
+        if(iterator.hasNext()) {
+            return (Integer) iterator.next();
+        } else {
+            return -1;
+        }
 
     }
 
@@ -225,7 +237,7 @@ public class AnticipationPlanning {
 
     private void bookCell(int x, int y, Agent agent, int clock) {
 
-        this.getBoardCell(x, y).put(new Booking(agent, clock), new Booking(agent, clock));
+        this.getBoardCell(x, y).put(clock, new Booking(agent, clock));
 
         if(!this.cleanupBins.containsKey(clock)) {
             this.cleanupBins.put(clock, new HashSet<Cell>());
@@ -236,7 +248,7 @@ public class AnticipationPlanning {
 
     private void unbookCell(int x, int y, Agent agent, int clock) {
 
-        this.getBoardCell(x, y).remove(new Booking(agent, clock));
+        this.getBoardCell(x, y).remove(clock);
 
         if(this.cleanupBins.containsKey(clock)) {
             this.cleanupBins.get(clock).remove(new Cell(x, y));
@@ -255,8 +267,8 @@ public class AnticipationPlanning {
                 Iterator it = this.getBoardCell(x, y).keySet().iterator();
 
                 while(it.hasNext()) {
-                    Booking booking = (Booking) it.next();
-                    board += booking.getInstant() + " ";
+                    int bookingInstant = (Integer) it.next();
+                    board += bookingInstant + " ";
                 }
 
                 board += ";";
@@ -334,7 +346,7 @@ public class AnticipationPlanning {
     }
 
     private Booking boardContains(int x, int y, int instant) {
-        return this.getBoardCell(x, y).get(new Booking(null, instant));
+        return this.getBoardCell(x, y).get(instant);
     }
 
     private Agent boardFindAgent(int x, int y, int instant) {
@@ -342,16 +354,16 @@ public class AnticipationPlanning {
         Iterator it = this.getBoardCell(x, y).keySet().iterator();
 
         while(it.hasNext()) {
-            Booking booking = (Booking) it.next();
+            Integer bookingInstant = (Integer) it.next();
 
-            if(booking.getInstant() == instant) {
-                return booking.getAgent();
+            if(bookingInstant == instant) {
+                return this.getBoardCell(x, y).get(bookingInstant).getAgent();
             }
         }
         return null;
     }
 
-    private class Booking {
+    private class Booking implements Comparable<Booking> {
 
         private Agent agent;
         private int instant;
@@ -377,6 +389,11 @@ public class AnticipationPlanning {
         @Override
         public boolean equals(Object obj) {
             return instant == ((Booking) obj).getInstant();
+        }
+
+        @Override
+        public int compareTo(Booking o) {
+            return o.getInstant() - this.getInstant();
         }
     }
 
