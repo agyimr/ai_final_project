@@ -24,7 +24,8 @@ public class Agent extends MovingObject {
         movingTowardsBox,
         movingBox,
         inConflict,
-        pathBlocked
+        pathBlocked,
+        removingObstacle
     }
     String serverOutput = null;
     public Agent( char id, String color, int y, int x ) {
@@ -34,7 +35,9 @@ public class Agent extends MovingObject {
     public String act(){
         //serverOutput = null;
         if(pendingHelp) {
-
+            changeState(removingObstacle);
+            attachedBox = nextBoxToPush;
+            nextBoxToPush = null;
             pendingHelp = false;
         }
         System.err.println("Starting CurrentState: "+currentState);
@@ -62,6 +65,8 @@ public class Agent extends MovingObject {
             case pathBlocked:
                 checkPath();
                 break;
+            case removingObstacle:
+                removeObstacle();
         }
         if(serverOutput != null) {
             System.err.println("Ending current state: "+currentState);
@@ -315,7 +320,10 @@ public class Agent extends MovingObject {
         //TODO clear anticipation board
         path = null;
     }
+    private void removeObstacle() {
+        String result = executePath();
 
+    }
     //external handlers
     public void replan() {
         clearPath();
@@ -333,7 +341,7 @@ public class Agent extends MovingObject {
             return null;
         }
     }
-    public void removeObstacle(Box issue, int offset) {
+    public void scheduleObstacleRemoval(Box issue, int offset) {
         nextBoxToPush = issue;
         if(this.isMovingBox() && path.size() < offset) {
             //just finish the job
