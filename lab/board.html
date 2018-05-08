@@ -1,0 +1,118 @@
+<textarea id="board"></textarea>
+<textarea id="level"></textarea>
+
+<style>
+td {
+	border:1px solid;
+}
+
+td {
+	font-size: 10px;
+	height: 30px;
+	width: 30px;
+}
+</style>
+
+<table id="table">
+
+</table>
+
+<script>
+
+update = function () {
+	
+	var w = 0;
+	var h = 0;
+	
+	var instants = {};
+	
+	lines = document.getElementById("board").value.split("$");
+
+	for(l in lines) {
+	
+		if(!(l in instants)) {
+			instants[l] = {};
+		}
+
+		cells = lines[l].split(";");
+		
+		if(cells.length < 2) {
+			break;
+		}		
+		
+		for(c in cells) {
+		
+			instants[l][c] = cells[c]; 
+			
+			w = Math.max(w, c);
+		}
+		
+		h = Math.max(h, l);
+	}
+	
+	/////
+	
+	var level = {};
+	
+	lines = document.getElementById("level").value.split("\n");	
+	
+	neo = "";
+	for(l in lines) {
+		if(lines[l].indexOf("+") != -1) {
+			neo += lines[l] + "\n"; 
+		}
+	}
+	
+	lines = neo.split("\n");		
+	
+	for(l in lines) {
+
+		if(!(l in level)) {
+			level[l] = {};
+		}
+
+		cells = lines[l].split("");
+		
+		if(cells.length < 2) {
+			break;
+		}
+				
+		
+		for(c in cells) {
+		
+			level[l][c] = cells[c]; 
+			
+			w = Math.max(w, c);
+		
+		}
+		
+		h = Math.max(h, l);
+	}
+	
+	var out = "";	
+
+	for(var y = 0; y <= h; y++) {
+
+		out += "<tr>";
+
+		for(var x = 0; x <= w; x++) {
+			
+			color = (level[y][x] == "+") ? "black" : "white";
+		 
+			out += '<td style="background-color:'+color+'">' + instants[y][x] + "</td>";
+		
+		}
+		
+		out += "</tr>";
+	}
+	
+	document.getElementById("table").innerHTML = out;
+
+};
+
+document.getElementById("level").onkeyup = update;
+document.getElementById("board").onkeyup = update;
+
+update();
+
+</script>

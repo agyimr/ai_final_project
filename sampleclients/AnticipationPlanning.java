@@ -105,10 +105,10 @@ public class AnticipationPlanning {
                 System.err.println("There will be an agent-agent conflict at cell " + node.agentX + "," + node.agentY);
                 System.err.println("Conflict with agent : " + conflictAgent);
                 System.err.println(conflictAgent);
-                //System.err.flush();
-                //System.exit(1);
                 return conflictAgent;
             }
+
+            bookCell(node.agentX, node.agentY, agent, localClock);
 
             if (node.boxY != -1 && node.boxX != -1) {
 
@@ -117,19 +117,17 @@ public class AnticipationPlanning {
                 if (conflictAgent != null) {
                     System.err.println("There will be an agent-box conflict at cell " + node.boxX + "," + node.boxY);
                     System.err.println("Conflict with agent : " + conflictAgent);
-                    //System.err.flush();
-                    //System.exit(2);
                     return conflictAgent;
                 }
 
+                bookCell(node.boxX, node.boxY, agent, localClock);
             }
 
             oldX = node.agentX;
             oldY = node.agentY;
 
         }
-
-
+        /*
         it = path.iterator();
 
         localClock = getClock();
@@ -147,6 +145,45 @@ public class AnticipationPlanning {
                 bookCell(node.boxX, node.boxY, agent, localClock);
 
             }
+        }*/
+
+        return null;
+
+    }
+
+    public Agent removePath(LinkedList<Node> path, Agent agent, int originalClock) {
+
+        if(path == null) {
+            return null;
+        }
+
+        Iterator it = path.iterator();
+
+        int localClock = originalClock;
+
+        int oldX = agent.getX();
+        int oldY = agent.getY();
+
+        Agent conflictAgent = null;
+
+        while(it.hasNext()) {
+
+            localClock++;
+
+            Node node = (Node) it.next();
+
+
+            unbookCell(node.agentX, node.agentY, agent, localClock);
+
+            if (node.boxY != -1 && node.boxX != -1) {
+
+
+                unbookCell(node.boxX, node.boxY, agent, localClock);
+            }
+
+            oldX = node.agentX;
+            oldY = node.agentY;
+
         }
 
         return null;
@@ -186,7 +223,7 @@ public class AnticipationPlanning {
         }
     }
 
-    public void bookCell(int x, int y, Agent agent, int clock) {
+    private void bookCell(int x, int y, Agent agent, int clock) {
 
         this.getBoardCell(x, y).put(new Booking(agent, clock), new Booking(agent, clock));
 
@@ -195,6 +232,16 @@ public class AnticipationPlanning {
         }
 
         this.cleanupBins.get(clock).add(new Cell(x, y));
+    }
+
+    private void unbookCell(int x, int y, Agent agent, int clock) {
+
+        this.getBoardCell(x, y).remove(new Booking(agent, clock));
+
+        if(this.cleanupBins.containsKey(clock)) {
+            this.cleanupBins.get(clock).remove(new Cell(x, y));
+        }
+
     }
 
     public void displayBoard() {
@@ -244,21 +291,11 @@ public class AnticipationPlanning {
 
     public boolean isConflicting(Node node, int instant) {
 
-        int oldAgentX = node.agentX;
-        int oldAgentY = node.agentY;
+        int oldAgentX = node.agentX - Command.dirToXChange(node.action.dir1);
+        int oldAgentY = node.agentY - Command.dirToYChange(node.action.dir1);
 
         int newAgentX = node.agentX;
         int newAgentY = node.agentY;
-
-        if(node.action.dir1 == Command.dir.N) {
-            newAgentY -= 1;
-        } else if(node.action.dir1 == Command.dir.S) {
-            newAgentY += 1;
-        } else if(node.action.dir1 == Command.dir.E) {
-            newAgentX += 1;
-        } else if(node.action.dir1 == Command.dir.W) {
-            newAgentX -= 1;
-        }
 
         if(boardContains(newAgentX, newAgentY, instant) != null) {
             return true;
@@ -272,23 +309,13 @@ public class AnticipationPlanning {
             }
         }
 
-        int oldBoxX = node.boxX;
-        int oldBoxY = node.boxY;
+        int newBoxX = node.boxX;
+        int newBoxY = node.boxY;
 
-        if(oldBoxX != -1 && oldBoxY != -1) {
+        int oldBoxX = node.boxX - Command.dirToXChange(node.action.dir2);
+        int oldBoxY = node.boxY - Command.dirToYChange(node.action.dir2);
 
-            int newBoxX = node.boxX;
-            int newBoxY = node.boxY;
-
-            if (node.action.dir2 == Command.dir.N) {
-                newBoxY -= 1;
-            } else if (node.action.dir2 == Command.dir.S) {
-                newBoxY += 1;
-            } else if (node.action.dir2 == Command.dir.E) {
-                newBoxX += 1;
-            } else if (node.action.dir2 == Command.dir.W) {
-                newBoxX -= 1;
-            }
+        if(node.action.actType == Command.type.Pull || node.action.actType == Command.type.Push) {
 
             if(boardContains(newBoxX, newBoxY, instant) != null) {
                 return true;

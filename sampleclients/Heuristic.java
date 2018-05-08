@@ -28,12 +28,17 @@ public abstract class Heuristic implements Comparator<Node> {
         this.goalRoom = goalRoom;
     }
 	public int h(Node n) {
+        int value;
         if(goalRoom != null) {
-            return getRoomHeuristic(n);
+            value = getRoomHeuristic(n);
         }
         else {
-            return getPointHeuristic(n);
+            value = getPointHeuristic(n);
         }
+        if(RandomWalkClient.anticipationPlanning.isConflicting(n, n.timeFrame)) {
+            value += 8;
+        }
+        return value;
     }
     private int getRoomHeuristic(Node n) {
         if(pushingBox) {

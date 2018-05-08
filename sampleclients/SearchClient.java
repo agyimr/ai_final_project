@@ -299,25 +299,4 @@ public class SearchClient {
             }
         }
     }
-    void findSaviors() {
-        for(LinkedList<Node>list : immovableObstacles) {
-            for(Node point : list) {
-                if(gameBoard.getElement(point.agentX, point.agentY) instanceof Box) {
-                    Box obstacle = (Box) gameBoard.getElement(point.agentX, point.agentY);
-                    Agent closestAgent = null;
-                    int closestDistance = Integer.MAX_VALUE;
-                    for (Agent savior : MainBoard.AgentColorGroups.get(obstacle.getColor())) {
-                        int distance = RandomWalkClient.roomMaster.getPathEstimate(savior.getCoordinates(), obstacle.getCoordinates());
-                        if(distance < closestDistance) {
-                            closestAgent = savior;
-                            closestDistance = distance;
-                        }
-                    }
-                    //closestAgent.helpYourFriend(obstacle, closestDistance - point.timeFrame);
-                }
-
-            }
-        }
-        immovableObstacles.clear();
-    }
 }
