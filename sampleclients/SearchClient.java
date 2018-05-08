@@ -288,7 +288,7 @@ public class SearchClient {
                 System.err.println(beforeFirstImmovableObstacle);
                 System.err.println(owner);
                 //throw new NegativeArraySizeException();
-//                findSaviors();
+                ObstacleArbitrator.findSaviors(this);
             }
         }
         else{
