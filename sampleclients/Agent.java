@@ -220,10 +220,8 @@ public class Agent extends MovingObject {
                 if(!tryToMove(nextStep)) {
                     System.err.println(path);
                     clearPath();
-                    serverOutput = "NoOp";
-                    return true;
+                    return false;
                 }
-                //serverOutput = nextStep.action.toString();
                 serverOutput = nextStep.action.toString();
                 return true;
             }
@@ -318,9 +316,10 @@ public class Agent extends MovingObject {
         path = null;
     }
     private void removeObstacle() {
-        if(!executePath()) {
+        throw new NegativeArraySizeException();
+/*        if(!executePath()) {
 
-        }
+        }*/
 
     }
     //external handlers
@@ -477,9 +476,8 @@ public class Agent extends MovingObject {
     public boolean jobless() { return currentState == jobless;}
     public void moveYourAss() {
         changeState(unassigned);
-        previousState = unassigned;
     }
     public boolean isWaiting(){
-        return currentState == waiting || currentState == jobless || currentState == pathBlocked;
+        return currentState == waiting || currentState == jobless || currentState == pathBlocked || currentState == unassigned;
     }
 }
