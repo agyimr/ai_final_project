@@ -53,6 +53,7 @@ public class SearchClient {
             dummyPath.add(new Node(null, new Command(), owner.getX(), owner.getY()));
             return dummyPath; // to prevent Agent from finding new path
         }
+
         if(currentRoom == null) return null;
         else if(nextRoom == null && getNextRoom()) {
                 return FindRoomPath(pushingBox, nextRoom);
@@ -60,7 +61,7 @@ public class SearchClient {
         else if(currentRoom.contains(new Point(goalX, goalY))) {
             return FindPath(pushingBox, goalX, goalY);
         }
-        else if(nextRoom!= null && nextRoom.contains(owner.getCoordinates())) {
+        else if(nextRoom != null && nextRoom.contains(owner.getCoordinates())) {
             currentRoom = nextRoom;
             if(getNextRoom())
                 return FindRoomPath(pushingBox, nextRoom);
@@ -68,7 +69,8 @@ public class SearchClient {
                 return FindPath(pushingBox, goalX, goalY);
         }
         else {
-            return FindPath(pushingBox, goalX, goalY);
+            //return FindPath(pushingBox, goalX, goalY);
+            return null;
         }
     }
     public boolean getPath(boolean pushingBox, int goalX, int goalY) {
@@ -254,7 +256,7 @@ public class SearchClient {
             if (!pushing && goalRoom.contains(new Point(leafNode.agentX, leafNode.agentY))) {
                 return leafNode.extractPlan();
             }
-            else if (pushing && goalRoom.contains(new Point(leafNode.boxX, leafNode.boxY))) {
+            else if (pushing && goalRoom.contains(new Point(leafNode.agentX, leafNode.agentY))) {
                 return leafNode.extractPlan();
             }
             strategy.addToExplored(leafNode);
