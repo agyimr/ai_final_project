@@ -39,7 +39,13 @@ public class SearchClient {
         strategy.clear();
         strategy.heuristic.initializeSearch(pushing, goalRoom);
     }
+
     public LinkedList<Node> continuePath() {
+        LinkedList<Node> localPath = getNextRoomPath();
+        Agent possibleConflictingAgent  = RandomWalkClient.anticipationPlanning.addPath(localPath, owner);
+        return localPath;
+    }
+    public LinkedList<Node> getNextRoomPath() {
         if(pathBlocked) {
             pathBlocked = false;
             owner.waitForObstacleToBeRemoved();

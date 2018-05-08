@@ -21,14 +21,8 @@ public class RandomWalkClient {
         nextStepGameBoard = new MainBoard(gameBoard);
         GoalDependency.getGoalDependency();
         roomMaster = new RoomAStar(gameBoard);
-<<<<<<< HEAD
-=======
+
         anticipationPlanning = new AnticipationPlanning(gameBoard);
-/*		Agent someAgent = agents.get(2);
-        LinkedList<Node> path = someAgent.findPathToBox(BoxColorGroups.get(someAgent.getColor()).get(2));
-        System.err.println(path + " for Agent: " + someAgent);
-        */
->>>>>>> AnticipationPlanningSandbox
 	}
 
 
@@ -50,8 +44,6 @@ public class RandomWalkClient {
                 System.err.println();
             }
         }
-
-        System.err.println("Clock " + anticipationPlanning.getClock());
 
         String jointAction = "[";
         // create joint actions
@@ -95,8 +87,8 @@ public class RandomWalkClient {
             throw exc;
         }
 
+        System.err.println("Clock " + anticipationPlanning.getClock());
         anticipationPlanning.incrementClock();
-
         return true;
     }
 
