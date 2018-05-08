@@ -61,7 +61,7 @@ public class FindSafeSpot {
             }
             return maxNode.getPoints().get(0);
         }
-        return new Point();
+        return null;
     }
 //Expansion increase clock with new depth
         private static List<ConflictNode> getNeighbours (ConflictNode cur, Point startPos){

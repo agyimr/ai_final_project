@@ -21,7 +21,6 @@ public class RandomWalkClient {
         nextStepGameBoard = new MainBoard(gameBoard);
         GoalDependency.getGoalDependency();
         roomMaster = new RoomAStar(gameBoard);
-
         anticipationPlanning = new AnticipationPlanning(gameBoard);
 	}
 

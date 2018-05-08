@@ -40,7 +40,7 @@ public class SearchClient {
         strategy.heuristic.initializeSearch(pushing, goalRoom);
     }
 
-    public LinkedList<Node> continuePath() {
+    public LinkedList<Node> continuePath() { //TODO overwrite path at the end
         LinkedList<Node> localPath = getNextRoomPath();
         Agent possibleConflictingAgent  = RandomWalkClient.anticipationPlanning.addPath(localPath, owner);
         return localPath;
@@ -61,7 +61,7 @@ public class SearchClient {
         else if(currentRoom.contains(new Point(goalX, goalY))) {
             return FindPath(pushingBox, goalX, goalY);
         }
-        else if(nextRoom != null && (nextRoom.contains(owner.getCoordinates()) || nextRoom.contains(owner.getAttachedBox().getCoordinates()))) {
+        else if(nextRoom != null && (nextRoom.contains(owner.getCoordinates()) || (owner.isBoxAttached() && nextRoom.contains(owner.getAttachedBox().getCoordinates())))) {
             currentRoom = nextRoom;
             if(getNextRoom())
                 return FindRoomPath(pushingBox, nextRoom);

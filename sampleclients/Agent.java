@@ -1,7 +1,9 @@
 package sampleclients;
 
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 import static sampleclients.Agent.possibleStates.*;
 import static sampleclients.Command.type;
@@ -17,6 +19,7 @@ public class Agent extends MovingObject {
     private possibleStates currentState = unassigned;
     private possibleStates previousState = currentState;
     private possibleStates beforeObstacleState = unassigned;
+    Point safeSpot = null;
     enum possibleStates {
         jobless,
         unassigned,
@@ -135,7 +138,7 @@ public class Agent extends MovingObject {
         else {
             System.err.println("Moving box towards goal: ");
             if ( executePath()) return;
-            else if (!findPathWithBox()) {
+            else if (!findPathWithBox(attachedBox.assignedGoal.getX(), attachedBox.assignedGoal.getY())) {
                 waitingProcedure(3);
             }
             else {
@@ -302,8 +305,16 @@ public class Agent extends MovingObject {
         else
             return false;
     }
-    private boolean findPathWithBox() {
-        if( ! pathFindingEngine.getPath(true, attachedBox.assignedGoal.getX(), attachedBox.assignedGoal.getY())) return false;
+    private boolean findPathWithBox(int goalX, int goalY) {
+        if( ! pathFindingEngine.getPath(true, goalX, goalY)) return false;
+        path = pathFindingEngine.continuePath();
+        if(path != null)
+            return true;
+        else
+            return false;
+    }
+    private boolean findPathToSpot(int goalX, int goalY) {
+        if( ! pathFindingEngine.getPath(false, goalX, goalY)) return false;
         path = pathFindingEngine.continuePath();
         if(path != null)
             return true;
@@ -317,23 +328,34 @@ public class Agent extends MovingObject {
     }
     private void removeObstacle() {
         if(!executePath()) {
-            if(isBoxAttached()) {
-                if(nextToBox(attachedBox)) {
-                    if(attachedBox.assignedGoal == null && !attachedBox.tryToFindAGoal()) {
-                        //TODO find some free place
-                    }
-                    else {
-                        if(!findPathWithBox()) {
-                            //TODO then just get safe spot
+            if (safeSpot == null) {
+                if (isBoxAttached()) {
+                    if (nextToBox(attachedBox)) {
+                        if (attachedBox.assignedGoal == null && !attachedBox.tryToFindAGoal()) {
+                            safeSpot = FindSafeSpot.safeSpotBFS(new Point(attachedBox.getX(), attachedBox.getY()));
+                            findPathWithBox(safeSpot.x, safeSpot.y);
+                            //TODO find some free place
+                        } else {
+                            if (findPathWithBox(attachedBox.assignedGoal.getX(), attachedBox.assignedGoal.getY())) {
+                                changeState(possibleStates.movingBox);
+                            } else {
+                                safeSpot = FindSafeSpot.safeSpotBFS(new Point(attachedBox.getX(), attachedBox.getY()));
+                                findPathWithBox(safeSpot.x, safeSpot.y);
+                                //TODO then just get safe spot
+                            }
                         }
+                    } else {
+                        findPathToBox(attachedBox);
                     }
-                }
-                else {
-                    findPathToBox(attachedBox);
+                } else {
+                    safeSpot = FindSafeSpot.safeSpotBFS(new Point(attachedBox.getX(), attachedBox.getY()));
+                    findPathToSpot(safeSpot.x, safeSpot.y);
+                    //TODO find free space
                 }
             }
             else {
-                //TODO find free space
+                safeSpot = null;
+                revertState();
             }
         }
 
