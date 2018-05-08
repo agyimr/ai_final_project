@@ -257,7 +257,7 @@ public class Conflicts {
 
         }
 
-        if(kingNoop){
+        if(kingNoop && kingAgent.hasMoved()){
             kingAgent.handleConflict(1);
         }
 

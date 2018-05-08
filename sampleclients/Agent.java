@@ -374,12 +374,10 @@ public class Agent extends MovingObject {
         conflictSteps = commands.size();
     }
     public void handleConflict(List<Command> commands) {
-        if(hasMoved()) return;
         changeState(inConflict);
         replacePath(commands);
     }
     public void handleConflict(int waitingTime) {
-        if(hasMoved()) return;
         waitingProcedure(waitingTime);
     }
     public boolean isMovingBox() { return currentState == movingBox;}
