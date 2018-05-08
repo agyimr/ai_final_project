@@ -45,10 +45,11 @@ public class GoalDependency {
         }
 
         Map<Goal,List<Goal>> tmp = generateDependencies(obstructions);
+        tmp = checkDoubleDependencies(tmp);
         for (Goal key : tmp.keySet()) {//Loop through goalSet
             key.deps = tmp.get(key);
         }
-        tmp = checkDoubleDependencies(tmp);
+
         System.err.println("-----------------------------------------------");
         System.err.println("GOALDEPENDENCY");
         for (Goal key : tmp.keySet()){//Loop through goalSet
