@@ -18,11 +18,14 @@ public class Box extends MovingObject {
     boolean tryToFindAGoal() {
         int bestDistance = Integer.MAX_VALUE;
         Goal bestGoal = null;
-        for(Goal current : MainBoard.goalsByID.get(Character.toLowerCase(getID()))) {
-            int currentDistance = RandomWalkClient.roomMaster.getPathEstimate(getCoordinates(), current.getCoordinates());
-            if(current.assignedBox == null && current.canBeSolved() && currentDistance < bestDistance) {
-                bestDistance = currentDistance;
-                bestGoal = current;
+        List <Goal>goals = MainBoard.goalsByID.get(Character.toLowerCase(getID()));
+        if(goals != null) {
+            for(Goal current : goals) {
+                int currentDistance = RandomWalkClient.roomMaster.getPathEstimate(getCoordinates(), current.getCoordinates());
+                if(current.assignedBox == null && current.canBeSolved() && currentDistance < bestDistance) {
+                    bestDistance = currentDistance;
+                    bestGoal = current;
+                }
             }
         }
         if (bestGoal == null) {
