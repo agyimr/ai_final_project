@@ -10,8 +10,10 @@ public class ConflictBFS {
 	private static MainBoard map;
 	private static MainBoard nextMap;
 	private static boolean considerAgents = true;
-	public static List<Command> doBFS(List<Point> locked, List<Point> pos, boolean ca){
+	private static boolean considerBoxes = true;
+	public static List<Command> doBFS(List<Point> locked, List<Point> pos, boolean ca, boolean cb){
 		considerAgents = ca;
+		considerBoxes = cb;
 		map = RandomWalkClient.gameBoard;
 		nextMap = RandomWalkClient.nextStepGameBoard;
 		List<ConflictNode> frontier = new ArrayList<ConflictNode>();
@@ -28,7 +30,7 @@ public class ConflictBFS {
 			frontier.remove(0);
 			
 			//goal check - not in any locked points
-			if(!containsList(locked,cur.getPoints())){
+			if(!containsList(locked,cur.getPoints()) && !isBlocked(cur) && !isAlley(cur)){
 				path = generateGoalPath(cur);
 				break;
 			}
@@ -53,7 +55,9 @@ public class ConflictBFS {
 	
 		return path;
 	}
-	
+
+
+
 	private static List<ConflictNode> getNeighbours(ConflictNode cur,List<Point> startPos){
 		List<ConflictNode> n = new ArrayList<ConflictNode>();
 		dir boxdir = null;
@@ -112,18 +116,34 @@ public class ConflictBFS {
 			if(!startPos.contains(cand.get(i))){
 				int x = cand.get(i).x;
 				int y = cand.get(i).y;
-				if(map.isWall(x,y) || map.isBox(x,y) || (map.isAgent(x,y) && considerAgents) || nextMap.isWall(x,y) || nextMap.isBox(x,y) || (nextMap.isAgent(x,y) && considerAgents)){
+				boolean mapBoxHasAgent = false;
+				boolean nextMapBoxHasAgent = false;
+				if(map.getElement(x,y) instanceof Box){
+					mapBoxHasAgent = ((Box) map.getElement(x,y)).assignedAgent == null;
+				}
+				if(nextMap.getElement(x,y) instanceof Box){
+					nextMapBoxHasAgent = ((Box) nextMap.getElement(x,y)).assignedAgent == null;
+				}
+				if(map.isWall(x,y) ||
+						(map.isBox(x,y) && (considerBoxes || mapBoxHasAgent)) ||
+						(map.isAgent(x,y) && considerAgents) ||
+						nextMap.isWall(x,y) ||
+						(nextMap.isBox(x,y) && considerBoxes) ||
+						(nextMap.isAgent(x,y) && (considerAgents || nextMapBoxHasAgent))
+						){
 						return false;
 				}
 			}
-			
 		}
 		return true;
 	}
 	private static List<Command> generateGoalPath(ConflictNode goal){
 		List<Command> solution = new ArrayList<Command>();
-		
 		ConflictNode cur = goal;
+		if (needNoop(cur)){
+			System.err.println("noopNeeded");
+			solution.add(0,new Command());
+		}
 		while(cur.getParent() != null){
 			solution.add(0,cur.getCommand());
 			cur = cur.getParent();
@@ -131,6 +151,73 @@ public class ConflictBFS {
 		}
 		
 		return solution;
+	}
+	private static boolean needNoop(ConflictNode cur){
+		Point agent =  cur.getPoints().get(0);
+		Point box = agent;
+		if(cur.getPoints().size() == 2){
+			box = cur.getPoints().get(1);
+		}
+		int freeSpaces = 0;
+
+		Point curP = new Command(dir.N).getNext(agent);
+		if(!isBlocked(curP) || curP.equals(box)){
+			freeSpaces+=1;
+		}
+		curP = new Command(dir.S).getNext(agent);
+		if(!isBlocked(curP) || curP.equals(box)){
+			freeSpaces+=1;
+		}
+		curP = new Command(dir.E).getNext(agent);
+		if(!isBlocked(curP) || curP.equals(box)){
+			freeSpaces+=1;
+		}
+		curP = new Command(dir.W).getNext(agent);
+		if(!isBlocked(curP) || curP.equals(box)){
+			freeSpaces+=1;
+		}
+
+		return freeSpaces < 3;
+	}
+	private static boolean isBlocked(Point p){
+		int x = p.x;
+		int y = p.y;
+		return map.isWall(x,y) ||
+				map.isBox(x,y)||
+				map.isAgent(x,y)||
+				nextMap.isWall(x,y) ||
+				nextMap.isBox(x,y) ||
+				nextMap.isAgent(x,y);
+	}
+
+	private static boolean isBlocked(ConflictNode cur) {
+		int x = cur.getX();
+		int y = cur.getY();
+		return  map.isBox(x,y)||
+				nextMap.isBox(x,y);
+	}
+	private static boolean isAlley(ConflictNode cur) {
+		Point agent =  cur.getPoints().get(0);
+		int freeSpaces = 0;
+
+		Point curP = new Command(dir.N).getNext(agent);
+		if(!map.isWall(curP.x,curP.y)){
+			freeSpaces+=1;
+		}
+		curP = new Command(dir.S).getNext(agent);
+		if(!map.isWall(curP.x,curP.y)){
+			freeSpaces+=1;
+		}
+		curP = new Command(dir.E).getNext(agent);
+		if(!map.isWall(curP.x,curP.y)){
+			freeSpaces+=1;
+		}
+		curP = new Command(dir.W).getNext(agent);
+		if(!map.isWall(curP.x,curP.y)){
+			freeSpaces+=1;
+		}
+
+		return freeSpaces <= 2;
 	}
 	public static <E> boolean containsList(List<E> l1, List<E> l2){
 		//goes through two list and returns false if one element is in the other list and vice versa

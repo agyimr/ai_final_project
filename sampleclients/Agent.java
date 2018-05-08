@@ -21,11 +21,11 @@ public class Agent extends MovingObject {
         jobless,
         unassigned,
         waiting,
-        movingTowardsBox,
-        movingBox,
-        inConflict,
         pathBlocked,
-        removingObstacle
+        movingTowardsBox,
+        removingObstacle,
+        movingBox,
+        inConflict
     }
     String serverOutput = null;
     public Agent( char id, String color, int y, int x ) {
@@ -224,8 +224,7 @@ public class Agent extends MovingObject {
                 if(!tryToMove(nextStep)) {
                     System.err.println(path);
                     clearPath();
-                    throw new NegativeArraySizeException();
-                    // return "NoOp";
+                    return "NoOp";
                 }
                 //serverOutput = nextStep.action.toString();
                 return nextStep.action.toString();

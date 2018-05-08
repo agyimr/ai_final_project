@@ -136,8 +136,11 @@ public class Conflicts {
 
 	//This method is for detecting and delegating the type of conflict to the correct methods
 	private static boolean noopFix(Agent pawnAgent, Agent kingAgent){
+        System.err.println("states in noopfix");
+        System.err.println("king:"+kingAgent.getCurrentState());
+        System.err.println("king:"+pawnAgent.getCurrentState());
 		//Find next two points for king, if intersects with pawnAgent pos, return false, else true.
-        if(kingAgent.isWaiting() || pawnAgent.isWaiting()){
+        if(kingAgent.isWaiting() || pawnAgent.isWaiting() || pawnAgent.path.isEmpty() || kingAgent.path.isEmpty()){
             return false;
         }
 
@@ -222,13 +225,13 @@ public class Conflicts {
         boolean kingNoop = false;
         for (int i = 0; i < kingAgent.path.size(); i++) {
             tmpC = kingAgent.getCommand(i);
-
             pos = tmpC.getNext(pos);
             for (Point p : pos) {
                 if (!locked.contains(p)) {
                     locked.add(p);
                 }
                 if (i == 0 && pawnAgentPos.contains(p)) {
+                    System.err.println("nooptrue");
                     kingNoop = true;
                 }
             }
@@ -236,7 +239,7 @@ public class Conflicts {
         }
 
 
-        List<Command> solution = ConflictBFS.doBFS(locked, pawnAgentPos, true);
+        List<Command> solution = ConflictBFS.doBFS(locked, pawnAgentPos, true,true);
         if (solution.size() == 0) {
             System.err.println();
             System.err.println("PLANMERGE FOUND NO SOLUTION while considering other agents");
@@ -244,20 +247,37 @@ public class Conflicts {
 
             System.err.println();
             System.err.println("trying to find solution while not considering other agents");
-            solution = ConflictBFS.doBFS(locked, pawnAgentPos, false);
+            solution = ConflictBFS.doBFS(locked, pawnAgentPos, false,true);
             System.err.println();
 
             if (solution.size() == 0) {
                 System.err.println();
                 System.err.println("PLANMERGE FOUND NO SOLUTION while not considering other agents");
                 System.err.println();
-                return false;
+
+                System.err.println();
+                System.err.println("trying to find solution while not considering other agents or boxes");
+                solution = ConflictBFS.doBFS(locked, pawnAgentPos, false,false);
+                System.err.println();
+
+                if (solution.size() == 0) {
+                    System.err.println();
+                    System.err.println("PLANMERGE FOUND NO SOLUTION while not considering other agents and boxes");
+                    System.err.println();
+
+                    return false;
+                }else{
+                    System.err.println("Planmerge no found solution. Reversing roles to get out");
+                    solution.add(0,new Command());
+                    pawnAgent.handleConflict(solution);
+                    return planMerge(pawnAgent,kingAgent);
+                }
             }
 
 
         }
 
-        if(kingNoop && kingAgent.hasMoved()){
+        if(kingNoop && !kingAgent.hasMoved()){
             kingAgent.handleConflict(1);
         }
 
