@@ -5,7 +5,6 @@ public class Box extends MovingObject {
     public Goal assignedGoal = null;
     public Agent assignedAgent = null;
     boolean noGoalOnTheMap = false;
-    boolean reachedGoalPosition = false;
     public Box( char id, String color, int currentRow, int currentColumn ) {
         super(id, color, currentRow, currentColumn, "Box");
 //            System.err.println("Found " + color + " box " + id + " at pos: " + currentColumn + ", " + currentRow );
@@ -41,21 +40,16 @@ public class Box extends MovingObject {
         }
     }
     public boolean atGoalPosition() {
-        if(reachedGoalPosition) return true;
-        else if(assignedGoal == null) return false;
+        if(assignedGoal == null) return false;
         else if( getX() - assignedGoal.getX() == 0
                 && getY() - assignedGoal.getY() == 0 ) {
-            reachedGoalPosition = true;
             return true;
         }
         else {
-            reachedGoalPosition = false;
             return false;
         }
     }
     public void resetDependencies() {
-        assignedGoal.assignedBox = null;
-        assignedGoal = null;
         for(Box theCurrentID : MainBoard.allBoxes) {
             theCurrentID.noGoalOnTheMap = false;
         }

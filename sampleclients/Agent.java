@@ -189,7 +189,7 @@ public class Agent extends MovingObject {
         changeState(waiting);
     }
     private void waitForSomeMiracle() {
-        if(waitingCounter == 0) {
+        if(waitingCounter <= 0) {
             revertState();
         }
         else {
