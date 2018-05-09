@@ -29,17 +29,54 @@ public abstract class Heuristic implements Comparator<Node> {
     }
 	public int h(Node n) {
         int value;
+        if(n.action.actType == Command.type.Noop && n.parent != null) {
+            return h(n.parent);
+        }
+
         if(goalRoom != null) {
-            value = getRoomHeuristic(n);
+            if(pushingBox) {
+                value = getBoxHeuristic(n, goalRoom.getDistanceFromPoint(new Point(n.boxX, n.boxY)));
+            }
+            else {
+                value = getAgentHeuristic(n, goalRoom.getDistanceFromPoint(new Point(n.agentX, n.agentY)));
+            }
         }
         else {
-            value = getPointHeuristic(n);
+            if(pushingBox) {
+                value = getBoxHeuristic(n, ManhattanDistance(n.boxX, n.boxY, goalX, goalY));
+            }
+            else {
+                value = getAgentHeuristic(n, ManhattanDistance(n.agentX, n.agentY,goalX,goalY));
+            }
         }
+
         if(RandomWalkClient.anticipationPlanning.isConflicting(n, n.timeFrame)) {
             value += 8;
         }
         return value;
     }
+    private int getBoxHeuristic(Node n, int distance) {
+        if(n.boxX == -1) return h(n.parent) + 1;
+        if(n.boxes[n.boxY][n.boxX] == owner.getAttachedBox()) {
+            if(n.action.actType == Command.type.Push) {
+                return distance - 2;
+            }
+            return distance;
+        }
+        else if(n.boxes[n.boxY][n.boxX].assignedAgent != null) {
+            return h(n.parent) + 8;
+        }
+        else{
+            return h(n.parent) + 2;
+        }
+    }
+    private int getAgentHeuristic(Node n, int distance) {
+        if (n.action.actType == Command.type.Move )
+            return distance;
+        else return distance + 4;
+    }
+
+
     private int getRoomHeuristic(Node n) {
         if(pushingBox) {
             if(n.boxX == -1) return h(n.parent) + 1;

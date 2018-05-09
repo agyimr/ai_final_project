@@ -25,6 +25,7 @@ public class Node {
     private int _hash = 0;
 
     public Node(int ownerX, int ownerY, String color, Collection<Box> consideredBoxes) {
+        action = new Command();
         ownerColor = color;
         agentX = ownerX;
         agentY = ownerY;

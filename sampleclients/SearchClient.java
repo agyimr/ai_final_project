@@ -27,6 +27,11 @@ public class SearchClient {
     private LinkedList<sampleclients.room_heuristics.Node> roomPath;
     private Section currentRoom = null;
     private Section nextRoom = null;
+    public void clearRoomPath() {
+        roomPath = null;
+        currentRoom = null;
+        nextRoom = null;
+    }
     public SearchClient(Agent owner) {
         this.owner = owner;
         strategy = new StrategyBestFirst(new AStar(owner));
@@ -292,7 +297,7 @@ public class SearchClient {
                 System.err.println(beforeFirstImmovableObstacle);
                 System.err.println(owner);
                 //throw new NegativeArraySizeException();
-                ObstacleArbitrator.findSaviors(this);
+                ObstacleArbitrator.findSaviors(this, owner);
             }
         }
         else{
