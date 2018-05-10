@@ -8,16 +8,16 @@ import java.util.ArrayList;
 public class RoomNode {
     public Point position;
     public int h, g, f;
-    public ArrayList<Box> boxList;
+    public ArrayList<Obstacle> obstacles;
     public RoomNode parent;
 
-    RoomNode(RoomNode parent, Point position, int g, int h, ArrayList<Box> boxList) {
+    RoomNode(RoomNode parent, Point position, int g, int h, ArrayList<Obstacle> obstacles) {
         this.parent = parent;
         this.position = position;
         this.h = h;
         this.g = g;
         this.f = h + g;
-        this.boxList = boxList;
+        this.obstacles = obstacles;
     }
 
     @Override
