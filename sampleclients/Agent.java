@@ -352,12 +352,22 @@ public class Agent extends MovingObject {
                 if (attachedBox.assignedGoal == null && !attachedBox.tryToFindAGoal()) {
                     safeSpot = FindSafeSpot.safeSpotBFS(new Point(attachedBox.getX(), attachedBox.getY()));
                     findPathWithBox(safeSpot.x, safeSpot.y);
+                    System.err.println(serverOutput);
+                    System.err.println("SAFE SPOT: " + safeSpot);
+                    System.err.println(path);
+                    System.err.println(this);
+                    throw new NegativeArraySizeException();
                 } else {
                     if (findPathWithBox(attachedBox.assignedGoal.getX(), attachedBox.assignedGoal.getY())) {
                         changeState(possibleStates.movingBox);
                     } else {
                         safeSpot = FindSafeSpot.safeSpotBFS(new Point(attachedBox.getX(), attachedBox.getY()));
                         findPathWithBox(safeSpot.x, safeSpot.y);
+                        System.err.println(serverOutput);
+                        System.err.println("SAFE SPOT: " + safeSpot);
+                        System.err.println(path);
+                        System.err.println(this);
+                        throw new NegativeArraySizeException();
                     }
                 }
                 //TODO wake the agent up
@@ -369,6 +379,11 @@ public class Agent extends MovingObject {
             safeSpot = FindSafeSpot.safeSpotBFS(new Point(attachedBox.getX(), attachedBox.getY()));
             findPathToSpot(safeSpot.x, safeSpot.y);
             ObstacleArbitrator.jobIsDone(this);
+            System.err.println(serverOutput);
+            System.err.println("SAFE SPOT: " + safeSpot);
+            System.err.println(path);
+            System.err.println(this);
+            throw new NegativeArraySizeException();
             //TODO wake the agent up
         }
     }
