@@ -8,16 +8,17 @@ public abstract class Heuristic implements Comparator<Node> {
     boolean pushingBox;
     Agent owner;
     int goalX, goalY;
-    public Heuristic() {
-    }
-    public void initializeSearch(Agent owner, boolean pushingBox, int goalX, int goalY) {
-        this.pushingBox = pushingBox;
+    public Heuristic(Agent owner) {
         this.owner = owner;
+    }
+    public void initializeSearch(boolean pushingBox, int goalX, int goalY) {
+        this.pushingBox = pushingBox;
         this.goalX = goalX;
         this.goalY = goalY;
     }
 	public int h(Node n) {
         if(pushingBox) {
+            if(n.boxX == -1) return h(n.parent);
             if(n.boxes[n.boxY][n.boxX] == owner.getAttachedBox().getID()) {
                 return ManhattanDistance(n.boxX, n.boxY, goalX, goalY);
             }
@@ -42,9 +43,9 @@ public abstract class Heuristic implements Comparator<Node> {
 	}
 
 	public static class AStar extends Heuristic {
-		public AStar() {
-
-		}
+		public AStar(Agent owner) {
+		    super(owner);
+        }
 
 		@Override
 		public int f(Node n) {
@@ -60,8 +61,9 @@ public abstract class Heuristic implements Comparator<Node> {
 	public static class WeightedAStar extends Heuristic {
 		private int W;
 
-		public WeightedAStar( int W) {
-			this.W = W;
+		public WeightedAStar( int W, Agent owner) {
+            super(owner);
+            this.W = W;
 		}
 
 		@Override
@@ -76,8 +78,8 @@ public abstract class Heuristic implements Comparator<Node> {
 	}
 
 	public static class Greedy extends Heuristic {
-		public Greedy() {
-			super();
+		public Greedy(Agent owner) {
+			super(owner);
 		}
 
 		@Override

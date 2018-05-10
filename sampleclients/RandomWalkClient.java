@@ -85,8 +85,6 @@ public class RandomWalkClient {
         }
         catch (UnsupportedOperationException exc) {
             System.err.println("------------ Update board failed -------");
-            System.err.println(gameBoard);
-            System.err.println(nextStepGameBoard);
             System.err.println(MainBoard.agents.get(i));
             System.err.println(MainBoard.agents.get(i).path);
             System.err.println("------------ Update board failed -------");
