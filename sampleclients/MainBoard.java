@@ -149,7 +149,7 @@ public class MainBoard {
 
     //returns object under given coordinates
     BasicObject getElement(int x, int y) {
-        if(yOutOfBounds(y) || xOutOfBounds(x)) throw new UnsupportedOperationException();
+        if(yOutOfBounds(y) || xOutOfBounds(x)) throw new NullPointerException();
         return gameBoard.get(y).get(x);
     }
     //used only internally, never expose this
