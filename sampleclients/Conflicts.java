@@ -10,18 +10,21 @@ public class Conflicts {
 	public static void Conflict(Agent agent1){
         System.err.println("\n -----------------------start--------------------------------");
 
-
+        List<Agent> allInvolved = new ArrayList<>();
+        allInvolved.add(agent1);
         int maxPathSize = -1;
         LinkedList<Agent> involved = new LinkedList<>();
         involved.add(agent1);
         System.err.println("\n ----------------first-------------------------");
         if(Conflicts.delegateConflict(agent1,involved,maxPathSize,1) == -1){
             maxPathSize = 3;
+            allInvolved.addAll(involved);
             involved.clear();
             involved.add(agent1);
             System.err.println("\n ----------------second-------------------------");
             if(Conflicts.delegateConflict(agent1,involved,maxPathSize,1) == -1){
                 maxPathSize = 1;
+                allInvolved.addAll(involved);
                 involved.clear();
                 involved.add(agent1);
                 System.err.println("\n ----------------third-------------------------");
@@ -32,6 +35,15 @@ public class Conflicts {
                     System.err.println("Replanning and waiting");
                     agent1.handleConflict(1,true,true);
                 }
+            }
+        }
+
+        for(Agent a : allInvolved){
+            if(!a.hasMoved()){
+                System.err.println("----FAIL SAFE Start----");
+                System.err.println("Agent "+a.getID()+" emergency acts");
+                a.handleConflict(1,true,false);
+                System.err.println("----FAIL SAFE end----");
             }
         }
         System.err.println("\n -------------------------end--------------------------------");
@@ -57,7 +69,7 @@ public class Conflicts {
             System.err.println("Replanning and waiting");
             agent1.handleConflict(1,true,true);
             System.err.println("---- Delegate conflict end ----");
-            return 1;
+            return -1;
 		}
 
 
@@ -85,7 +97,7 @@ public class Conflicts {
             return -1;
         }
 
-        solved = noopFix(pawnAgent,kingAgent,agent1.getID());
+        solved = noopFix(pawnAgent,kingAgent,agent1.getID(),involved,mps,rec);
         System.err.println(rec+" Conflict resolved by NoOp's: "+solved);
 
         if(!solved){
@@ -103,7 +115,9 @@ public class Conflicts {
 	}
 
 	private static Agent getConflictPartners(Agent agent1) {
-
+        if(agent1.isWaiting() || agent1.path.isEmpty()){
+            return null;
+        }
 		List<Point> agentPos = new ArrayList<Point>();
 		agentPos.add(agent1.getCoordinates());
 		if (agent1.isMovingBox()) {
@@ -134,9 +148,11 @@ public class Conflicts {
 	}
 
 	//This method is for detecting and delegating the type of conflict to the correct methods
-	private static boolean noopFix(Agent pawnAgent, Agent kingAgent,char original){
+	private static boolean noopFix(Agent pawnAgent, Agent kingAgent,char original,List<Agent> involved,int mps, int rec){
+        System.err.println("----- NoopFix start -------");
 		//Find next two points for king, if intersects with pawnAgent pos, return false, else true.
         if(kingAgent.isWaiting() || pawnAgent.isWaiting() || pawnAgent.path.isEmpty() || kingAgent.path.isEmpty()){
+            System.err.println("----- NoopFix end -------");
             return false;
         }
 
@@ -168,6 +184,7 @@ public class Conflicts {
 				kingArea = kingCommand.getNext(kingArea);
 				for (Point p : pawnArea) {
 					if (kingArea.contains(p)) {
+                        System.err.println("----- NoopFix end -------");
 						return false;
 					}
 				}
@@ -177,9 +194,17 @@ public class Conflicts {
 
 		pawnAgent.handleConflict(3, pawnAgent.getID() == original,false);
 		if(kingAgent.getID() == original){
-		    kingAgent.act();
+		    try{
+                kingAgent.act();
+            }catch (UnsupportedOperationException exc){
+                System.err.println("\n move Cant be applied after conflict!");
+                rec = delegateConflict(kingAgent,involved,mps,rec);
+                System.err.println("in planmerge out of delegate");
+            }
+
         }
-		return true;
+        System.err.println("----- NoopFix end -------");
+		return rec != -1;
 	}
 
 	
@@ -204,12 +229,15 @@ public class Conflicts {
 	private static boolean planMerge(Agent kingAgent, Agent pawnAgent, int mps,boolean reversed,List<Agent> involved,char original,int rec) {
         System.err.println("---- PLANMERGE start ----");
 	    int index = 0;
+        List<Point> startLocked = new ArrayList<>();
         Point posKing = new Point(kingAgent.getX(), kingAgent.getY()); //Node 0 for the king
         List<Point> pos = new ArrayList<Point>();
+        startLocked.add(posKing);
         pos.add(posKing);
         if (kingAgent.isBoxAttached()) {
             Point posBox = kingAgent.getAttachedBox().getCoordinates();
             pos.add(posBox);
+            startLocked.add(posBox);
         }
 
         List<Point> pawnAgentPos = new LinkedList<Point>();
@@ -240,16 +268,16 @@ public class Conflicts {
         }
 
 
-        List<Command> solution = ConflictBFS.doBFS(locked, pawnAgentPos, true,true,reversed);
+        List<Command> solution = ConflictBFS.doBFS(locked, pawnAgentPos, startLocked,true,true,reversed);
         if (solution.size() == 0) {
             System.err.println("\nPLANMERGE FOUND NO SOLUTION while considering other agents");
             System.err.println("trying to find solution while not considering other agents\n");
-            solution = ConflictBFS.doBFS(locked, pawnAgentPos, false,true,reversed);
+            solution = ConflictBFS.doBFS(locked, pawnAgentPos, startLocked,false,true,reversed);
 
             if (solution.size() == 0) {
                 System.err.println("\nPLANMERGE FOUND NO SOLUTION while not considering other agents");
                 System.err.println("trying to find solution while not considering other agents or boxes\n");
-                solution = ConflictBFS.doBFS(locked, pawnAgentPos, false,false,reversed);
+                solution = ConflictBFS.doBFS(locked, pawnAgentPos, startLocked,false,false,reversed);
 
                 if (solution.size() == 0) {
                     System.err.println("\nPLANMERGE FOUND NO SOLUTION while not considering other agents and boxes\n");

@@ -12,7 +12,9 @@ public class ConflictBFS {
 	private static boolean considerAgents = true;
 	private static boolean considerBoxes = true;
 	private static boolean reversed = false;
-	public static List<Command> doBFS(List<Point> locked, List<Point> pos, boolean ca, boolean cb, boolean r){
+	private static List<Point> sl;
+	public static List<Command> doBFS(List<Point> locked, List<Point> pos,List<Point> startLocked, boolean ca, boolean cb, boolean r){
+		sl = startLocked;
 		considerAgents = ca;
 		considerBoxes = cb;
 		reversed = r;
@@ -129,7 +131,8 @@ public class ConflictBFS {
 						(map.isAgent(x,y) && considerAgents) ||
 						nextMap.isWall(x,y) ||
 						(nextMap.isBox(x,y) && considerBoxes) ||
-						(nextMap.isAgent(x,y) && (considerAgents || nextMapBoxHasAgent))
+						(nextMap.isAgent(x,y) && (considerAgents || nextMapBoxHasAgent)) ||
+						(containsList(sl,cand))
 						){
 						return false;
 				}
