@@ -95,7 +95,12 @@ public class Agent extends MovingObject {
             startObstacleRemoval();
         }
         else if(isBoxAttached()) {
-            changeState(movingTowardsBox);
+            if(nextToBox(attachedBox)) {
+                changeState(movingBox);
+            }
+            else {
+                changeState(movingTowardsBox);
+            }
         }
         else if( !findClosestBox()) {
             System.err.println("Cant find box: ");
