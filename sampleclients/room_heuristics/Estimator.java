@@ -21,8 +21,8 @@ public class Estimator {
         RoomNode goal_node = search(from, to, through, beginning_path_length, punishment);
         if (goal_node == null) return null;
 
-        int total_punishment = goal_node.obstacles.size() * punishment;
-        return new PathWithObstacles(goal_node.g - beginning_path_length - total_punishment,
+        //int total_punishment = goal_node.obstacles.size() * punishment;
+        return new PathWithObstacles(goal_node.g - beginning_path_length,
                 goal_node.obstacles, goal_node.position);
     }
 
@@ -36,8 +36,8 @@ public class Estimator {
         RoomNode goal_node = search(from, new Section(to, to), through, beginning_path_length, punishment);
         if (goal_node == null) return null;
 
-        int total_punishment = goal_node.obstacles.size() * punishment;
-        return new PathWithObstacles(goal_node.g - beginning_path_length - total_punishment,
+        //int total_punishment = goal_node.obstacles.size() * punishment;
+        return new PathWithObstacles(goal_node.g - beginning_path_length,
                 goal_node.obstacles, to);
     }
 
@@ -81,8 +81,8 @@ public class Estimator {
                         if (helper_agent != null) { // if obstacle is movable...
                             ArrayList<Obstacle> obstacles = new ArrayList<>(current_node.obstacles);
 
-                            int path_length_until_box = current_node.g;
-                            System.err.println(current_node.g);
+                            int path_length_until_box =
+                                    (current_node.g - current_node.obstacles.size() * agent_usage_punishment);
                             obstacles.add(new Obstacle(box, helper_agent.a, current_node.position, path_length_until_box));
 
                             RoomNode n = new RoomNode(current_node, neighbour,
