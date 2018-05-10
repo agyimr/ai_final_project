@@ -148,7 +148,9 @@ public class FindSafeSpot {
                 score *= 1.5;
             }
 
-            System.err.println(spot.getX() + " " + spot.getY() + " " + score);
+            //score = bookingDistance * -geoDistance * space;
+
+            //System.err.println(spot.getX() + " " + spot.getY() + " " + score);
 //            minimize geoDistance = maximize -geoDistance
 //            maximize (bookingDistance - geoDistance)
 //            maximize space
