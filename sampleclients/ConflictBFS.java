@@ -106,7 +106,7 @@ public class ConflictBFS {
 			
 			//if the command is applicable, and allowed in the enviroment
 			if(posCand != null && isAllowed(posCand,startPos)){
-				Cnode nodeCand = new Cnode(posCand,cur.getG());
+				Cnode nodeCand = new Cnode(posCand,cur.getG()+1);
 				nodeCand.setParent(cur);
 				nodeCand.setCommand(allCommands[i]);
 				n.add(nodeCand);
@@ -373,15 +373,19 @@ class Cnode implements Comparator<Cnode>, Comparable<Cnode>{
 		return g;
 	}
 	public int getH(){
-		int prio = 1;
-		if(RandomWalkClient.gameBoard.isFree(pos.x,pos.y)){
-			return g;
+		int prio = g;
+		if(RandomWalkClient.gameBoard.isGoal(pos.x,pos.y)){
+			prio += 1;
+		}
+		if(RandomWalkClient.gameBoard.isAgent(pos.x,pos.y)){
+			Agent a = (Agent) RandomWalkClient.gameBoard.getElement(pos.x,pos.y);
+			prio += a.getPriority();
 		}
 		if(RandomWalkClient.gameBoard.getElement(pos.x,pos.y) instanceof Box){
 			if(((Box) RandomWalkClient.gameBoard.getElement(pos.x,pos.y)).assignedAgent == null){
-				prio = 5;
+				prio += 10;
 			}else{
-				prio = 1;
+				prio = 5;
 			}
 		}
 
