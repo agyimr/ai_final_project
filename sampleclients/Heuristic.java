@@ -73,7 +73,7 @@ public abstract class Heuristic implements Comparator<Node> {
     private int getAgentHeuristic(Node n, int distance) {
         if (n.action.actType == Command.type.Move )
             return distance;
-        else return distance;
+        else return distance + 2;
     }
 
 
