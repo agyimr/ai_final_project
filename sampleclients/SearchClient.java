@@ -2,8 +2,6 @@ package sampleclients;
 
 import java.awt.*;
 import java.util.*;
-import java.util.List;
-import java.util.Map;
 
 import sampleclients.Strategy.*;
 import sampleclients.Heuristic.*;
@@ -20,8 +18,8 @@ public class SearchClient {
     private int goalX;
     private int goalY;
     private final int searchIncrement = MainBoard.MainBoardYDomain * MainBoard.MainBoardXDomain ;
-    private int searchRange =searchIncrement * 10;
-    private boolean biggerRangeTriggered = false;
+    private int searchRange =searchIncrement * 20;
+    private boolean recursionTriggered = false;
     public LinkedList<LinkedList<Node>> immovableObstacles = new LinkedList<>();
     public boolean pathBlocked = false;
     public boolean pathInaccessible = false;
@@ -47,6 +45,7 @@ public class SearchClient {
     public LinkedList<Node> continuePath() { //TODO overwrite path at the end
         System.err.println("trying to continue path");
         LinkedList<Node> localPath = getNextRoomPath();
+        System.err.println(localPath);
         Agent possibleConflictingAgent  = RandomWalkClient.anticipationPlanning.addPath(localPath, owner);
         return localPath;
     }
@@ -73,35 +72,25 @@ public class SearchClient {
                 return getPathToGoal();
         }
         else {
-            return getPathToNextRoom();
-//            if(getPath(pushingBox, goalX, goalY)) {
-//                throw new NullPointerException();
-//                //return continuePath();
-//            }
-//            else {
-//                System.err.println(roomPath);
-//                System.err.println(currentRoom);
-//                System.err.println(nextRoom);
-//                System.err.println(owner);
-//                throw new NullPointerException();
-//            }
-
-            //return FindPath(pushingBox, goalX, goalY);
-//            RandomWalkClient.roomMaster.passages.PrintMap();
-//            System.err.println(roomPath);
-//            System.err.println(currentRoom);
-//            System.err.println(nextRoom);
-//            throw new NegativeArraySizeException();
+            if(nextRoom != null) {
+                return getPathToNextRoom();
+            }
+            else {
+                return getPathToGoal();
+            }
         }
     }
     private LinkedList<Node> getPathToNextRoom() {
+        System.err.println("finding path to next room!");
         return FindRoomPath(pushingBox, nextRoom);
     }
     private LinkedList<Node> getPathToGoal() {
+        System.err.println("in the goal room!");
         return FindPath(pushingBox, goalX, goalY);
     }
 
     public boolean getPath(boolean pushingBox, int goalX, int goalY) {
+        System.err.println("finding new path");
         this.pushingBox = pushingBox;
         this.goalX = goalX;
         this.goalY = goalY;
@@ -111,12 +100,16 @@ public class SearchClient {
         immovableObstacles.clear();
         roomPath = RandomWalkClient.roomMaster.getRoomPath(owner.getCoordinates(), new Point(goalX, goalY));
         if(!roomPath.getLast().obstacles.isEmpty()) {
-            System.err.println(roomPath);
-            System.err.println(owner);
-            System.err.println(owner.getAttachedBox());
-            System.err.println(roomPath.getLast().obstacles);
-            ObstacleArbitrator.processObstacles(owner, roomPath.getLast().obstacles);
-            //throw new NullPointerException();//TODO process
+//            System.err.println("Goal coordinates: " + goalX + "' " + goalY);
+//            System.err.println(roomPath);
+//            System.err.println(owner);
+//            System.err.println(owner.getAttachedBox());
+//            System.err.println(roomPath.getLast().obstacles);
+            Point firstSafeSpace = ObstacleArbitrator.processObstacles(owner, roomPath.getLast().obstacles);
+            if(firstSafeSpace != null) {
+                //throw new NullPointerException();
+                beforeFirstImmovableObstacle = firstSafeSpace;
+            }
         }
         if(roomPath == null) return false; //TODO impossible to get there
         currentRoom = roomPath.poll().through;
@@ -134,10 +127,10 @@ public class SearchClient {
         }
     }
 
-    private LinkedList<Node> FindPath(boolean pushingBox, int goalX, int goalY) {
+    private LinkedList<Node> FindPath(boolean pushing, int goalX, int goalY) {
         //System.err.format("Search starting for agent at pos: %d, %d, goal: %d, %d.\n", owner.getX(), owner.getY(), goalX, goalY);
-        initializeSearch(pushingBox, goalX, goalY);
-        if(pushingBox) {
+        initializeSearch(pushing, goalX, goalY);
+        if(pushing) {
             strategy.addToFrontier(new Node(owner.getX(), owner.getY(),
                     owner.getAttachedBox().getX(), owner.getAttachedBox().getY(),
                     owner.getColor(), MainBoard.allBoxes));
@@ -145,16 +138,20 @@ public class SearchClient {
         else {
             strategy.addToFrontier(new Node(owner.getX(), owner.getY(), owner.getColor(), MainBoard.allBoxes));
         }
-        LinkedList<Node> result = conductSearch(searchRange, goalX, goalY, pushingBox);
+        LinkedList<Node> result = conductSearch(searchRange, goalX, goalY, pushing);
         //System.err.println("Goal coordinates: " + goalX + ", " + goalY + result);
         if(result == null) {
-            if(biggerRangeTriggered || pathBlocked) {
+            if(recursionTriggered) {
                 return null;
             }
-            findObstacles();
-            if(pathBlocked) {
+            if(beforeFirstImmovableObstacle != null) {
+                pathBlocked = true;
+                return findPathBeforeObstacle(pushing);
+            }
+            processObstacles(roomMaster.getObstacles(owner.getCoordinates(), new Point(goalX, goalY)));
+            if(beforeFirstImmovableObstacle != null) {
                 System.err.println("Path Blocked");
-                return FindPath(pushingBox, beforeFirstImmovableObstacle.x, beforeFirstImmovableObstacle.y);
+                return findPathBeforeObstacle(pushing);
             }
             else if(pathInaccessible)  {
                 System.err.println("Path inaccessible");
@@ -162,25 +159,44 @@ public class SearchClient {
             }
             else {
                 int oldRange = searchRange;
-                searchRange *= 10;
-                biggerRangeTriggered = true;
+                searchRange *= 30;
+                recursionTriggered = true;
                 System.err.println("bigger range search: ");
-                LinkedList<Node> mustBeTrue = FindPath(pushingBox, goalX, goalY);
+                LinkedList<Node> mustBeTrue = FindPath(pushing, goalX, goalY);
                 searchRange = oldRange;
-                biggerRangeTriggered = false;
+                recursionTriggered = false;
                 return mustBeTrue;
             }
         }
         return result;
     }
+
+    private LinkedList<Node> findPathBeforeObstacle(boolean pushing) {
+        recursionTriggered = true;
+        System.err.println("POSITION BEFORE OBSTACLE: X: " + beforeFirstImmovableObstacle.x + ", Y: " + beforeFirstImmovableObstacle.y);
+        LinkedList<Node> mustBeTrue = FindPath(pushing, beforeFirstImmovableObstacle.x, beforeFirstImmovableObstacle.y);
+        if(mustBeTrue != null && mustBeTrue.isEmpty()) {
+            mustBeTrue.add(new Node(null, new Command(), owner.getX(), owner.getY()));
+        }
+        recursionTriggered = false;
+        return mustBeTrue;
+    }
+    public static boolean nextTo(int firstX, int firstY, int secondX, int secondY) {
+        return (Math.abs(firstX - secondX) == 1) && (Math.abs(firstY - secondY) == 0)
+                || (Math.abs(firstX - secondX) == 0) && (Math.abs(firstY - secondY) == 1);
+    }
     private LinkedList<Node> conductSearch(int maxIterations, int x, int y, boolean pushing) { //FUCKING JAVA
         int iterations = 0;
+        boolean goingToBox = false;
+        if(gameBoard.isBox(x, y)) goingToBox = true;
         while (true) {
             if (strategy.frontierIsEmpty()) {
                 return null;
             }
             Node leafNode = strategy.getAndRemoveLeaf();
-            if (!pushing && Agent.nextTo(leafNode.agentX, leafNode.agentY, x, y)) {
+            if (!pushing &&
+                    ((goingToBox && nextTo(leafNode.agentX, leafNode.agentY, x, y)
+                    || leafNode.agentX == x && leafNode.agentY == y))) {
                 return leafNode.extractPlan();
             }
             else if(pushing && leafNode.boxX == x && leafNode.boxY == y){
@@ -197,24 +213,14 @@ public class SearchClient {
             }
         }
     }
-    private void findObstacles() {
-//        beforeFirstImmovableObstacle = null;
-//        initializeSearch(false, goalX, goalY);
-//        strategy.addToFrontier(new Node(owner.getX(), owner.getY(), owner.getColor(), Collections.emptyList()));
-        //LinkedList<Node> emptySearchResult = conductSearch(searchRange, goalX, goalY, false);
-        //handleEmptyPathResults(emptySearchResult);
-        processObstacles(roomMaster.getObstacles(owner.getCoordinates(), new Point(goalX, goalY)));
-    }
+
 
     private void processObstacles(ArrayList<Obstacle> result) {
         if(result != null) {
-            if(result.isEmpty()) {
-                pathBlocked = false;
-            }
-            else {
-                beforeFirstImmovableObstacle = result.get(0).waitingPosition;
+            Point firstSafeSpace = ObstacleArbitrator.processObstacles(owner, result);
+            if(firstSafeSpace != null) {
                 pathBlocked = true;
-                ObstacleArbitrator.processObstacles(owner, result);
+                beforeFirstImmovableObstacle = firstSafeSpace;
             }
         }
         else {
@@ -222,55 +228,6 @@ public class SearchClient {
         }
     }
 
-    private void examineBoxesOnPath(LinkedList<Node> path, LinkedList<Box> obstacles, LinkedList<LinkedList<Node>> workaroundPaths) {
-        if(path == null || path.isEmpty()) return;
-        Node previousNode = path.get(0);
-        Node workaroundBegin = null;
-        int workaroundLength = 0;
-        for(Node point : path) {
-            if(gameBoard.isBox(point.agentX, point.agentY)) {
-                if(workaroundBegin == null) {
-                    workaroundPaths.push(new LinkedList<>());
-                    workaroundBegin = previousNode;
-                    workaroundLength = 1;
-                }
-                else {
-                    ++workaroundLength;
-                }
-                if(!((Box) gameBoard.getElement(point.agentX, point.agentY)).getColor().equals(owner.getColor())) {
-                    obstacles.add((Box) gameBoard.getElement(point.agentX, point.agentY));
-                    workaroundPaths.peek().add(point);
-                }
-            }
-            else if(workaroundBegin != null && !obstacles.isEmpty()) {
-                System.err.println(workaroundLength);
-                System.err.println(workaroundBegin + " end: " + point);
-                System.err.println(obstacles);
-                initializeSearch(false, point.agentX, point.agentY);
-                strategy.addToFrontier(new Node(workaroundBegin.agentX, workaroundBegin.agentY, owner.getColor(), obstacles));
-                LinkedList<Node> partialSearchResult = conductSearch(50* workaroundLength, point.agentX, point.agentY, false);
-                if(partialSearchResult != null) {
-                    examineBoxesOnPath(partialSearchResult, obstacles, workaroundPaths);
-                }
-                else {
-                    if(!pathBlocked) { // setting a flag
-                        pathBlocked = true;
-                        //beforeFirstImmovableObstacle = workaroundBegin;
-                    }
-                    for(LinkedList<Node> list : workaroundPaths) {
-                        if(!list.isEmpty())
-                            immovableObstacles.add(list);
-                    }
-                    workaroundPaths.clear();
-                    obstacles.clear();
-                }
-                workaroundBegin = null;
-                workaroundLength = 0;
-            }
-            previousNode = point;
-        }
-
-    }
     private LinkedList<Node> FindRoomPath(boolean pushingBox, Section goalRoom) {
         initializeSearch(pushingBox, goalRoom);
         if(pushingBox) {
@@ -283,19 +240,27 @@ public class SearchClient {
         }
         LinkedList<Node> result = conductRoomSearch(searchRange,goalRoom, pushingBox);
         if(result == null) {
-            findRoomObstacles(goalRoom);
-            if(pathBlocked) {
-                System.err.println(immovableObstacles);
-                return FindPath(pushingBox, beforeFirstImmovableObstacle.x, beforeFirstImmovableObstacle.y);
+            if(recursionTriggered) {
+                return null;
+            }
+            if(beforeFirstImmovableObstacle != null) {
+                pathBlocked = true;
+                return findPathBeforeObstacle(pushingBox);
+            }
+            processObstacles(roomMaster.getObstacles(owner.getCoordinates(), goalRoom));
+            if(beforeFirstImmovableObstacle != null) {
+                return findPathBeforeObstacle(pushingBox);
             }
             else if(pathInaccessible)  {
                 return null;
             }
             else {
                 int oldRange = searchRange;
-                searchRange *= 20;
+                searchRange *= 30;
+                recursionTriggered = true;
                 LinkedList<Node> mustBeTrue = FindRoomPath(pushingBox, goalRoom);
                 searchRange = oldRange;
+                recursionTriggered = false;
                 return mustBeTrue;
             }
         }
@@ -323,39 +288,6 @@ public class SearchClient {
             if(++iterations > maxIterations) {
                 return null;
             }
-        }
-    }
-    private void findRoomObstacles(Section goalRoom) {
-//        beforeFirstImmovableObstacle = null;
-//        initializeSearch(false, goalRoom);
-//        strategy.addToFrontier(new Node(owner.getX(), owner.getY(), owner.getColor(), Collections.emptyList()));
-//        LinkedList<Node> emptySearchResult = conductRoomSearch(searchRange,goalRoom, false);
-//        handleEmptyPathResults(emptySearchResult);
-        processObstacles(roomMaster.getObstacles(owner.getCoordinates(), goalRoom));
-    }
-
-    private void handleEmptyPathResults(LinkedList<Node> emptySearchResult) {
-        if(emptySearchResult != null) {
-            LinkedList<Box> obstacles = new LinkedList<>();
-            LinkedList<LinkedList<Node>> workaroundPaths = new LinkedList<>();
-            examineBoxesOnPath(emptySearchResult, obstacles, workaroundPaths);
-            if(!immovableObstacles.isEmpty()) {
-                System.err.println(immovableObstacles);
-                System.err.println(beforeFirstImmovableObstacle);
-                System.err.println(owner);
-                //throw new NegativeArraySizeException();
-                ObstacleArbitrator.findSaviors(this, owner);
-            }
-        }
-        else{
-            pathInaccessible = true;
-            throw new NullPointerException();
-//            if(pushingBox) {
-//                //owner.getAttachedBox().noGoalOnTheMap = true;
-//            }
-//            else {
-//                //TODO box is inaccessible, handle accordingly
-//            }
         }
     }
 }

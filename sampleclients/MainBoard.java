@@ -173,6 +173,14 @@ public class MainBoard {
     }
     public boolean isGoal (int x, int y) {
         if(getElement(x, y) == null) return false;
+        else if(getElement(x, y) instanceof MovingObject) {
+            System.err.println("Yupi!!!!");
+            Goal res = steppedOnGoals.get(getElement(x, y));
+            System.err.println(res);
+            if(res != null) {
+                return true;
+            }
+        }
         return (isGoal(getElement(x, y).getID()));
     }
     public boolean isWall (int x, int y) {
@@ -180,12 +188,12 @@ public class MainBoard {
         return (isWall(getElement(x, y).getID()));
     }
     public boolean isFree (int x, int y) {
-        return getElement(x, y) == null || isGoal(x,y);
+        return getElement(x, y) == null || (getElement(x,y) instanceof Goal);
     }
 
     //Function assumes that passed object is at its' getX and getY location on the map
     public void changePositionOnMap(MovingObject obj, int x, int y) {
-        if(!spaceEmpty(x,y) || obj == null) throw new UnsupportedOperationException();
+        if(!isFree(x,y) || obj == null) throw new UnsupportedOperationException();
         manageMovingThroughGoal(obj, x, y);
         if(getElement(obj.getX(), obj.getY()) == obj) {
             setElement(obj.getX(), obj.getY(), null);
@@ -193,7 +201,7 @@ public class MainBoard {
         setElement(x, y, obj);
     }
     public void revertPositionChange(MovingObject obj, int xFrom, int yFrom) {
-        if(!spaceEmpty(obj.getX(),obj.getY())) throw new UnsupportedOperationException();
+        if(!isFree(obj.getX(),obj.getY())) throw new UnsupportedOperationException();
         manageMovingThroughGoal(obj, obj.getX(), obj.getY());
         if(getElement(xFrom, yFrom) == obj) {
             setElement(xFrom, yFrom, null);
@@ -202,14 +210,13 @@ public class MainBoard {
     }
     private boolean yOutOfBounds(int y) { return (y >= (MainBoardYDomain) || y < 0);}
     private boolean xOutOfBounds(int x) {return (x >= (MainBoardXDomain) || x < 0);}
-    private boolean spaceEmpty(int x, int y) {return isGoal(x, y) || getElement(x, y) == null; }
     private void manageMovingThroughGoal(MovingObject obj, int x, int y) {
         Goal steppedOnGoal = steppedOnGoals.get(obj);
         if(steppedOnGoal  != null) {
             setElement(steppedOnGoal.getX(), steppedOnGoal.getY(), steppedOnGoal);
             steppedOnGoals.remove(obj);
         }
-        if(isGoal(x,y)) {
+        if(getElement(x,y) instanceof Goal) {
             steppedOnGoals.put(obj, (Goal) getElement(x,y));
         }
     }
