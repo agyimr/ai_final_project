@@ -199,10 +199,12 @@ public class SearchClient {
                 }
             }
             else if(workaroundBegin != null && !obstacles.isEmpty()) {
+                System.err.println(workaroundLength);
                 System.err.println(workaroundBegin + " end: " + point);
+                System.err.println(obstacles);
                 initializeSearch(false, point.agentX, point.agentY);
                 strategy.addToFrontier(new Node(workaroundBegin.agentX, workaroundBegin.agentY, owner.getColor(), obstacles));
-                LinkedList<Node> partialSearchResult = conductSearch(100* workaroundLength, point.agentX, point.agentY, false);
+                LinkedList<Node> partialSearchResult = conductSearch(50* workaroundLength, point.agentX, point.agentY, false);
                 if(partialSearchResult != null) {
                     examineBoxesOnPath(partialSearchResult, obstacles, workaroundPaths);
                 }
@@ -302,12 +304,13 @@ public class SearchClient {
         }
         else{
             pathInaccessible = true;
-            if(pushingBox) {
-                //owner.getAttachedBox().noGoalOnTheMap = true;
-            }
-            else {
-                //TODO box is inaccessible, handle accordingly
-            }
+            throw new NullPointerException();
+//            if(pushingBox) {
+//                //owner.getAttachedBox().noGoalOnTheMap = true;
+//            }
+//            else {
+//                //TODO box is inaccessible, handle accordingly
+//            }
         }
     }
 }

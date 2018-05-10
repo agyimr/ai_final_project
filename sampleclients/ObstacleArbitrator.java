@@ -15,6 +15,7 @@ public class ObstacleArbitrator {
                 BasicObject element = gameBoard.getElement(point.agentX, point.agentY);
                 if(element instanceof Box) {
                     Box obstacle = (Box) element;
+                    if(obstacle.assignedAgent != null) continue;
                     Agent closestAgent = null;
                     int closestDistance = Integer.MAX_VALUE;
                     for (Agent savior : MainBoard.AgentColorGroups.get(obstacle.getColor())) {

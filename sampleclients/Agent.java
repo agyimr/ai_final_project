@@ -365,7 +365,7 @@ public class Agent extends MovingObject {
             }
             else {
                 safeSpot = null;
-                revertState();
+                changeState(unassigned);
             }
         }
     }
