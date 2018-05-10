@@ -109,11 +109,12 @@ public class Agent extends MovingObject {
         }
     }
     private void moveToTheBox() {
-        if(executePath()) return;
-        else if(nextToBox(attachedBox)) {
+
+        if(nextToBox(attachedBox)) {
             System.err.println("isNext to box: ");
             changeState(movingBox);
         }
+        else if(executePath()) return;
         else if(!findPathToBox(attachedBox)) {
             waitingProcedure(3);
         }
