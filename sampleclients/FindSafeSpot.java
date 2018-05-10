@@ -1,27 +1,27 @@
 package sampleclients;
-import java.io.*;
 import java.util.*;
 import java.awt.Point;
-import sampleclients.Command.dir;
-import sampleclients.Command.type;
 
 public class FindSafeSpot {
 
     private static MainBoard map;
     private static MainBoard nextMap;
     private static AnticipationPlanning anticiObj;
-    private static int startClock;
-    private static int clockIncrement=0;
+
     public static Point safeSpotBFS(Point startPos) {
+
         map = RandomWalkClient.gameBoard;
         nextMap = RandomWalkClient.nextStepGameBoard;
         anticiObj = RandomWalkClient.anticipationPlanning;
-        startClock = anticiObj.getClock();
+
         List<ConflictNode> frontier = new ArrayList<ConflictNode>();
         List<ConflictNode> explored = new ArrayList<ConflictNode>();
 
         //Add the current agent position to explored
-        frontier.add(new ConflictNode(startPos,startClock));
+        frontier.add(new ConflictNode(startPos, anticiObj.getClock()));
+
+        double bestEstimation = 0;
+        Point bestSpot = null;
 
         //continue search as long as there are points in the firstfrontier
         while (!frontier.isEmpty()) {
@@ -31,6 +31,17 @@ public class FindSafeSpot {
             //goal check - Is this an empty spot? with perhabs area around it? or perhabs the highest anticipation clock relative to position,
             if(isMySpot(cur.getAgent())){
                 return cur.getAgent();
+            }
+
+            if(bestSpot == null) {
+                bestSpot = cur.getAgent();
+            } else {
+                double estimation = estimateSpot(cur.getAgent(), cur.getClock());
+
+                if(estimation > bestEstimation) {
+                    bestEstimation = estimation;
+                    bestSpot = cur.getAgent();
+                }
             }
 
             //Get neighbour states of cur
@@ -48,6 +59,7 @@ public class FindSafeSpot {
             }
 
         }
+        /*
         if(frontier.isEmpty()){
             int max = 0;
             ConflictNode maxNode = explored.get(0);
@@ -59,7 +71,10 @@ public class FindSafeSpot {
             }
             return maxNode.getAgent();
         }
-        return null;
+        */
+
+        return bestSpot;
+        //return null;
     }
 //Expansion increase clock with new depth
         private static List<ConflictNode> getNeighbours (ConflictNode cur){
@@ -67,7 +82,6 @@ public class FindSafeSpot {
             List<ConflictNode> n = new ArrayList<ConflictNode>();
             int x1=0;
             int y1=0;
-            clockIncrement = clockIncrement+1;
             for (int i = 0; i < 4; i++) {
                 Point posCand = null;
 
@@ -80,7 +94,7 @@ public class FindSafeSpot {
 
                 //if the command is applicable, and allowed in the enviroment
                 if (isAllowed(posCand)) {
-                    ConflictNode nodeCand = new ConflictNode(posCand, startClock+clockIncrement);
+                    ConflictNode nodeCand = new ConflictNode(posCand, cur.getClock()+1);
                     nodeCand.setParent(cur);
                     n.add(nodeCand);
                 }
@@ -96,6 +110,74 @@ public class FindSafeSpot {
             }
             return false;
         }
+
+
+        private static double estimateSpot(Point spot, int localClock) {
+
+
+            if(RandomWalkClient.gameBoard.isGoal((int) spot.getX(), (int) spot.getY())) {
+                return 0;
+            }
+
+            int geoDistance = localClock - anticiObj.getClock();
+
+            if(geoDistance == 0) {
+                return 0;
+            }
+
+            int space = getSpacenessAround(spot);
+
+            int nextBooking = anticiObj.getEarliestOccupation(spot);
+
+            if(nextBooking == -1) {
+                nextBooking = anticiObj.getClock() + RandomWalkClient.gameBoard.getHeight() + RandomWalkClient.gameBoard.getWidth();
+            }
+
+            int bookingDistance = nextBooking - anticiObj.getClock() - geoDistance;
+
+            if(bookingDistance - geoDistance < 0) {
+                return 0;
+            }
+
+           // int score = (bookingDistance - geoDistance) * Math.min((space-2)/2,1) + 3 * -geoDistance;
+
+            double score = (1-geoDistance) + (1+geoDistance) * Math.max(space-2, 0);
+            score =  Math.max(0, space-2)^3 - (1-geoDistance)^2;
+
+            if(geoDistance * 2 < nextBooking) {
+                score *= 1.5;
+            }
+
+            System.err.println(spot.getX() + " " + spot.getY() + " " + score);
+//            minimize geoDistance = maximize -geoDistance
+//            maximize (bookingDistance - geoDistance)
+//            maximize space
+            return score;
+        }
+
+        private static int getSpacenessAround(Point spot) {
+            if(spot.x == 0 || spot.x == map.getWidth() - 1 || spot.y == 0 || spot.y == map.getHeight() - 1) {
+                return 0;
+            }
+
+            int space = 0;
+
+            if(!map.isWall(spot.x+1, spot.y)) { //right
+                space++;
+            }
+            if(!map.isWall(spot.x-1, spot.y)) { //left
+                space++;
+            }
+            if(!map.isWall(spot.x, spot.y-1)) {//top
+                space++;
+            }
+            if(!map.isWall(spot.x, spot.y+1)) {  //bottom
+                space++;
+            }
+
+            return space;
+        }
+
         private static boolean isSpaceAround(Point spot) {
             if(spot.x == 0 || spot.x == map.getWidth() - 1 || spot.y == 0 || spot.y == map.getHeight() - 1) return false;
             if((map.isFree(spot.x+1, spot.y) && map.isFree(spot.x+1, spot.y - 1) && map.isFree(spot.x+1, spot.y + 1)) //right
@@ -106,8 +188,6 @@ public class FindSafeSpot {
             }
             return false;
         }
-
-
 
         private static boolean isAllowed (Point cand){
             int x = cand.x;
