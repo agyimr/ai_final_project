@@ -33,21 +33,17 @@ public class Conflicts {
 
         if(conflictPartner == null){
             System.err.println("conflict detected but no conflict partner found");
-            System.err.println("reverting, Replanning and waiting");
-            if(agent1.hasMoved()) agent1.revertMoveIntention(RandomWalkClient.nextStepGameBoard);
+            System.err.println("Replanning and waiting");
             agent1.replan();
             agent1.handleConflict(1);
-            agent1.act();
             return true;
         }
 
 		if(conflictPartner.getID() == agent1.getID()){
 			System.err.println("Conflict detected with itself.");
-            System.err.println("reverting, Replanning and waiting");
-            if(agent1.hasMoved()) agent1.revertMoveIntention(RandomWalkClient.nextStepGameBoard);
+            System.err.println("Replanning and waiting");
             agent1.replan();
             agent1.handleConflict(1);
-            agent1.act();
             return true;
 		}
 
@@ -75,16 +71,6 @@ public class Conflicts {
         }
 
 
-        boolean pawnMove = false;
-        if(pawnAgent.getID() < kingAgent.getID()){
-
-                pawnMove = true;
-            if(pawnAgent.hasMoved()) {
-                System.err.println("trying to revert Agent " + pawnAgent.getID());
-                pawnAgent.revertMoveIntention(RandomWalkClient.nextStepGameBoard);
-            }
-        }
-
         System.err.println("Trying to resolve conflict by adding NoOp to pawn agent");
         boolean noopFix = noopFix(pawnAgent,kingAgent);
         System.err.println("Conflict resolved: "+noopFix);
@@ -97,20 +83,19 @@ public class Conflicts {
         }
 
         if(noopFix || planMerge){
-            if(pawnMove && conflictPartner.getID() == pawnAgent.getID()) {
-                try {
-                    System.err.println("Agent act "+conflictPartner.getID());
-                    conflictPartner.act();
-                } catch (UnsupportedOperationException exc) {
-                    System.err.println("Move cant be applied after conflict");
-                    System.err.println("Trying to resovle this conflict");
-                    delegateConflict(conflictPartner,involved,mps);
-                }
+            try {
+                System.err.println("Agent act "+conflictPartner.getID());
+                conflictPartner.act();
+            } catch (UnsupportedOperationException exc) {
+                System.err.println("Move cant be applied after conflict");
+                System.err.println("Trying to resovle this conflict");
+                delegateConflict(conflictPartner,involved,mps);
             }
 
 
-            System.err.println("Agent act "+agent1.getID());
+
             try {
+                System.err.println("Agent act "+agent1.getID());
                 agent1.act();
             }catch (UnsupportedOperationException exc){
                 System.err.println("Move cant be applied after conflict");
