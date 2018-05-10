@@ -203,7 +203,12 @@ public class Agent extends MovingObject {
     private void changeState(possibleStates nextState) {
         System.err.println("next state: " + nextState + "current: " + currentState + "previous: " + previousState);
         if(nextState == currentState) return;
-        previousState = currentState;
+        if(myPathIsBlocked && previousState == possibleStates.removingObstacle) {
+            previousState = removingObstacle;
+        }
+        else {
+            previousState = currentState;
+        }
         currentState = nextState;
 
     }
@@ -373,6 +378,7 @@ public class Agent extends MovingObject {
                 findObstaclePath();
             }
             else {
+                ObstacleArbitrator.jobIsDone(this);
                 safeSpot = null;
                 changeState(unassigned);
             }
@@ -414,7 +420,7 @@ public class Agent extends MovingObject {
     }
     public void replacePath(List<Command> commands) {
         if(path != null){
-            path.clear();
+            clearPath();
         }else{
             path = new LinkedList<>();
         }
