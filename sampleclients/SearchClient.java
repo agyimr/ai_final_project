@@ -72,7 +72,19 @@ public class SearchClient {
                 return getPathToGoal();
         }
         else {
-            return null;
+            return getPathToNextRoom();
+//            if(getPath(pushingBox, goalX, goalY)) {
+//                throw new NullPointerException();
+//                //return continuePath();
+//            }
+//            else {
+//                System.err.println(roomPath);
+//                System.err.println(currentRoom);
+//                System.err.println(nextRoom);
+//                System.err.println(owner);
+//                throw new NullPointerException();
+//            }
+
             //return FindPath(pushingBox, goalX, goalY);
 //            RandomWalkClient.roomMaster.passages.PrintMap();
 //            System.err.println(roomPath);
@@ -314,6 +326,7 @@ public class SearchClient {
         }
     }
     private void findRoomObstacles(Section goalRoom) {
+//        beforeFirstImmovableObstacle = null;
 //        initializeSearch(false, goalRoom);
 //        strategy.addToFrontier(new Node(owner.getX(), owner.getY(), owner.getColor(), Collections.emptyList()));
 //        LinkedList<Node> emptySearchResult = conductRoomSearch(searchRange,goalRoom, false);
