@@ -23,7 +23,13 @@ public class RandomWalkClient {
         roomMaster = new RoomAStar(gameBoard);
         anticipationPlanning = new AnticipationPlanning(gameBoard);
 	}
-
+    public void assignGoals() {
+        for(Goal current : MainBoard.allGoals) {
+            if (current.canBeSolved() && current.assignedBox != null) {
+                current.findClosestBox();
+            }
+        }
+    }
 
 
 	public boolean update() throws IOException {
