@@ -290,7 +290,7 @@ public class Conflicts {
                     if(pawnAgent.getID() == original){
                         System.err.println("PROBLEM ! UNSAFE HANDLE CONFLICT");
                     }
-                    pawnAgent.replacePath(solution);
+                    pawnAgent.handleConflict(solution,false);
                     System.err.println("---- PLANMERGE end ----");
                     return planMerge(pawnAgent,kingAgent,mps,true,involved,original,rec);
                 }
@@ -319,7 +319,7 @@ public class Conflicts {
             System.err.println("---- PLANMERGE end ----");
             return false;
         }
-        if(!kingAgent.hasMoved()) {
+        if(!kingAgent.hasMoved() && kingAgent.path!= null && kingAgent.path.peek().action.actType != Command.type.Noop) {
             kingAgent.handleConflict(rec, kingAgent.getID() == original,false);
         }
 
