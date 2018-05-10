@@ -138,6 +138,19 @@ public class RoomAStar {
         return null;
     }
 
+    public ArrayList<Obstacle> getObstacles(Point from, Point to) {
+        LinkedList<Node> path = this.getRoomPath(from, to);
+        return path.getLast().obstacles;
+    }
+
+    public ArrayList<Obstacle> getObstacle(Point from, Section to) {
+        LinkedList<Node> path = this.getRoomPath(from, to.p1);
+        // TODO: if to.p1 is inaccessible because of a wall of boxes that can't be moved it'll throw an error...
+        if (to.contains(from)) return new ArrayList<>();
+        path.getLast();
+        return path.getLast().obstacles;
+    }
+
     public LinkedList<Node> getEmptyRoomPath(Point from, Point to) {
         // closed set - already discovered nodes
         ArrayList<Node> closed_set = new ArrayList<>();
