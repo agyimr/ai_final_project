@@ -12,11 +12,11 @@ public class Conflicts {
         LinkedList<Agent> involved = new LinkedList<>();
         involved.add(agent1);
 
-        if(!Conflicts.delegateConflict(agent1,involved,maxPathSize)){
+        if(Conflicts.delegateConflict(agent1,involved,maxPathSize,1) == -1){
             maxPathSize = 3;
-            if(!Conflicts.delegateConflict(agent1,involved,maxPathSize)){
+            if(Conflicts.delegateConflict(agent1,involved,maxPathSize,1) == -1){
                 maxPathSize = 1;
-                if(Conflicts.delegateConflict(agent1,involved,maxPathSize)){
+                if(Conflicts.delegateConflict(agent1,involved,maxPathSize,1) != -1){
                     System.err.println("Conflict resolved");
                 }else{
                     System.err.println("Conflict NOT resolved");
@@ -25,7 +25,7 @@ public class Conflicts {
         }
     }
 
-	public static boolean delegateConflict(Agent agent1, List<Agent> involved,int mps){
+	public static int delegateConflict(Agent agent1, List<Agent> involved,int mps,int rec){
         boolean solved = false;
 		System.err.println();
 		System.err.println( "Conflict Started for agent:"+agent1.getID() );
@@ -37,7 +37,7 @@ public class Conflicts {
             System.err.println("Replanning and waiting");
             agent1.replan();
             agent1.handleConflict(1, true);
-            return true;
+            return 1;
         }
 
 		if(conflictPartner.getID() == agent1.getID()){
@@ -45,7 +45,7 @@ public class Conflicts {
             System.err.println("Replanning and waiting");
             agent1.replan();
             agent1.handleConflict(1, true);
-            return true;
+            return 1;
 		}
 
 
@@ -68,7 +68,7 @@ public class Conflicts {
         if(!involved.contains(conflictPartner)){
             involved.add(conflictPartner);
         }else{
-            return false;
+            return -1;
         }
 
 
@@ -78,15 +78,16 @@ public class Conflicts {
 
         if(!solved){
             System.err.println("Trying to resolve conflict by PlanMerging");
-            solved = planMerge(kingAgent,pawnAgent,mps,false,involved,agent1.getID());
+            solved = planMerge(kingAgent,pawnAgent,mps,false,involved,agent1.getID(),rec);
             System.err.println("Conflict resolved: "+solved);
         }
 
-        if(!agent1.hasMoved()){
-            agent1.act();
-        }
 
-        return solved;
+        if(solved){
+            return rec+1;
+        }else {
+            return -1;
+        }
 
 	}
 
@@ -189,7 +190,7 @@ public class Conflicts {
 	}
 	//More difficult conflict where one needs to backtrack or go around with/without box
 	
-	private static boolean planMerge(Agent kingAgent, Agent pawnAgent, int mps,boolean reversed,List<Agent> involved,char original) {
+	private static boolean planMerge(Agent kingAgent, Agent pawnAgent, int mps,boolean reversed,List<Agent> involved,char original,int rec) {
         int index = 0;
         Point posKing = new Point(kingAgent.getX(), kingAgent.getY()); //Node 0 for the king
         List<Point> pos = new ArrayList<Point>();
@@ -257,7 +258,7 @@ public class Conflicts {
                     System.err.println("Planmerge found solution. Reversing roles to get out");
                     solution.add(0,new Command());
                     pawnAgent.handleConflict(solution,pawnAgent.getID() == original);
-                    return planMerge(pawnAgent,kingAgent,mps,true,involved,original);
+                    return planMerge(pawnAgent,kingAgent,mps,true,involved,original,rec);
                 }
             }
 
@@ -271,17 +272,18 @@ public class Conflicts {
             System.err.println(c.action.toString());
         }
 
-        if(!kingAgent.hasMoved()) {
-            kingAgent.handleConflict(1, kingAgent.getID() == original);
-        }
+
 
         try{
             pawnAgent.handleConflict(solution, pawnAgent.getID() == original);
         }catch (UnsupportedOperationException exc){
             System.err.println("move Cant be applied after conflict");
-            delegateConflict(pawnAgent,involved,mps);
+            rec = delegateConflict(pawnAgent,involved,mps,rec);
         }
 
+        if(!kingAgent.hasMoved()) {
+            kingAgent.handleConflict(rec, kingAgent.getID() == original);
+        }
         return true;
     }
 

@@ -214,9 +214,9 @@ public class Agent extends MovingObject {
             if (nextStep != null) {
                 System.err.println("try to move");
                 if(!tryToMove(nextStep)) {
-                    System.err.println(path);
+                    //System.err.println(path);
                     clearPath();
-                    throw new NullPointerException();
+                    return false;
 
                 }
                 serverOutput = nextStep.action.toString();
