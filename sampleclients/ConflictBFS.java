@@ -11,9 +11,11 @@ public class ConflictBFS {
 	private static MainBoard nextMap;
 	private static boolean considerAgents = true;
 	private static boolean considerBoxes = true;
-	public static List<Command> doBFS(List<Point> locked, List<Point> pos, boolean ca, boolean cb){
+	private static boolean reversed = false;
+	public static List<Command> doBFS(List<Point> locked, List<Point> pos, boolean ca, boolean cb, boolean r){
 		considerAgents = ca;
 		considerBoxes = cb;
+		reversed = r;
 		map = RandomWalkClient.gameBoard;
 		nextMap = RandomWalkClient.nextStepGameBoard;
 		PriorityQueue<Cnode> explored = new PriorityQueue<Cnode>();
@@ -22,7 +24,12 @@ public class ConflictBFS {
 		
 		//Add the current agent position to explored
 		frontier.add(new Cnode(pos,0));
-		
+
+		System.err.println("locked");
+		for(Point p : locked){
+			System.err.println(p.toString());
+		}
+
 		//continue search as long as there are points in the firstfrontier
 		while(!frontier.isEmpty()) {
 			//pop the first element
@@ -30,7 +37,8 @@ public class ConflictBFS {
 			frontier.remove(0);
 			
 			//goal check - not in any locked points
-			if(!containsList(locked,cur.getPoints()) && isFree(cur)){
+			System.err.println(cur.toString()+" "+isGoal(cur));
+			if(!containsList(locked,cur.getPoints()) && isGoal(cur)){
 				path = generateGoalPath(cur);
 				break;
 			}
@@ -188,11 +196,27 @@ public class ConflictBFS {
 				nextMap.isAgent(x,y);
 	}
 
-	private static boolean isFree(Cnode cur) {
+	private static boolean isGoal(Cnode cur) {
 		int x = cur.getX();
 		int y = cur.getY();
-		return  map.isFree(x,y)||
-				nextMap.isFree(x,y);
+		boolean mapBoxHasAgent = false;
+		boolean nextMapBoxHasAgent = false;
+		if(map.getElement(x,y) instanceof Box){
+			mapBoxHasAgent = ((Box) map.getElement(x,y)).assignedAgent == null;
+		}
+		if(nextMap.getElement(x,y) instanceof Box){
+			nextMapBoxHasAgent = ((Box) nextMap.getElement(x,y)).assignedAgent == null;
+		}
+		boolean boxCase = 		!(map.isBox(x,y) && considerBoxes && mapBoxHasAgent) &&
+								!(nextMap.isBox(x,y) && considerBoxes && nextMapBoxHasAgent);
+		boolean agentCase = 	!(map.isAgent(x,y) && considerAgents) &&
+								!(nextMap.isAgent(x,y) && considerAgents);
+		boolean alleyCase = 	!(reversed && isAlley(cur));
+
+		return  !map.isWall(x,y) &&
+				boxCase &&
+				agentCase &&
+				alleyCase;
 	}
 	private static boolean isAlley(Cnode cur) {
 		Point agent =  cur.getPoints().get(0);

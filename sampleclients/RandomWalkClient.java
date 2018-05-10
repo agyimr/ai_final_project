@@ -22,8 +22,15 @@ public class RandomWalkClient {
         GoalDependency.getGoalDependency();
         roomMaster = new RoomAStar(gameBoard);
         anticipationPlanning = new AnticipationPlanning(gameBoard);
+        assignGoals();
 	}
-
+    public void assignGoals() {
+        for(Goal current : MainBoard.allGoals) {
+            if (current.canBeSolved() && current.assignedBox != null) {
+                current.findClosestBox();
+            }
+        }
+    }
 
 
 	public boolean update() throws IOException {
@@ -39,7 +46,7 @@ public class RandomWalkClient {
                 System.err.println(MainBoard.agents.get(i).getAttachedBox());
                 System.err.println(nextStepGameBoard);
                 System.err.println(gameBoard);
-                Conflicts.delegateConflict(MainBoard.agents.get(i));
+                Conflicts.Conflict(MainBoard.agents.get(i));
                 System.err.println();
             }
         }

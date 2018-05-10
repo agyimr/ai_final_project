@@ -36,7 +36,7 @@ public class Agent extends MovingObject {
         super(id, color, y, x, "Agent");
         pathFindingEngine = new SearchClient(this);
     }
-    public String act(){
+    public void act(){
         //serverOutput = null;
         if(pendingHelp) {
             startObstacleRemoval();
@@ -72,9 +72,9 @@ public class Agent extends MovingObject {
         if(serverOutput != null) {
             System.err.println("Ending current state: "+currentState);
             System.err.println("ServerOutput: "+serverOutput);
-            return serverOutput;
+            return;
         }
-        return act(); // Temporary, just to cause stackOverflow instead of infinite loop, for better debugging
+        act(); // Temporary, just to cause stackOverflow instead of infinite loop, for better debugging
     }
     public String collectServerOutput() {
         if(serverOutput == null) throw new NegativeArraySizeException();
@@ -451,12 +451,30 @@ public class Agent extends MovingObject {
         }
         conflictSteps = commands.size();
     }
-    public void handleConflict(List<Command> commands) {
+    public void handleConflict(List<Command> commands, boolean conflictOrigin) {
+        boolean needsToMove = false;
+        if(hasMoved()) {
+            revertMoveIntention(RandomWalkClient.nextStepGameBoard);
+            needsToMove = true;
+        }
         changeState(inConflict);
+        clearPath();
         replacePath(commands);
+        if(needsToMove || conflictOrigin) {
+            act();
+        }
     }
-    public void handleConflict(int waitingTime) {
+    public void handleConflict(int waitingTime, boolean conflictOrigin) {
+        boolean needsToMove = false;
+        if(hasMoved()) {
+            revertMoveIntention(RandomWalkClient.nextStepGameBoard);
+            needsToMove = true;
+        }
         waitingProcedure(waitingTime);
+        if(needsToMove || conflictOrigin) {
+            act();
+        }
+
     }
     public boolean isMovingBox() { return currentState == movingBox;}
     public String getCurrentState() { return "" + currentState;}
