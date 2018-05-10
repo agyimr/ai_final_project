@@ -95,7 +95,12 @@ public class Agent extends MovingObject {
             startObstacleRemoval();
         }
         else if(isBoxAttached()) {
-            changeState(movingTowardsBox);
+            if(nextToBox(attachedBox)) {
+                changeState(movingBox);
+            }
+            else {
+                changeState(movingTowardsBox);
+            }
         }
         else if( !findClosestBox()) {
             System.err.println("Cant find box: ");
@@ -109,11 +114,12 @@ public class Agent extends MovingObject {
         }
     }
     private void moveToTheBox() {
-        if(executePath()) return;
-        else if(nextToBox(attachedBox)) {
+
+        if(nextToBox(attachedBox)) {
             System.err.println("isNext to box: ");
             changeState(movingBox);
         }
+        else if(executePath()) return;
         else if(!findPathToBox(attachedBox)) {
             waitingProcedure(3);
         }
