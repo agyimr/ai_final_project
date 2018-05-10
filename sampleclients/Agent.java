@@ -28,8 +28,8 @@ public class Agent extends MovingObject {
         pathBlocked,
         movingTowardsBox,
         movingBox,
-        removingObstacle,
-        inConflict
+        inConflict,
+        removingObstacle
     }
     String serverOutput = null;
     public Agent( char id, String color, int y, int x ) {
@@ -41,6 +41,7 @@ public class Agent extends MovingObject {
         if(pendingHelp) {
             startObstacleRemoval();
         }
+        System.err.println("Agent "+getID()+" acting");
         System.err.println("Starting CurrentState: "+currentState);
         while(serverOutput == null) {
             switch (currentState) {
@@ -76,6 +77,7 @@ public class Agent extends MovingObject {
 //        act(); // Temporary, just to cause stackOverflow instead of infinite loop, for better debugging
     }
     public String collectServerOutput() {
+        System.err.println("Agent "+getID());
         if(serverOutput == null) throw new NegativeArraySizeException();
         return serverOutput;
     }
@@ -193,6 +195,7 @@ public class Agent extends MovingObject {
         }
     }
     private void changeState(possibleStates nextState) {
+        System.err.println("next state: " + nextState + "current: " + currentState + "previous: " + previousState);
         if(nextState == currentState) return;
         previousState = currentState;
         currentState = nextState;
@@ -380,7 +383,7 @@ public class Agent extends MovingObject {
             }
             else {
                 safeSpot = null;
-                revertState();
+                changeState(unassigned);
             }
         }
     }
@@ -389,7 +392,7 @@ public class Agent extends MovingObject {
         myPathIsBlocked = false;
         pathFindingEngine.pathBlocked = false;
     }
-    public void replan() {
+    private void replan() {
         clearPath();
         if(isBoxAttached()) {
             dropTheBox();
@@ -418,7 +421,7 @@ public class Agent extends MovingObject {
         return (Math.abs(firstX - secondX) == 1) && (Math.abs(firstY - secondY) == 0)
                 || (Math.abs(firstX - secondX) == 0) && (Math.abs(firstY - secondY) == 1);
     }
-    private void replacePath(List<Command> commands) {
+    public void replacePath(List<Command> commands) {
         if(path != null){
             path.clear();
         }else{
@@ -464,11 +467,14 @@ public class Agent extends MovingObject {
             act();
         }
     }
-    public void handleConflict(int waitingTime, boolean conflictOrigin) {
+    public void handleConflict(int waitingTime, boolean conflictOrigin, boolean replanNeeded) {
         boolean needsToMove = false;
         if(hasMoved()) {
             revertMoveIntention(RandomWalkClient.nextStepGameBoard);
             needsToMove = true;
+        }
+        if(replanNeeded) {
+            clearPath();
         }
         waitingProcedure(waitingTime);
         if(needsToMove || conflictOrigin) {

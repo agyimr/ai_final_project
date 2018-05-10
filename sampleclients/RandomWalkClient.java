@@ -24,6 +24,7 @@ public class RandomWalkClient {
         anticipationPlanning = new AnticipationPlanning(gameBoard);
         assignGoals();
 	}
+
     public void assignGoals() {
         for(Goal current : MainBoard.allGoals) {
             if (current.canBeSolved() && current.assignedBox != null) {

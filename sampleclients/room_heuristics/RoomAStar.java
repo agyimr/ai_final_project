@@ -22,6 +22,19 @@ public class RoomAStar {
         this.passages = new Passage(map, this.horizontal_sections, this.vertical_sections);
     }
 
+    public ArrayList<Obstacle> getObstacles(Point from, Point to) {
+        LinkedList<Node> path = this.getRoomPath(from, to);
+        return path.getLast().obstacles;
+    }
+
+    public ArrayList<Obstacle> getObstacle(Point from, Section to) {
+        LinkedList<Node> path = this.getRoomPath(from, to.p1);
+        // TODO: if to.p1 is inaccessible because of a wall of boxes that can't be moved it'll throw an error...
+        if (to.contains(from)) return new ArrayList<>();
+        path.getLast();
+        return path.getLast().obstacles;
+    }
+
     public LinkedList<Node> getRoomPath(Point from, Point to) {
         ArrayList<Node> closed_set = new ArrayList<>();
         PriorityQueue<Node> open_set = new PriorityQueue<>(10, Comparator.comparingInt((n) -> n.f));
@@ -62,7 +75,7 @@ public class RoomAStar {
             for (Section s : current_node.sections) {
                 if (s != null) {
                     if (s.contains(to)) {
-                        PathWithObstacles path = Estimator.estimatePath(current_node.position, to, s, current_node.g);
+                        PathWithObstacles path = Estimator.estimatePath(current_node.position, to, s, current_node.g,true);
                         if (path != null) { // if path exists...
                             ArrayList<Obstacle> obstacles = new ArrayList<>(current_node.obstacles);
                             obstacles.addAll(path.obstacles);
@@ -99,7 +112,7 @@ public class RoomAStar {
                 ArrayList<Path> neighbour_sections = this.passages.getAllNeighbours(current_node.position);
                 if (neighbour_sections != null) {
                     for(Path s : neighbour_sections) {
-                        PathWithObstacles path = Estimator.estimatePath(current_node.position, s.to, s.through, current_node.g);
+                        PathWithObstacles path = Estimator.estimatePath(current_node.position, s.to, s.through, current_node.g, true);
                         if (path != null) { // if path exists...
                             Point p = path.arrivingPosition;
                             //System.err.println(distance);

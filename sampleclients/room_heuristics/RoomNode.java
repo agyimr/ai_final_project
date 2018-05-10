@@ -27,4 +27,10 @@ public class RoomNode {
         RoomNode n = (RoomNode) o;
         return n.position.equals(this.position);
     }
+
+    @Override
+    public String toString() {
+        return "X: " + position.x + ", Y: " + position.y + "; " + "Room: " + ", g: " + g + ", h: " + h + ", f: " + f +
+                " Obstacles: \n" + obstacles.toString();
+    }
 }

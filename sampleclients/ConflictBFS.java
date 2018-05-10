@@ -12,7 +12,9 @@ public class ConflictBFS {
 	private static boolean considerAgents = true;
 	private static boolean considerBoxes = true;
 	private static boolean reversed = false;
-	public static List<Command> doBFS(List<Point> locked, List<Point> pos, boolean ca, boolean cb, boolean r){
+	private static List<Point> sl;
+	public static List<Command> doBFS(List<Point> locked, List<Point> pos,List<Point> startLocked, boolean ca, boolean cb, boolean r){
+		sl = startLocked;
 		considerAgents = ca;
 		considerBoxes = cb;
 		reversed = r;
@@ -25,11 +27,6 @@ public class ConflictBFS {
 		//Add the current agent position to explored
 		frontier.add(new Cnode(pos,0));
 
-		System.err.println("locked");
-		for(Point p : locked){
-			System.err.println(p.toString());
-		}
-
 		//continue search as long as there are points in the firstfrontier
 		while(!frontier.isEmpty()) {
 			//pop the first element
@@ -37,7 +34,6 @@ public class ConflictBFS {
 			frontier.remove(0);
 			
 			//goal check - not in any locked points
-			System.err.println(cur.toString()+" "+isGoal(cur));
 			if(!containsList(locked,cur.getPoints()) && isGoal(cur)){
 				path = generateGoalPath(cur);
 				break;
@@ -135,7 +131,8 @@ public class ConflictBFS {
 						(map.isAgent(x,y) && considerAgents) ||
 						nextMap.isWall(x,y) ||
 						(nextMap.isBox(x,y) && considerBoxes) ||
-						(nextMap.isAgent(x,y) && (considerAgents || nextMapBoxHasAgent))
+						(nextMap.isAgent(x,y) && (considerAgents || nextMapBoxHasAgent)) ||
+						(containsList(sl,cand))
 						){
 						return false;
 				}
@@ -147,7 +144,6 @@ public class ConflictBFS {
 		List<Command> solution = new ArrayList<Command>();
 		Cnode cur = goal;
 		if (needNoop(cur)){
-			System.err.println("noopNeeded");
 			solution.add(0,new Command());
 		}
 		while(cur.getParent() != null){
