@@ -3,7 +3,6 @@ package sampleclients;
 
 import sampleclients.room_heuristics.RoomAStar;
 
-import java.awt.*;
 import java.io.*;
 import java.util.*;
 
@@ -32,11 +31,6 @@ public class RandomWalkClient {
             }
         }
     }
-
-        roomMaster.passages.PrintMap();
-        Point start = new Point(9, 5);
-        Point finish = new Point(4, 5);
-        LinkedList<sampleclients.room_heuristics.Node> path = roomMaster.getRoomPath(start, finish);
 
 
 	public boolean update() throws IOException {
