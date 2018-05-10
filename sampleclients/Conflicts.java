@@ -121,6 +121,7 @@ public class Conflicts {
 		List<Point> agentPos = new ArrayList<Point>();
 		agentPos.add(agent1.getCoordinates());
 		if (agent1.isMovingBox()) {
+            System.err.println("isMovingBox");
 			agentPos.add(agent1.getAttachedBox().getCoordinates());
 		}
 		List<Point> nextAgentPos = agent1.path.peek().action.getNext(agentPos);
@@ -133,9 +134,9 @@ public class Conflicts {
 		}
 
 
-		BasicObject b = RandomWalkClient.nextStepGameBoard.getElement((int) conflictPos.getX(), (int) conflictPos.getY());
+		BasicObject b = RandomWalkClient.gameBoard.getElement((int) conflictPos.getX(), (int) conflictPos.getY());
 		if(b == null){
-			b = RandomWalkClient.gameBoard.getElement((int) conflictPos.getX(), (int) conflictPos.getY());
+			b = RandomWalkClient.nextStepGameBoard.getElement((int) conflictPos.getX(), (int) conflictPos.getY());
 		}
 		Agent conflictPartner = null;
 		if(b instanceof Agent){
