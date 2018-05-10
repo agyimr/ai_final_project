@@ -37,44 +37,43 @@ public class Agent extends MovingObject {
         pathFindingEngine = new SearchClient(this);
     }
     public void act(){
-        //serverOutput = null;
+        serverOutput = null;
         if(pendingHelp) {
             startObstacleRemoval();
         }
         System.err.println("Starting CurrentState: "+currentState);
-        switch (currentState) {
-            case waiting:
-                waitForSomeMiracle();
-                break;
-            case unassigned:
-                searchForJob();
-                break;
-            case jobless:
-                //previousState=unassigned;
-                //waitingProcedure(5);
-                serverOutput = "NoOp";
-                break;
-            case inConflict:
-                resolveConflict();
-                break;
-            case movingTowardsBox:
-                moveToTheBox();
-                break;
-            case movingBox:
-                moveWithTheBox();
-                break;
-            case pathBlocked:
-                checkPath();
-                break;
-            case removingObstacle:
-                removeObstacle();
+        while(serverOutput == null) {
+            switch (currentState) {
+                case waiting:
+                    waitForSomeMiracle();
+                    break;
+                case unassigned:
+                    searchForJob();
+                    break;
+                case jobless:
+                    //previousState=unassigned;
+                    //waitingProcedure(5);
+                    serverOutput = "NoOp";
+                    break;
+                case inConflict:
+                    resolveConflict();
+                    break;
+                case movingTowardsBox:
+                    moveToTheBox();
+                    break;
+                case movingBox:
+                    moveWithTheBox();
+                    break;
+                case pathBlocked:
+                    checkPath();
+                    break;
+                case removingObstacle:
+                    removeObstacle();
+            }
         }
-        if(serverOutput != null) {
-            System.err.println("Ending current state: "+currentState);
-            System.err.println("ServerOutput: "+serverOutput);
-            return;
-        }
-        act(); // Temporary, just to cause stackOverflow instead of infinite loop, for better debugging
+        System.err.println("Ending current state: "+currentState);
+        System.err.println("ServerOutput: "+serverOutput);
+//        act(); // Temporary, just to cause stackOverflow instead of infinite loop, for better debugging
     }
     public String collectServerOutput() {
         if(serverOutput == null) throw new NegativeArraySizeException();
@@ -217,7 +216,8 @@ public class Agent extends MovingObject {
                 if(!tryToMove(nextStep)) {
                     System.err.println(path);
                     clearPath();
-                    return false;
+                    throw new NullPointerException();
+
                 }
                 serverOutput = nextStep.action.toString();
                 return true;

@@ -73,7 +73,11 @@ public abstract class Heuristic implements Comparator<Node> {
     private int getAgentHeuristic(Node n, int distance) {
         if (n.action.actType == Command.type.Move )
             return distance;
-        else return distance + 2;
+        else if(n.boxX != -1){
+            if(n.boxes[n.boxY][n.boxX].assignedAgent != null) return distance + 4;
+            else if(n.boxes[n.boxY][n.boxX].atGoalPosition()) return distance + 8;
+        }
+        return distance + 2;
     }
 
     int ManhattanDistance(int x1, int y1, int x2, int y2) {
