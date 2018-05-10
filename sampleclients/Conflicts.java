@@ -73,7 +73,7 @@ public class Conflicts {
 
 
         System.err.println("Trying to resolve conflict by adding NoOp to pawn agent");
-        solved = noopFix(pawnAgent,kingAgent);
+        solved = noopFix(pawnAgent,kingAgent,agent1.getID());
         System.err.println("Conflict resolved: "+solved);
 
         if(!solved){
@@ -117,7 +117,7 @@ public class Conflicts {
 	}
 
 	//This method is for detecting and delegating the type of conflict to the correct methods
-	private static boolean noopFix(Agent pawnAgent, Agent kingAgent){
+	private static boolean noopFix(Agent pawnAgent, Agent kingAgent,char original){
 		//Find next two points for king, if intersects with pawnAgent pos, return false, else true.
         if(kingAgent.isWaiting() || pawnAgent.isWaiting() || pawnAgent.path.isEmpty() || kingAgent.path.isEmpty()){
             return false;
@@ -158,8 +158,11 @@ public class Conflicts {
 			}
 		}
 
-
-		pawnAgent.handleConflict(3, true);
+		pawnAgent.handleConflict(3, pawnAgent.getID() == original);
+		if(kingAgent.getID() == original){
+            System.err.println("acted");
+		    kingAgent.act();
+        }
 		return true;
 	}
 
@@ -203,6 +206,10 @@ public class Conflicts {
         locked.addAll(pos);
         if(mps == -1){
             mps = kingAgent.path.size();
+        }else {
+            if(kingAgent.path.size() < mps){
+                mps = kingAgent.path.size();
+            }
         }
         for (int i = 0; i < mps; i++) {
             tmpC = kingAgent.getCommand(i);
@@ -260,7 +267,7 @@ public class Conflicts {
             System.err.println(c.action.toString());
         }
 
-        if(!kingAgent.hasMoved()){
+        if(!kingAgent.hasMoved()) {
             kingAgent.handleConflict(1, kingAgent.getID() == original);
         }
 
