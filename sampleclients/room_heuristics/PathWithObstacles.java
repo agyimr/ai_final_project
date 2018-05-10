@@ -4,7 +4,7 @@ package sampleclients.room_heuristics;
 import java.awt.*;
 import java.util.ArrayList;
 
-class PathWithObstacles {
+public class PathWithObstacles {
     public int distance;
     public ArrayList<Obstacle> obstacles;
     public Point arrivingPosition;

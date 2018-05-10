@@ -193,6 +193,7 @@ public class Agent extends MovingObject {
         }
     }
     private void changeState(possibleStates nextState) {
+        System.err.println("next state: " + nextState + "current: " + currentState + "previous: " + previousState);
         if(nextState == currentState) return;
         previousState = currentState;
         currentState = nextState;
@@ -381,6 +382,13 @@ public class Agent extends MovingObject {
         }
         changeState(unassigned);
     }
+    public void replanAndWait(int counter) {
+        clearPath();
+        if(isBoxAttached()) {
+            dropTheBox();
+        }
+        waitingProcedure(counter);
+    }
     public Command getCommand(int i) {
         try{
             if(path == null) return null;
@@ -403,7 +411,7 @@ public class Agent extends MovingObject {
         return (Math.abs(firstX - secondX) == 1) && (Math.abs(firstY - secondY) == 0)
                 || (Math.abs(firstX - secondX) == 0) && (Math.abs(firstY - secondY) == 1);
     }
-    private void replacePath(List<Command> commands) {
+    public void replacePath(List<Command> commands) {
         if(path != null){
             path.clear();
         }else{

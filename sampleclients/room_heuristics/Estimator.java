@@ -82,7 +82,6 @@ public class Estimator {
                             ArrayList<Obstacle> obstacles = new ArrayList<>(current_node.obstacles);
 
                             int path_length_until_box = current_node.g;
-                            System.err.println(current_node.g);
                             obstacles.add(new Obstacle(box, helper_agent.a, current_node.position, path_length_until_box));
 
                             RoomNode n = new RoomNode(current_node, neighbour,
