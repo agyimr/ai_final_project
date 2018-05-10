@@ -36,7 +36,7 @@ public class Agent extends MovingObject {
         super(id, color, y, x, "Agent");
         pathFindingEngine = new SearchClient(this);
     }
-    public String act(){
+    public void act(){
         //serverOutput = null;
         if(pendingHelp) {
             startObstacleRemoval();
@@ -72,9 +72,9 @@ public class Agent extends MovingObject {
         if(serverOutput != null) {
             System.err.println("Ending current state: "+currentState);
             System.err.println("ServerOutput: "+serverOutput);
-            return serverOutput;
+            return;
         }
-        return act(); // Temporary, just to cause stackOverflow instead of infinite loop, for better debugging
+        act(); // Temporary, just to cause stackOverflow instead of infinite loop, for better debugging
     }
     public String collectServerOutput() {
         if(serverOutput == null) throw new NegativeArraySizeException();
@@ -372,6 +372,7 @@ public class Agent extends MovingObject {
     //external handlers
     public void youShallPass() {
         myPathIsBlocked = false;
+        pathFindingEngine.pathBlocked = false;
     }
     public void replan() {
         clearPath();
@@ -436,11 +437,16 @@ public class Agent extends MovingObject {
         conflictSteps = commands.size();
     }
     public void handleConflict(List<Command> commands) {
+        if(hasMoved()) revertMoveIntention(RandomWalkClient.nextStepGameBoard);
         changeState(inConflict);
+        clearPath();
         replacePath(commands);
+        act();
     }
     public void handleConflict(int waitingTime) {
+        if(hasMoved()) revertMoveIntention(RandomWalkClient.nextStepGameBoard);
         waitingProcedure(waitingTime);
+        act();
     }
     public boolean isMovingBox() { return currentState == movingBox;}
     public String getCurrentState() { return "" + currentState;}

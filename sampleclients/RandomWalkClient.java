@@ -23,7 +23,13 @@ public class RandomWalkClient {
         roomMaster = new RoomAStar(gameBoard);
         anticipationPlanning = new AnticipationPlanning(gameBoard);
 	}
-
+    public void assignGoals() {
+        for(Goal current : MainBoard.allGoals) {
+            if (current.canBeSolved() && current.assignedBox != null) {
+                current.findClosestBox();
+            }
+        }
+    }
 
 
 	public boolean update() throws IOException {
@@ -94,7 +100,7 @@ public class RandomWalkClient {
 
 	public static void main( String[] args ) {
 
-        new Debugger("levels/MAthomasAppartment.lvl");
+        new Debugger("levels/MAthomasAppartment.lvl", 150);
 
         // Use stderr to print to console
 
