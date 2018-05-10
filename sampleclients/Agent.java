@@ -436,7 +436,7 @@ public class Agent extends MovingObject {
         }
         conflictSteps = commands.size();
     }
-    public void handleConflict(List<Command> commands) {
+    public void handleConflict(List<Command> commands, boolean conflictOrigin) {
         boolean needsToMove = false;
         if(hasMoved()) {
             revertMoveIntention(RandomWalkClient.nextStepGameBoard);
@@ -445,19 +445,18 @@ public class Agent extends MovingObject {
         changeState(inConflict);
         clearPath();
         replacePath(commands);
-        if(needsToMove) {
+        if(needsToMove || conflictOrigin) {
             act();
         }
-
     }
-    public void handleConflict(int waitingTime) {
+    public void handleConflict(int waitingTime, boolean conflictOrigin) {
         boolean needsToMove = false;
         if(hasMoved()) {
             revertMoveIntention(RandomWalkClient.nextStepGameBoard);
             needsToMove = true;
         }
         waitingProcedure(waitingTime);
-        if(needsToMove) {
+        if(needsToMove || conflictOrigin) {
             act();
         }
 

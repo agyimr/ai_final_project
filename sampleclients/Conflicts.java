@@ -36,7 +36,7 @@ public class Conflicts {
             System.err.println("conflict detected but no conflict partner found");
             System.err.println("Replanning and waiting");
             agent1.replan();
-            agent1.handleConflict(1);
+            agent1.handleConflict(1, true);
             return true;
         }
 
@@ -44,7 +44,7 @@ public class Conflicts {
 			System.err.println("Conflict detected with itself.");
             System.err.println("Replanning and waiting");
             agent1.replan();
-            agent1.handleConflict(1);
+            agent1.handleConflict(1, true);
             return true;
 		}
 
@@ -159,7 +159,7 @@ public class Conflicts {
 		}
 
 
-		pawnAgent.handleConflict(3);
+		pawnAgent.handleConflict(3, true);
 		return true;
 	}
 
@@ -245,13 +245,12 @@ public class Conflicts {
                 }else{
                     System.err.println("Planmerge found solution. Reversing roles to get out");
                     solution.add(0,new Command());
-                    pawnAgent.handleConflict(solution);
+                    pawnAgent.handleConflict(solution,pawnAgent.getID() == original);
                     return planMerge(pawnAgent,kingAgent,mps,true,involved,pawnAgent.getID());
                 }
             }
 
         }
-
         System.err.println("PlanMerge found solution with pawn agent " + pawnAgent.getID() + ":");
         for (Command c : solution) {
             System.err.println(c.toString());
