@@ -30,7 +30,7 @@ public class Conflicts {
                 }else{
                     System.err.println("Conflict NOT resolved");
                     System.err.println("Replanning and waiting");
-                    agent1.replanAndWait(1);
+                    agent1.handleConflict(1,true,true);
                 }
             }
         }
@@ -47,7 +47,7 @@ public class Conflicts {
         if(conflictPartner == null){
             System.err.println("\n"+rec+" conflict detected but no conflict partner found");
             System.err.println("Replanning and waiting");
-            agent1.replanAndWait(1);
+            agent1.handleConflict(1,true,true);
             System.err.println("---- Delegate conflict end ----");
             return 1;
         }
@@ -55,7 +55,7 @@ public class Conflicts {
 		if(conflictPartner.getID() == agent1.getID()){
 			System.err.println(rec+" Conflict detected with itself.");
             System.err.println("Replanning and waiting");
-            agent1.replanAndWait(1);
+            agent1.handleConflict(1,true,true);
             System.err.println("---- Delegate conflict end ----");
             return 1;
 		}
@@ -175,7 +175,7 @@ public class Conflicts {
 			}
 		}
 
-		pawnAgent.handleConflict(3, pawnAgent.getID() == original);
+		pawnAgent.handleConflict(3, pawnAgent.getID() == original,false);
 		if(kingAgent.getID() == original){
 		    kingAgent.act();
         }
@@ -291,7 +291,7 @@ public class Conflicts {
             return false;
         }
         if(!kingAgent.hasMoved()) {
-            kingAgent.handleConflict(rec, kingAgent.getID() == original);
+            kingAgent.handleConflict(rec, kingAgent.getID() == original,false);
         }
 
         System.err.println("---- PLANMERGE end ----");
