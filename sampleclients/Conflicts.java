@@ -82,6 +82,10 @@ public class Conflicts {
             System.err.println("Conflict resolved: "+solved);
         }
 
+        if(!agent1.hasMoved()){
+            agent1.act();
+        }
+
         return solved;
 
 	}
@@ -253,7 +257,7 @@ public class Conflicts {
                     System.err.println("Planmerge found solution. Reversing roles to get out");
                     solution.add(0,new Command());
                     pawnAgent.handleConflict(solution,pawnAgent.getID() == original);
-                    return planMerge(pawnAgent,kingAgent,mps,true,involved,pawnAgent.getID());
+                    return planMerge(pawnAgent,kingAgent,mps,true,involved,original);
                 }
             }
 
