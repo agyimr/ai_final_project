@@ -46,7 +46,7 @@ public class RandomWalkClient {
                 System.err.println(MainBoard.agents.get(i).getAttachedBox());
                 System.err.println(nextStepGameBoard);
                 System.err.println(gameBoard);
-                Conflicts.delegateConflict(MainBoard.agents.get(i));
+                Conflicts.Conflict(MainBoard.agents.get(i));
                 System.err.println();
             }
         }

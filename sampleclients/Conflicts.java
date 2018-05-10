@@ -7,7 +7,25 @@ public class Conflicts {
 
 	private static MainBoard mainBoard;
 
-	public static void delegateConflict(Agent agent1){
+	public static void Conflict(Agent agent1){
+        int maxPathSize = -1;
+        LinkedList<Agent> involved = new LinkedList<>();
+        involved.add(agent1);
+
+        if(!Conflicts.delegateConflict(agent1,involved,maxPathSize)){
+            maxPathSize = 3;
+            if(!Conflicts.delegateConflict(agent1,involved,maxPathSize)){
+                maxPathSize = 1;
+                if(Conflicts.delegateConflict(agent1,involved,maxPathSize)){
+                    System.err.println("Conflict resolved");
+                }else{
+                    System.err.println("Conflict NOT resolved");
+                }
+            }
+        }
+    }
+
+	public static boolean delegateConflict(Agent agent1, List<Agent> involved,int mps){
 		System.err.println();
 		System.err.println( "Conflict Started for agent:"+agent1.getID() );
 		mainBoard = RandomWalkClient.gameBoard;
@@ -15,22 +33,18 @@ public class Conflicts {
 
         if(conflictPartner == null){
             System.err.println("conflict detected but no conflict partner found");
-            System.err.println("reverting, Replanning and waiting");
-            agent1.revertMoveIntention(RandomWalkClient.nextStepGameBoard);
+            System.err.println("Replanning and waiting");
             agent1.replan();
             agent1.handleConflict(1);
-            agent1.act();
-            return;
+            return true;
         }
 
 		if(conflictPartner.getID() == agent1.getID()){
 			System.err.println("Conflict detected with itself.");
-            System.err.println("reverting, Replanning and waiting");
-            agent1.revertMoveIntention(RandomWalkClient.nextStepGameBoard);
+            System.err.println("Replanning and waiting");
             agent1.replan();
             agent1.handleConflict(1);
-            agent1.act();
-            return;
+            return true;
 		}
 
 
@@ -50,12 +64,12 @@ public class Conflicts {
         System.err.println("pawn is:"+pawnAgent.getID());
         System.err.println("king is:"+kingAgent.getID());
 
-        boolean pawnMove = false;
-        if(pawnAgent.getID() < kingAgent.getID()){
-            pawnMove = true;
-            System.err.println("trying to revert Agent "+pawnAgent.getID());
-            pawnAgent.revertMoveIntention(RandomWalkClient.nextStepGameBoard);
+        if(!involved.contains(conflictPartner)){
+            involved.add(conflictPartner);
+        }else{
+            return false;
         }
+
 
         System.err.println("Trying to resolve conflict by adding NoOp to pawn agent");
         boolean noopFix = noopFix(pawnAgent,kingAgent);
@@ -64,42 +78,35 @@ public class Conflicts {
         boolean planMerge = false;
         if(!noopFix){
             System.err.println("Trying to resolve conflict by PlanMerging");
-            planMerge = planMerge(kingAgent,pawnAgent);
+            planMerge = planMerge(kingAgent,pawnAgent,mps,false);
             System.err.println("Conflict resolved: "+planMerge);
         }
 
         if(noopFix || planMerge){
-            System.err.println("Agent act "+agent1.getID());
             try {
+                System.err.println("Agent act "+conflictPartner.getID());
+                conflictPartner.act();
+            } catch (UnsupportedOperationException exc) {
+                System.err.println("Move cant be applied after conflict");
+                System.err.println("Trying to resovle this conflict");
+                delegateConflict(conflictPartner,involved,mps);
+            }
+
+
+
+            try {
+                System.err.println("Agent act "+agent1.getID());
                 agent1.act();
             }catch (UnsupportedOperationException exc){
                 System.err.println("Move cant be applied after conflict");
-                System.err.println("waiting and Replanning instead");
-                agent1.replan();
-                agent1.handleConflict(1);
-                agent1.act();
+                System.err.println("Trying to resovle this conflict");
+                delegateConflict(conflictPartner,involved,mps);
             }
-            if(pawnMove && conflictPartner.getID() == pawnAgent.getID()) {
-                try {
-                    conflictPartner.act();
-                } catch (UnsupportedOperationException exc) {
-                    System.err.println("Move cant be applied after conflict");
-                    System.err.println("waiting and Replanning instead");
-                    conflictPartner.replan();
-                    conflictPartner.handleConflict(1);
-                    conflictPartner.act();
-                }
-            }
-            return;
+
+            return true;
         }else{
-            System.err.println("Conflict resolution have not been able to resovle the conflict -> throwing exception");
-            System.err.println("waiting and Replanning instead");
-            conflictPartner.replan();
-            conflictPartner.handleConflict(1);
-            conflictPartner.act();
-            agent1.replan();
-            agent1.handleConflict(1);
-            agent1.act();
+            System.err.println("Conflict resolution have not been able to resovle the conflict");
+            return false;
         }
 
 	}
@@ -203,7 +210,7 @@ public class Conflicts {
 	}
 	//More difficult conflict where one needs to backtrack or go around with/without box
 	
-	private static boolean planMerge(Agent kingAgent, Agent pawnAgent) {
+	private static boolean planMerge(Agent kingAgent, Agent pawnAgent, int mps,boolean reversed) {
         int index = 0;
         Point posKing = new Point(kingAgent.getX(), kingAgent.getY()); //Node 0 for the king
         List<Point> pos = new ArrayList<Point>();
@@ -223,7 +230,10 @@ public class Conflicts {
         Command tmpC;
         locked.addAll(pos);
         boolean kingNoop = false;
-        for (int i = 0; i < kingAgent.path.size(); i++) {
+        if(mps == -1){
+            mps = kingAgent.path.size();
+        }
+        for (int i = 0; i < mps; i++) {
             tmpC = kingAgent.getCommand(i);
             pos = tmpC.getNext(pos);
             for (Point p : pos) {
@@ -239,7 +249,7 @@ public class Conflicts {
         }
 
 
-        List<Command> solution = ConflictBFS.doBFS(locked, pawnAgentPos, true,true);
+        List<Command> solution = ConflictBFS.doBFS(locked, pawnAgentPos, true,true,reversed);
         if (solution.size() == 0) {
             System.err.println();
             System.err.println("PLANMERGE FOUND NO SOLUTION while considering other agents");
@@ -247,7 +257,7 @@ public class Conflicts {
 
             System.err.println();
             System.err.println("trying to find solution while not considering other agents");
-            solution = ConflictBFS.doBFS(locked, pawnAgentPos, false,true);
+            solution = ConflictBFS.doBFS(locked, pawnAgentPos, false,true,reversed);
             System.err.println();
 
             if (solution.size() == 0) {
@@ -257,7 +267,7 @@ public class Conflicts {
 
                 System.err.println();
                 System.err.println("trying to find solution while not considering other agents or boxes");
-                solution = ConflictBFS.doBFS(locked, pawnAgentPos, false,false);
+                solution = ConflictBFS.doBFS(locked, pawnAgentPos, false,false,reversed);
                 System.err.println();
 
                 if (solution.size() == 0) {
@@ -267,10 +277,10 @@ public class Conflicts {
 
                     return false;
                 }else{
-                    System.err.println("Planmerge no found solution. Reversing roles to get out");
+                    System.err.println("Planmerge found solution. Reversing roles to get out");
                     solution.add(0,new Command());
                     pawnAgent.handleConflict(solution);
-                    return planMerge(pawnAgent,kingAgent);
+                    return planMerge(pawnAgent,kingAgent,mps,true);
                 }
             }
 
