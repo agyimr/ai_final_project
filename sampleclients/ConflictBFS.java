@@ -25,11 +25,6 @@ public class ConflictBFS {
 		//Add the current agent position to explored
 		frontier.add(new Cnode(pos,0));
 
-		System.err.println("locked");
-		for(Point p : locked){
-			System.err.println(p.toString());
-		}
-
 		//continue search as long as there are points in the firstfrontier
 		while(!frontier.isEmpty()) {
 			//pop the first element
@@ -37,7 +32,6 @@ public class ConflictBFS {
 			frontier.remove(0);
 			
 			//goal check - not in any locked points
-			System.err.println(cur.toString()+" "+isGoal(cur));
 			if(!containsList(locked,cur.getPoints()) && isGoal(cur)){
 				path = generateGoalPath(cur);
 				break;
@@ -147,7 +141,6 @@ public class ConflictBFS {
 		List<Command> solution = new ArrayList<Command>();
 		Cnode cur = goal;
 		if (needNoop(cur)){
-			System.err.println("noopNeeded");
 			solution.add(0,new Command());
 		}
 		while(cur.getParent() != null){
