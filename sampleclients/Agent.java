@@ -41,6 +41,7 @@ public class Agent extends MovingObject {
         if(pendingHelp) {
             startObstacleRemoval();
         }
+        System.err.println("Agent "+getID()+" acting");
         System.err.println("Starting CurrentState: "+currentState);
         while(serverOutput == null) {
             switch (currentState) {
@@ -76,6 +77,7 @@ public class Agent extends MovingObject {
 //        act(); // Temporary, just to cause stackOverflow instead of infinite loop, for better debugging
     }
     public String collectServerOutput() {
+        System.err.println("Agent "+getID());
         if(serverOutput == null) throw new NegativeArraySizeException();
         return serverOutput;
     }
