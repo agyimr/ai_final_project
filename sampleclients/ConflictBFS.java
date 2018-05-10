@@ -11,9 +11,11 @@ public class ConflictBFS {
 	private static MainBoard nextMap;
 	private static boolean considerAgents = true;
 	private static boolean considerBoxes = true;
-	public static List<Command> doBFS(List<Point> locked, List<Point> pos, boolean ca, boolean cb){
+	private static boolean reversed = false;
+	public static List<Command> doBFS(List<Point> locked, List<Point> pos, boolean ca, boolean cb, boolean r){
 		considerAgents = ca;
 		considerBoxes = cb;
+		reversed = r;
 		map = RandomWalkClient.gameBoard;
 		nextMap = RandomWalkClient.nextStepGameBoard;
 		PriorityQueue<Cnode> explored = new PriorityQueue<Cnode>();
@@ -22,7 +24,12 @@ public class ConflictBFS {
 		
 		//Add the current agent position to explored
 		frontier.add(new Cnode(pos,0));
-		
+
+		System.err.println("locked");
+		for(Point p : locked){
+			System.err.println(p.toString());
+		}
+
 		//continue search as long as there are points in the firstfrontier
 		while(!frontier.isEmpty()) {
 			//pop the first element
@@ -30,7 +37,8 @@ public class ConflictBFS {
 			frontier.remove(0);
 			
 			//goal check - not in any locked points
-			if(!containsList(locked,cur.getPoints()) && isFree(cur)){
+			System.err.println(cur.toString()+" "+isGoal(cur));
+			if(!containsList(locked,cur.getPoints()) && isGoal(cur)){
 				path = generateGoalPath(cur);
 				break;
 			}
@@ -98,7 +106,7 @@ public class ConflictBFS {
 			
 			//if the command is applicable, and allowed in the enviroment
 			if(posCand != null && isAllowed(posCand,startPos)){
-				Cnode nodeCand = new Cnode(posCand,cur.getG());
+				Cnode nodeCand = new Cnode(posCand,cur.getG()+1);
 				nodeCand.setParent(cur);
 				nodeCand.setCommand(allCommands[i]);
 				n.add(nodeCand);
@@ -188,11 +196,27 @@ public class ConflictBFS {
 				nextMap.isAgent(x,y);
 	}
 
-	private static boolean isFree(Cnode cur) {
+	private static boolean isGoal(Cnode cur) {
 		int x = cur.getX();
 		int y = cur.getY();
-		return  map.isFree(x,y)||
-				nextMap.isFree(x,y);
+		boolean mapBoxHasAgent = false;
+		boolean nextMapBoxHasAgent = false;
+		if(map.getElement(x,y) instanceof Box){
+			mapBoxHasAgent = ((Box) map.getElement(x,y)).assignedAgent == null;
+		}
+		if(nextMap.getElement(x,y) instanceof Box){
+			nextMapBoxHasAgent = ((Box) nextMap.getElement(x,y)).assignedAgent == null;
+		}
+		boolean boxCase = 		!(map.isBox(x,y) && considerBoxes && mapBoxHasAgent) &&
+								!(nextMap.isBox(x,y) && considerBoxes && nextMapBoxHasAgent);
+		boolean agentCase = 	!(map.isAgent(x,y) && considerAgents) &&
+								!(nextMap.isAgent(x,y) && considerAgents);
+		boolean alleyCase = 	!(reversed && isAlley(cur));
+
+		return  !map.isWall(x,y) &&
+				boxCase &&
+				agentCase &&
+				alleyCase;
 	}
 	private static boolean isAlley(Cnode cur) {
 		Point agent =  cur.getPoints().get(0);
@@ -349,15 +373,19 @@ class Cnode implements Comparator<Cnode>, Comparable<Cnode>{
 		return g;
 	}
 	public int getH(){
-		int prio = 1;
-		if(RandomWalkClient.gameBoard.isFree(pos.x,pos.y)){
-			return g;
+		int prio = g;
+		if(RandomWalkClient.gameBoard.isGoal(pos.x,pos.y)){
+			prio += 1;
+		}
+		if(RandomWalkClient.gameBoard.isAgent(pos.x,pos.y)){
+			Agent a = (Agent) RandomWalkClient.gameBoard.getElement(pos.x,pos.y);
+			prio += a.getPriority();
 		}
 		if(RandomWalkClient.gameBoard.getElement(pos.x,pos.y) instanceof Box){
 			if(((Box) RandomWalkClient.gameBoard.getElement(pos.x,pos.y)).assignedAgent == null){
-				prio = 5;
+				prio += 10;
 			}else{
-				prio = 1;
+				prio = 5;
 			}
 		}
 

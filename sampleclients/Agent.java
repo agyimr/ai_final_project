@@ -36,45 +36,44 @@ public class Agent extends MovingObject {
         super(id, color, y, x, "Agent");
         pathFindingEngine = new SearchClient(this);
     }
-    public String act(){
-        //serverOutput = null;
+    public void act(){
+        serverOutput = null;
         if(pendingHelp) {
             startObstacleRemoval();
         }
         System.err.println("Starting CurrentState: "+currentState);
-        switch (currentState) {
-            case waiting:
-                waitForSomeMiracle();
-                break;
-            case unassigned:
-                searchForJob();
-                break;
-            case jobless:
-                //previousState=unassigned;
-                //waitingProcedure(5);
-                serverOutput = "NoOp";
-                break;
-            case inConflict:
-                resolveConflict();
-                break;
-            case movingTowardsBox:
-                moveToTheBox();
-                break;
-            case movingBox:
-                moveWithTheBox();
-                break;
-            case pathBlocked:
-                checkPath();
-                break;
-            case removingObstacle:
-                removeObstacle();
+        while(serverOutput == null) {
+            switch (currentState) {
+                case waiting:
+                    waitForSomeMiracle();
+                    break;
+                case unassigned:
+                    searchForJob();
+                    break;
+                case jobless:
+                    //previousState=unassigned;
+                    //waitingProcedure(5);
+                    serverOutput = "NoOp";
+                    break;
+                case inConflict:
+                    resolveConflict();
+                    break;
+                case movingTowardsBox:
+                    moveToTheBox();
+                    break;
+                case movingBox:
+                    moveWithTheBox();
+                    break;
+                case pathBlocked:
+                    checkPath();
+                    break;
+                case removingObstacle:
+                    removeObstacle();
+            }
         }
-        if(serverOutput != null) {
-            System.err.println("Ending current state: "+currentState);
-            System.err.println("ServerOutput: "+serverOutput);
-            return serverOutput;
-        }
-        return act(); // Temporary, just to cause stackOverflow instead of infinite loop, for better debugging
+        System.err.println("Ending current state: "+currentState);
+        System.err.println("ServerOutput: "+serverOutput);
+//        act(); // Temporary, just to cause stackOverflow instead of infinite loop, for better debugging
     }
     public String collectServerOutput() {
         if(serverOutput == null) throw new NegativeArraySizeException();
@@ -215,9 +214,10 @@ public class Agent extends MovingObject {
             if (nextStep != null) {
                 System.err.println("try to move");
                 if(!tryToMove(nextStep)) {
-                    System.err.println(path);
+                    //System.err.println(path);
                     clearPath();
                     return false;
+
                 }
                 serverOutput = nextStep.action.toString();
                 return true;
@@ -436,12 +436,30 @@ public class Agent extends MovingObject {
         }
         conflictSteps = commands.size();
     }
-    public void handleConflict(List<Command> commands) {
+    public void handleConflict(List<Command> commands, boolean conflictOrigin) {
+        boolean needsToMove = false;
+        if(hasMoved()) {
+            revertMoveIntention(RandomWalkClient.nextStepGameBoard);
+            needsToMove = true;
+        }
         changeState(inConflict);
+        clearPath();
         replacePath(commands);
+        if(needsToMove || conflictOrigin) {
+            act();
+        }
     }
-    public void handleConflict(int waitingTime) {
+    public void handleConflict(int waitingTime, boolean conflictOrigin) {
+        boolean needsToMove = false;
+        if(hasMoved()) {
+            revertMoveIntention(RandomWalkClient.nextStepGameBoard);
+            needsToMove = true;
+        }
         waitingProcedure(waitingTime);
+        if(needsToMove || conflictOrigin) {
+            act();
+        }
+
     }
     public boolean isMovingBox() { return currentState == movingBox;}
     public String getCurrentState() { return "" + currentState;}

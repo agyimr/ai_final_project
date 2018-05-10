@@ -119,7 +119,7 @@ public class SearchClient {
             strategy.addToFrontier(new Node(owner.getX(), owner.getY(), owner.getColor(), MainBoard.allBoxes));
         }
         LinkedList<Node> result = conductSearch(searchRange, goalX, goalY, pushingBox);
-        System.err.println("Goal coordinates: " + goalX + ", " + goalY + result);
+        //System.err.println("Goal coordinates: " + goalX + ", " + goalY + result);
         if(result == null) {
             if(biggerRangeTriggered || pathBlocked) {
                 return null;
