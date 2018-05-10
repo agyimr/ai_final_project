@@ -191,6 +191,7 @@ public class AnticipationPlanning {
     }
 
     public int getEarliestOccupation(Point target) {
+        System.err.println("target x: " + target.x + "Target y: " + target.y);
         Iterator iterator = this.getBoardCell(target.x, target.y).keySet().iterator();
 
         if(iterator.hasNext()) {

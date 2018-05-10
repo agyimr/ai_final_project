@@ -11,7 +11,6 @@ public class FindSafeSpot {
     private static MainBoard nextMap;
     private static AnticipationPlanning anticiObj;
     private static int startClock;
-    private static boolean considerAgents = true;
     private static int clockIncrement=0;
     public static Point safeSpotBFS(Point startPos) {
         map = RandomWalkClient.gameBoard;
@@ -113,7 +112,7 @@ public class FindSafeSpot {
         private static boolean isAllowed (Point cand){
             int x = cand.x;
             int y = cand.y;
-            if (x >= 0 && x < map.getWidth() && y >= 0 && y< map.getHeight() &&( map.isFree(x, y) || (nextMap.isAgent(x, y) && considerAgents))) {
+            if (x < 0 || x >= map.getWidth() || y < 0 || y >= map.getHeight() || ( !map.isFree(x, y))) {
                 return false;
             }
 

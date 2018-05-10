@@ -372,6 +372,7 @@ public class Agent extends MovingObject {
     //external handlers
     public void youShallPass() {
         myPathIsBlocked = false;
+        pathFindingEngine.pathBlocked = false;
     }
     public void replan() {
         clearPath();
