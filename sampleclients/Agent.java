@@ -437,19 +437,27 @@ public class Agent extends MovingObject {
         conflictSteps = commands.size();
     }
     public void handleConflict(List<Command> commands) {
+        boolean needsToMove = false;
+        if(hasMoved()) {
+            revertMoveIntention(RandomWalkClient.nextStepGameBoard);
+            needsToMove = true;
+        }
         changeState(inConflict);
         clearPath();
         replacePath(commands);
-        if(hasMoved()) {
-            revertMoveIntention(RandomWalkClient.nextStepGameBoard);
+        if(needsToMove) {
             act();
         }
 
     }
     public void handleConflict(int waitingTime) {
-        waitingProcedure(waitingTime);
+        boolean needsToMove = false;
         if(hasMoved()) {
             revertMoveIntention(RandomWalkClient.nextStepGameBoard);
+            needsToMove = true;
+        }
+        waitingProcedure(waitingTime);
+        if(needsToMove) {
             act();
         }
 
