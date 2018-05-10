@@ -93,7 +93,8 @@ public class Node {
     }
 
     public ArrayList<Node> getExpandedNodes() {
-        ArrayList<Node> expandedNodes = new ArrayList<Node>(Command.every.length);
+        ArrayList<Node> expandedNodes = new ArrayList<Node>(Command.every.length + 1);
+        expandedNodes.add(this.childNode(new Command(), agentX, agentY, -1, -1));
         for (Command c : Command.every) {
             // Determine applicability of action
             int newAgentY = this.agentY + Command.dirToYChange(c.dir1);
