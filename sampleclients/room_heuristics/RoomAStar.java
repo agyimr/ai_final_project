@@ -6,6 +6,8 @@ import java.awt.Point;
 import java.util.*;
 
 public class RoomAStar {
+    static int STRICT_PUNISHMENT_FOR_AGENT_USAGE = 10000;
+
     private Map map;
     public Passage passages;
     private ArrayList<Section> vertical_sections;
@@ -27,7 +29,7 @@ public class RoomAStar {
         return path.getLast().obstacles;
     }
 
-    public ArrayList<Obstacle> getObstacle(Point from, Section to) {
+    public ArrayList<Obstacle> getObstacles(Point from, Section to) {
         LinkedList<Node> path = this.getRoomPath(from, to.p1);
         // TODO: if to.p1 is inaccessible because of a wall of boxes that can't be moved it'll throw an error...
         if (to.contains(from)) return new ArrayList<>();
@@ -51,7 +53,7 @@ public class RoomAStar {
             Node current_node = open_set.poll();
 
             if (!solution.isEmpty() && current_node.g > solution.getLast().g) {
-                return solution;
+                return removePunishment(solution);
             }
 
             // checking for goal state
@@ -147,8 +149,18 @@ public class RoomAStar {
             }
         }
 
-        if (!solution.isEmpty()) return solution;
+        if (!solution.isEmpty()) return removePunishment(solution);
         return null;
+    }
+
+    private LinkedList<Node> removePunishment(LinkedList<Node> path) {
+        LinkedList<Node> real_path = new LinkedList<>();
+        for(Node n: path) {
+            Node n_transformed = new Node(null, n.sections, n.position, n.through,
+                    n.g - n.obstacles.size() * STRICT_PUNISHMENT_FOR_AGENT_USAGE, n.g, n.obstacles);
+            real_path.addLast(n_transformed);
+        }
+        return real_path;
     }
 
     public LinkedList<Node> getEmptyRoomPath(Point from, Point to) {
