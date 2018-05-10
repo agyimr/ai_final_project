@@ -15,7 +15,7 @@ function benchmark (level, callback) {
 	
 	var jointActionsCounter = -3;
 
-	var ps = child_process.spawn("java", ['-jar', 'server.jar', '-l', "levels/" + level, '-c', 'java -Xmx2g sampleclients.RandomWalkClient', '-t', '180'], {cwd : cwd});
+	var ps = child_process.spawn("java", ['-jar', 'server.jar', '-l', "levels/" + level, '-c', 'java -Xmx2g sampleclients.RandomWalkClient', '-t', '10'], {cwd : cwd});
 
 	ps.stderr.on('data', function (data) {
 
@@ -23,6 +23,11 @@ function benchmark (level, callback) {
 			error = "MAP_TOO_WIDE";
 			ps.kill();
 		}
+		
+		if(data.includes("Exception in thread")) {
+			error = "JAVA_EXCEPTION";
+			ps.kill();
+		}		
 	});
 	
 	ps.stdout.on('data', function (data) {
