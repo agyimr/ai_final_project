@@ -3,7 +3,7 @@ const net = require('net');
 
 if(process.argv[2] == "--launcher") {
 	
-	var ps = child_process.spawn("java", ['-jar', 'server.jar', '-l', process.argv[3], '-c', "node debugger.js " + process.argv[4] + " " + process.argv[5] + " " + process.argv[6] + " " + process.argv[7], '-g']);
+	var ps = child_process.spawn("java", ['-jar', 'server.jar', '-l', process.argv[3], '-c', "node debugger.js " + process.argv[5] + " " + process.argv[6] + " " + process.argv[7] + " " + process.argv[8], '-g', process.argv[4]]);
 
 } else {
 		
