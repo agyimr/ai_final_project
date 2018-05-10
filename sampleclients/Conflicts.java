@@ -319,7 +319,7 @@ public class Conflicts {
             System.err.println("---- PLANMERGE end ----");
             return false;
         }
-        if(!kingAgent.hasMoved() && kingAgent.path!= null && kingAgent.path.peek().action.actType != Command.type.Noop) {
+        if(!kingAgent.hasMoved() && kingAgent.path!= null && !kingAgent.path.isEmpty() && kingAgent.path.peek().action.actType != Command.type.Noop) {
             kingAgent.handleConflict(rec, kingAgent.getID() == original,false);
         }
 
