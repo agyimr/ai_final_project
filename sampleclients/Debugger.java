@@ -23,8 +23,9 @@ public class Debugger {
     private InputStream oldIn = System.in;
 
     private String level;
+    private int speed;
 
-    public Debugger(String level) {
+    public Debugger(String level, int speed) {
 
         List<String> args = ManagementFactory.getRuntimeMXBean().getInputArguments();
 
@@ -33,6 +34,7 @@ public class Debugger {
         }
 
         this.level = level;
+        this.speed = speed;
 
         try {
             errServerSocket = new ServerSocket(0);
@@ -229,7 +231,7 @@ public class Debugger {
 
         public void run() {
 
-            ProcessBuilder processBuilder = new ProcessBuilder("cmd", "/c node debugger.js --launcher " + level + " " + errServerSocket.getLocalPort() + " " + outServerSocket.getLocalPort() + " " + inServerSocket.getLocalPort() + " " + ioServerSocket.getLocalPort());
+            ProcessBuilder processBuilder = new ProcessBuilder("cmd", "/c node debugger.js --launcher " + level + " " + speed + " " + errServerSocket.getLocalPort() + " " + outServerSocket.getLocalPort() + " " + inServerSocket.getLocalPort() + " " + ioServerSocket.getLocalPort());
 
             Process process = null;
             try {

@@ -11,7 +11,6 @@ public class FindSafeSpot {
     private static MainBoard nextMap;
     private static AnticipationPlanning anticiObj;
     private static int startClock;
-    private static boolean considerAgents = true;
     private static int clockIncrement=0;
     public static Point safeSpotBFS(Point startPos) {
         map = RandomWalkClient.gameBoard;
@@ -29,14 +28,13 @@ public class FindSafeSpot {
             //pop the first element
             ConflictNode cur = frontier.get(0);
             frontier.remove(0);
-
             //goal check - Is this an empty spot? with perhabs area around it? or perhabs the highest anticipation clock relative to position,
-            if(isMySpot(cur.getPoints().get(0))){
-                return cur.getPoints().get(0);
+            if(isMySpot(cur.getAgent())){
+                return cur.getAgent();
             }
 
             //Get neighbour states of cur
-            List<ConflictNode> neighbours = getNeighbours(cur, startPos);
+            List<ConflictNode> neighbours = getNeighbours(cur);
 
             //add the current ConflictNode to explored
             explored.add(cur);
@@ -59,16 +57,17 @@ public class FindSafeSpot {
                     maxNode = n;
                 }
             }
-            return maxNode.getPoints().get(0);
+            return maxNode.getAgent();
         }
         return null;
     }
 //Expansion increase clock with new depth
-        private static List<ConflictNode> getNeighbours (ConflictNode cur, Point startPos){
+        private static List<ConflictNode> getNeighbours (ConflictNode cur){
 
             List<ConflictNode> n = new ArrayList<ConflictNode>();
             int x1=0;
             int y1=0;
+            clockIncrement = clockIncrement+1;
             for (int i = 0; i < 4; i++) {
                 Point posCand = null;
 
@@ -80,8 +79,7 @@ public class FindSafeSpot {
                 posCand = new Point(x1,y1);
 
                 //if the command is applicable, and allowed in the enviroment
-                if (isAllowed(posCand, startPos)) {
-                    clockIncrement = clockIncrement+1;
+                if (isAllowed(posCand)) {
                     ConflictNode nodeCand = new ConflictNode(posCand, startClock+clockIncrement);
                     nodeCand.setParent(cur);
                     n.add(nodeCand);
@@ -93,7 +91,17 @@ public class FindSafeSpot {
         private static boolean isMySpot(Point spot){
         //Maybe add area clear around spot, or maybe consider
             int earliestOcc = anticiObj.getEarliestOccupation(spot);
-            if(earliestOcc==-1){
+            if(earliestOcc==-1 && isSpaceAround(spot)){
+                return true;
+            }
+            return false;
+        }
+        private static boolean isSpaceAround(Point spot) {
+            if(spot.x == 0 || spot.x == map.getWidth() - 1 || spot.y == 0 || spot.y == map.getHeight() - 1) return false;
+            if((map.isFree(spot.x+1, spot.y) && map.isFree(spot.x+1, spot.y - 1) && map.isFree(spot.x+1, spot.y + 1)) //right
+                || (map.isFree(spot.x-1, spot.y) && map.isFree(spot.x-1, spot.y - 1) && map.isFree(spot.x-1, spot.y + 1)) //left
+                || (map.isFree(spot.x-1, spot.y - 1) && map.isFree(spot.x, spot.y - 1) && map.isFree(spot.x+1, spot.y -1)) //top
+                || (map.isFree(spot.x-1, spot.y + 1) && map.isFree(spot.x, spot.y + 1) && map.isFree(spot.x+1, spot.y +1))) {  //bottom
                 return true;
             }
             return false;
@@ -101,15 +109,13 @@ public class FindSafeSpot {
 
 
 
-
-        private static boolean isAllowed (Point cand, Point Pos){
-            if (!(Pos == cand)) {
-                int x = cand.x;
-                int y = cand.y;
-                if (map.isWall(x, y) || map.isBox(x, y) || map.isAgent(x, y) || nextMap.isWall(x, y) || nextMap.isBox(x, y) || (nextMap.isAgent(x, y) && considerAgents)) {
-                    return false;
-                }
+        private static boolean isAllowed (Point cand){
+            int x = cand.x;
+            int y = cand.y;
+            if (x < 0 || x >= map.getWidth() || y < 0 || y >= map.getHeight() || ( !map.isFree(x, y))) {
+                return false;
             }
+
             return true;
         }
 
@@ -117,8 +123,6 @@ public class FindSafeSpot {
 
 class ConflictNode {
     private final Point pos;
-    private final Point boxPos;
-    private final List<Point> posLst;
     private ConflictNode parent = null;
     private Command c = null;
     private int Clock;
@@ -126,9 +130,6 @@ class ConflictNode {
     public ConflictNode(Point pos, int Clock) {
         this.Clock = Clock;
         this.pos = pos;
-        boxPos = null;
-        posLst = new ArrayList<Point>();
-        posLst.add(pos);
 
     }
 
@@ -152,10 +153,8 @@ class ConflictNode {
 
     public int getX() { return pos.x;}
     public int getY() {return pos.y;}
-    public int getBoxX() { return boxPos.x;}
-    public int getBoxY() {return boxPos.y;}
-    public List<Point> getPoints() {return posLst;}
-    public boolean hasBox(){return posLst.size() == 2;}
+
+    public Point getAgent() {return pos;}
 
     @Override
     public boolean equals(Object obj) {
@@ -170,17 +169,12 @@ class ConflictNode {
             return false;
         if (pos.y != other.pos.y)
             return false;
-        return posLst.equals(other.posLst);
+        else return true;
     }
 
     @Override
     public String toString() {
-        if(boxPos == null){
-            return "(" + pos.x + ", " + pos.y + ")";
-        }else{
-            return "(" + pos.x + ", " + pos.y + ")" + "(" + boxPos.x + ", " + boxPos.y + ")";
-        }
-
+        return "(" + pos.x + ", " + pos.y + ")";
     }
 
     @Override

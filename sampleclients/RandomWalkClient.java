@@ -94,7 +94,7 @@ public class RandomWalkClient {
 
 	public static void main( String[] args ) {
 
-        new Debugger("levels/MAthomasAppartment.lvl");
+        new Debugger("levels/MAthomasAppartment.lvl", 150);
 
         // Use stderr to print to console
 

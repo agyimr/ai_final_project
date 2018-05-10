@@ -28,5 +28,25 @@ public class Goal extends BasicObject {
         return true;
 
     }
-
+    public void findClosestBox() {
+        int bestDistance = Integer.MAX_VALUE;
+        Box bestBox = null;
+        List <Box>boxes = MainBoard.boxesByID.get(Character.toUpperCase(getID()));
+        if(boxes != null) {
+            for(Box current : boxes) {
+                int currentDistance = RandomWalkClient.roomMaster.getPathEstimate(getCoordinates(), current.getCoordinates());
+                if(current.assignedGoal == null && currentDistance < bestDistance) {
+                    bestDistance = currentDistance;
+                    bestBox = current;
+                }
+            }
+        }
+        if (bestBox == null) {
+            assignedBox = null;
+        }
+        else {
+            assignedBox = bestBox;
+            bestBox.assignedGoal = this;
+        }
+    }
 }

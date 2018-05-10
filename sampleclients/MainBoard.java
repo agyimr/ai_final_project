@@ -21,7 +21,14 @@ public class MainBoard {
     }
 
     public int getWidth() {
-        return gameBoard.get(0).size();
+
+        int width = 0;
+
+        for(List<BasicObject> line : gameBoard) {
+            width = Math.max(width, line.size());
+        }
+
+        return width;
     }
 
     public List<List<BasicObject>> getGameBoard() {
@@ -149,7 +156,7 @@ public class MainBoard {
 
     //returns object under given coordinates
     BasicObject getElement(int x, int y) {
-        if(yOutOfBounds(y) || xOutOfBounds(x)) throw new UnsupportedOperationException();
+        if(yOutOfBounds(y) || xOutOfBounds(x)) throw new NullPointerException();
         return gameBoard.get(y).get(x);
     }
     //used only internally, never expose this
