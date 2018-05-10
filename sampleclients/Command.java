@@ -7,6 +7,7 @@ import java.awt.Point;
 public class Command {
 	static {
 		LinkedList< Command > cmds = new LinkedList< Command >();
+		cmds.add( new Command( ) );
 		for ( dir d : dir.values() ) {
 			cmds.add( new Command( d ) );
 		}

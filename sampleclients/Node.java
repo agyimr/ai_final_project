@@ -25,11 +25,12 @@ public class Node {
     private int _hash = 0;
 
     public Node(int ownerX, int ownerY, String color, Collection<Box> consideredBoxes) {
+        action = new Command();
         ownerColor = color;
         agentX = ownerX;
         agentY = ownerY;
         this.g = 0;
-        timeFrame = 0;
+        timeFrame = RandomWalkClient.anticipationPlanning.getClock();
         initializeBoxes(consideredBoxes);
     }
 
@@ -54,7 +55,7 @@ public class Node {
         this.boxX = boxX;
         this.boxY = boxY;
         action = new Command();
-        timeFrame = 0;
+        timeFrame = RandomWalkClient.anticipationPlanning.getClock();
     }
     public Node(Node parent, Command action, int agentX, int agentY) {
         boxes = new Box[MainBoard.MainBoardYDomain][MainBoard.MainBoardXDomain];

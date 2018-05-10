@@ -18,11 +18,14 @@ public class Box extends MovingObject {
     boolean tryToFindAGoal() {
         int bestDistance = Integer.MAX_VALUE;
         Goal bestGoal = null;
-        for(Goal current : MainBoard.goalsByID.get(Character.toLowerCase(getID()))) {
-            int currentDistance = RandomWalkClient.roomMaster.getPathEstimate(getCoordinates(), current.getCoordinates());
-            if(current.assignedBox == null && current.canBeSolved() && currentDistance < bestDistance) {
-                bestDistance = currentDistance;
-                bestGoal = current;
+        List <Goal>goals = MainBoard.goalsByID.get(Character.toLowerCase(getID()));
+        if(goals != null) {
+            for(Goal current : goals) {
+                int currentDistance = RandomWalkClient.roomMaster.getPathEstimate(getCoordinates(), current.getCoordinates());
+                if(current.assignedBox == null && current.canBeSolved() && currentDistance < bestDistance) {
+                    bestDistance = currentDistance;
+                    bestGoal = current;
+                }
             }
         }
         if (bestGoal == null) {
@@ -37,9 +40,9 @@ public class Box extends MovingObject {
         }
     }
     public boolean atGoalPosition() {
-        if (assignedGoal == null) return false;
-        if( Integer.compare(getX(), assignedGoal.getX()) == 0
-                && Integer.compare(getY(), assignedGoal.getY()) == 0 ) {
+        if(assignedGoal == null) return false;
+        else if( getX() - assignedGoal.getX() == 0
+                && getY() - assignedGoal.getY() == 0 ) {
             return true;
         }
         else {
@@ -47,10 +50,8 @@ public class Box extends MovingObject {
         }
     }
     public void resetDependencies() {
-
         for(Box theCurrentID : MainBoard.allBoxes) {
             theCurrentID.noGoalOnTheMap = false;
-            theCurrentID.assignedAgent = null;
         }
         for(Agent sameColor : MainBoard.agents) {
             if(sameColor.jobless()) sameColor.moveYourAss();

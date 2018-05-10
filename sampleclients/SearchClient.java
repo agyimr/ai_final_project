@@ -27,6 +27,11 @@ public class SearchClient {
     private LinkedList<sampleclients.room_heuristics.Node> roomPath;
     private Section currentRoom = null;
     private Section nextRoom = null;
+    public void clearRoomPath() {
+        roomPath = null;
+        currentRoom = null;
+        nextRoom = null;
+    }
     public SearchClient(Agent owner) {
         this.owner = owner;
         strategy = new StrategyBestFirst(new AStar(owner));
@@ -39,7 +44,13 @@ public class SearchClient {
         strategy.clear();
         strategy.heuristic.initializeSearch(pushing, goalRoom);
     }
-    public LinkedList<Node> continuePath() {
+
+    public LinkedList<Node> continuePath() { //TODO overwrite path at the end
+        LinkedList<Node> localPath = getNextRoomPath();
+        Agent possibleConflictingAgent  = RandomWalkClient.anticipationPlanning.addPath(localPath, owner);
+        return localPath;
+    }
+    public LinkedList<Node> getNextRoomPath() {
         if(pathBlocked) {
             pathBlocked = false;
             owner.waitForObstacleToBeRemoved();
@@ -47,6 +58,7 @@ public class SearchClient {
             dummyPath.add(new Node(null, new Command(), owner.getX(), owner.getY()));
             return dummyPath; // to prevent Agent from finding new path
         }
+
         if(currentRoom == null) return null;
         else if(nextRoom == null && getNextRoom()) {
                 return FindRoomPath(pushingBox, nextRoom);
@@ -54,7 +66,7 @@ public class SearchClient {
         else if(currentRoom.contains(new Point(goalX, goalY))) {
             return FindPath(pushingBox, goalX, goalY);
         }
-        else if(nextRoom!= null && nextRoom.contains(owner.getCoordinates())) {
+        else if(nextRoom != null && (nextRoom.contains(owner.getCoordinates()) || (owner.isBoxAttached() && nextRoom.contains(owner.getAttachedBox().getCoordinates())))) {
             currentRoom = nextRoom;
             if(getNextRoom())
                 return FindRoomPath(pushingBox, nextRoom);
@@ -63,6 +75,11 @@ public class SearchClient {
         }
         else {
             return FindPath(pushingBox, goalX, goalY);
+//            RandomWalkClient.roomMaster.passages.PrintMap();
+//            System.err.println(roomPath);
+//            System.err.println(currentRoom);
+//            System.err.println(nextRoom);
+//            throw new NegativeArraySizeException();
         }
     }
     public boolean getPath(boolean pushingBox, int goalX, int goalY) {
@@ -280,7 +297,7 @@ public class SearchClient {
                 System.err.println(beforeFirstImmovableObstacle);
                 System.err.println(owner);
                 //throw new NegativeArraySizeException();
-//                findSaviors();
+                ObstacleArbitrator.findSaviors(this, owner);
             }
         }
         else{
@@ -292,26 +309,5 @@ public class SearchClient {
                 //TODO box is inaccessible, handle accordingly
             }
         }
-    }
-    void findSaviors() {
-        for(LinkedList<Node>list : immovableObstacles) {
-            for(Node point : list) {
-                if(gameBoard.getElement(point.agentX, point.agentY) instanceof Box) {
-                    Box obstacle = (Box) gameBoard.getElement(point.agentX, point.agentY);
-                    Agent closestAgent = null;
-                    int closestDistance = Integer.MAX_VALUE;
-                    for (Agent savior : MainBoard.AgentColorGroups.get(obstacle.getColor())) {
-                        int distance = RandomWalkClient.roomMaster.getPathEstimate(savior.getCoordinates(), obstacle.getCoordinates());
-                        if(distance < closestDistance) {
-                            closestAgent = savior;
-                            closestDistance = distance;
-                        }
-                    }
-                    //closestAgent.helpYourFriend(obstacle, closestDistance - point.timeFrame);
-                }
-
-            }
-        }
-        immovableObstacles.clear();
     }
 }

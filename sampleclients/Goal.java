@@ -20,17 +20,33 @@ public class Goal extends BasicObject {
         }
     }
     public boolean canBeSolved(){
-        System.err.println("--------------CAN BE SOLVED:--------------------");
         for (Goal g : deps){
-            System.err.println("getID(): "+getID()+" !g.solved():"+!g.solved());
             if(!g.solved()){
-                System.err.println("REACHED?");
                 return false;
             }
         }
-        System.err.println("-------------------------------------------2222222");
         return true;
 
     }
-
+    public void findClosestBox() {
+        int bestDistance = Integer.MAX_VALUE;
+        Box bestBox = null;
+        List <Box>boxes = MainBoard.boxesByID.get(Character.toUpperCase(getID()));
+        if(boxes != null) {
+            for(Box current : boxes) {
+                int currentDistance = RandomWalkClient.roomMaster.getPathEstimate(getCoordinates(), current.getCoordinates());
+                if(current.assignedGoal == null && currentDistance < bestDistance) {
+                    bestDistance = currentDistance;
+                    bestBox = current;
+                }
+            }
+        }
+        if (bestBox == null) {
+            assignedBox = null;
+        }
+        else {
+            assignedBox = bestBox;
+            bestBox.assignedGoal = this;
+        }
+    }
 }

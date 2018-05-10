@@ -45,10 +45,11 @@ public class GoalDependency {
         }
 
         Map<Goal,List<Goal>> tmp = generateDependencies(obstructions);
+        tmp = checkDoubleDependencies(tmp);
         for (Goal key : tmp.keySet()) {//Loop through goalSet
             key.deps = tmp.get(key);
         }
-        //tmp = checkDoubleDependencies(tmp);
+
         System.err.println("-----------------------------------------------");
         System.err.println("GOALDEPENDENCY");
         for (Goal key : tmp.keySet()){//Loop through goalSet
@@ -67,63 +68,72 @@ public class GoalDependency {
         //Run through each goal in tmp, and for each goal; check the deps in temp, and if they have the initial goal in their deps, then delete both.,
         Map<Goal,List<Goal>> tmpReturn = tmp;
         System.err.println("Check double dep");
+
+
         for(Goal key : tmp.keySet()) {
             for (Goal g : tmp.get(key)) {
-                //Run through MAP
-            }
-        }
-        System.err.println("Lets return");
-        return tmpReturn;
+                //Each depGoal in tmp.
 
-    }
+                if (tmp.containsKey(g)) {
+                   // System.err.println("rech: "+g.getID());
+                    System.err.println();
+                    if(tmp.get(g).contains(key)){
+                        System.err.println("Doubledep Reached :)");
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-        /*for(Goal key : tmp.keySet()){
-            for (Goal g : tmp.get(key)){
-                //Each dep in tmp goal key.
-                for (Goal key1 : tmp.keySet()){
-                    if(key1.getID() == g.getID()){
-                        //Corresponding goal
-                        for(Goal g2 : tmp.get(key1)){
-                            //Run through deps for corresponding goal; if initial goal is here, delete both.
-                            if(g2.getID()==key.getID()){
-
-
-                                List<Goal> lst = tmp.get(key);
-                                for (int i2=0; i2<lst.size();i2++){
-                                    if(lst.get(i2).getID() == g.getID()){
-                                        lst.remove(i2);
-                                    }
-                                }
-                                if(lst.isEmpty()){tmpReturn.remove(key);} tmpReturn.put(key,lst);
-
-
-
-                                List<Goal> lst1 = tmp.get(key1);
-                                for (int i=0; i<lst1.size();i++){
-                                    if(lst1.get(i).getID() == g2.getID()){
-                                        lst1.remove(i);
-                                    }
-                                }
-                                if(lst1.isEmpty()){tmpReturn.remove(key1);}tmpReturn.put(key1,lst1);
+                        List<Goal> current = tmp.get(key);
+                        List<Goal> newlst = new ArrayList<>();
+                        for (Goal cur : current) {
+                            if (cur.getID() != g.getID()) {
+                                newlst.add(cur);
                             }
+                        }
+                        tmpReturn.put(key, newlst);
+
+                        current = tmp.get(g);
+                        newlst = new ArrayList<>();
+                        for (Goal cur : current) {
+                            if (cur.getID() != key.getID()) {
+                                newlst.add(cur);
+                            }
+                        }
+                        tmpReturn.put(g, newlst);
+
                         }
                     }
                 }
             }
-        }*/
+
+            List<Goal> deleteList = new ArrayList<Goal>();
+            for(Goal s : tmpReturn.keySet()){
+                if(tmpReturn.get(s).isEmpty()){
+                    deleteList.add(s);
+                }
+            }
+            for (Goal z : deleteList){
+                tmpReturn.remove(z);
+            }
+
+            return tmpReturn;
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     private <E> boolean containsList(List<E> l1, List<E> l2){

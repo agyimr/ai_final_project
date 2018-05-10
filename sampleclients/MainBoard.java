@@ -16,6 +16,20 @@ public class MainBoard {
     public static int MainBoardYDomain = 0, MainBoardXDomain = 0;
     private Map<MovingObject, Goal> steppedOnGoals = new HashMap<>();
 
+    public int getHeight() {
+        return gameBoard.size();
+    }
+
+    public int getWidth() {
+
+        int width = 0;
+
+        for(List<BasicObject> line : gameBoard) {
+            width = Math.max(width, line.size());
+        }
+
+        return width;
+    }
 
     public List<List<BasicObject>> getGameBoard() {
         return gameBoard;
@@ -141,8 +155,8 @@ public class MainBoard {
     public static boolean isWall (char id) {return (id == '+');}
 
     //returns object under given coordinates
-    public BasicObject getElement(int x, int y) {
-        if(yOutOfBounds(y) || xOutOfBounds(x)) throw new UnsupportedOperationException();
+    BasicObject getElement(int x, int y) {
+        if(yOutOfBounds(y) || xOutOfBounds(x)) throw new NullPointerException();
         return gameBoard.get(y).get(x);
     }
     //used only internally, never expose this

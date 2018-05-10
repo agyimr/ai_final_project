@@ -14,11 +14,14 @@ public class RandomWalkClient {
     public static MainBoard gameBoard;
     public static MainBoard nextStepGameBoard;
     public static RoomAStar roomMaster;
+    public static AnticipationPlanning anticipationPlanning;
+
 	public RandomWalkClient() {
         gameBoard = new MainBoard(in); //map read in the constructor
         nextStepGameBoard = new MainBoard(gameBoard);
         GoalDependency.getGoalDependency();
         roomMaster = new RoomAStar(gameBoard);
+        anticipationPlanning = new AnticipationPlanning(gameBoard);
 	}
 
 
@@ -71,8 +74,8 @@ public class RandomWalkClient {
                     MainBoard.agents.get(i).updatePosition();
                 }
                 else {
-                    MainBoard.agents.get(i).path = null;
-                }
+                    System.err.println( MainBoard.agents.get(i));
+                    throw new NumberFormatException();                }
             }
         }
         catch (UnsupportedOperationException exc) {
@@ -82,12 +85,16 @@ public class RandomWalkClient {
             System.err.println("------------ Update board failed -------");
             throw exc;
         }
+
+        System.err.println("Clock " + anticipationPlanning.getClock());
+        anticipationPlanning.incrementClock();
+        anticipationPlanning.displayBoard();
         return true;
     }
 
 	public static void main( String[] args ) {
 
-        new Debugger("levels/MAthomasAppartment.lvl");
+        new Debugger("levels/MAthomasAppartment.lvl", 150);
 
         // Use stderr to print to console
 
