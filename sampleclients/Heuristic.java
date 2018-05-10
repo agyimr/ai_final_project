@@ -29,12 +29,13 @@ public abstract class Heuristic implements Comparator<Node> {
     }
 	public int h(Node n) {
         int value;
-        if(n.action.actType == Command.type.Noop && n.parent != null) {
-            return h(n.parent);
-        }
+
 
         if(goalRoom != null) {
-            if(pushingBox) {
+            if(n.action.actType == Command.type.Noop && n.parent != null) {
+                value = goalRoom.getDistanceFromPoint(new Point(n.boxX, n.boxY));
+            }
+            else if(pushingBox) {
                 value = getBoxHeuristic(n, goalRoom.getDistanceFromPoint(new Point(n.boxX, n.boxY)));
             }
             else {
@@ -42,7 +43,10 @@ public abstract class Heuristic implements Comparator<Node> {
             }
         }
         else {
-            if(pushingBox) {
+            if(n.action.actType == Command.type.Noop && n.parent != null) {
+                value = ManhattanDistance(n.boxX, n.boxY, goalX, goalY);
+            }
+            else if(pushingBox) {
                 value = getBoxHeuristic(n, ManhattanDistance(n.boxX, n.boxY, goalX, goalY));
             }
             else {
@@ -56,10 +60,10 @@ public abstract class Heuristic implements Comparator<Node> {
         return value;
     }
     private int getBoxHeuristic(Node n, int distance) {
-        if(n.boxX == -1) return h(n.parent) + 1;
+        if(n.boxX == -1) return h(n.parent);
         if(n.boxes[n.boxY][n.boxX] == owner.getAttachedBox()) {
-            if(n.action.actType == Command.type.Push) {
-                return distance - 2;
+            if(n.action.actType == Command.type.Pull) {
+                return distance + 2;
             }
             return distance;
         }
@@ -67,7 +71,7 @@ public abstract class Heuristic implements Comparator<Node> {
             return h(n.parent) + 8;
         }
         else{
-            return h(n.parent) + 2;
+            return h(n.parent) + 4;
         }
     }
     private int getAgentHeuristic(Node n, int distance) {
