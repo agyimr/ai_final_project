@@ -1,14 +1,9 @@
 package sampleclients.room_heuristics;
 
-import sampleclients.BasicObject;
 import sampleclients.MainBoard;
-import sampleclients.RandomWalkClient;
 
 import java.awt.Point;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.PriorityQueue;
+import java.util.*;
 
 public class RoomAStar {
     private Map map;
@@ -30,19 +25,155 @@ public class RoomAStar {
     public LinkedList<Node> getRoomPath(Point from, Point to) {
         ArrayList<Node> closed_set = new ArrayList<>();
         PriorityQueue<Node> open_set = new PriorityQueue<>(10, Comparator.comparingInt((n) -> n.f));
-        Node init_node = new Node(null, passages.section_map[from.y][from.x], from, null, 0, passages.getDistanceFrom(from, to));
+        Node init_node = new Node(null, passages.section_map[from.y][from.x], from, null, 0,
+                passages.getDistanceFrom(from, to), new ArrayList<>());
         open_set.add(init_node);
 
+        boolean explore;
+        LinkedList<Node> solution = new LinkedList<>();
         // main loop
         while(!open_set.isEmpty()) {
+            explore = true;
 
             Node current_node = open_set.poll();
+
+            if (!solution.isEmpty() && current_node.g > solution.getLast().g) {
+                return solution;
+            }
+
+            // checking for goal state
+            if (current_node.position.equals(to)) {
+                LinkedList<Node> path = extractRoomPathWithBoxesPlan(current_node);
+                // if first time we find a solution
+                if (solution.isEmpty()) {
+                    solution = path;
+                }
+                // if we find a better solution than we already have...
+                if (!solution.isEmpty() && !path.isEmpty() && path.getLast().g < solution.getLast().g) {
+                    solution = path;
+                }
+                explore = false;
+            }
+
+            // putting current state to the closed set
+            closed_set.add(current_node);
+
+            // If already in goal room
+            for (Section s : current_node.sections) {
+                if (s != null) {
+                    if (s.contains(to)) {
+                        PathWithObstacles path = Estimator.estimatePath(current_node.position, to, s, current_node.g);
+                        if (path != null) { // if path exists...
+                            ArrayList<Obstacle> obstacles = new ArrayList<>(current_node.obstacles);
+                            obstacles.addAll(path.obstacles);
+
+                            Node n = new Node(current_node, passages.section_map[to.y][to.x], to, s,
+                                    current_node.g + path.distance, 0, obstacles);
+
+                            Node already_in_open_set = getAlreadyInList(open_set, n);
+                            Node already_in_closed_set = getAlreadyInList(closed_set, n);
+
+                            // Check if open set contains a node which equals with current one but it's g values is less
+                            if (already_in_open_set != null) {
+                                if (already_in_open_set.g > n.g) {
+                                    open_set.remove(already_in_open_set);
+                                    open_set.add(n);
+                                }
+                                // if open set doesn't contains similar node, check on the closed set. if closed set contains,
+                                // we should check whether closed set's g values is bigger
+                            } else if (already_in_closed_set != null) {
+                                if (already_in_closed_set.g > n.g) {
+                                    open_set.add(n);
+                                }
+                                // If neither of them contains the node, then we should add it to the open set.
+                            } else {
+                                open_set.add(n);
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (explore) {
+                // generating successor states
+                ArrayList<Path> neighbour_sections = this.passages.getAllNeighbours(current_node.position);
+                if (neighbour_sections != null) {
+                    for(Path s : neighbour_sections) {
+                        PathWithObstacles path = Estimator.estimatePath(current_node.position, s.to, s.through, current_node.g);
+                        if (path != null) { // if path exists...
+                            Point p = path.arrivingPosition;
+                            //System.err.println(distance);
+                            ArrayList<Obstacle> obstacles = new ArrayList<>(current_node.obstacles);
+
+                            obstacles.addAll(path.obstacles);
+                            Node n = new Node(current_node, passages.section_map[p.y][p.x], p, s.through,
+                                    current_node.g + path.distance, passages.getDistanceFrom(p, to), obstacles);
+
+                            Node already_in_open_set = getAlreadyInList(open_set, n);
+                            Node already_in_closed_set = getAlreadyInList(closed_set, n);
+
+                            // Check if open set contains a node which equals with current one but it's g values is less
+                            if (already_in_open_set != null) {
+                                if (already_in_open_set.g > n.g) {
+                                    open_set.remove(already_in_open_set);
+                                    open_set.add(n);
+                                }
+                                // if open set doesn't contains similar node, check on the closed set. if closed set contains,
+                                // we should check whether closed set's g values is bigger
+                            } else if (already_in_closed_set != null) {
+                                if (already_in_closed_set.g > n.g) {
+                                    open_set.add(n);
+                                }
+                                // If neither of them contains the node, then we should add it to the open set.
+                            } else {
+                                open_set.add(n);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!solution.isEmpty()) return solution;
+        return null;
+    }
+
+    public LinkedList<Node> getEmptyRoomPath(Point from, Point to) {
+        // closed set - already discovered nodes
+        ArrayList<Node> closed_set = new ArrayList<>();
+
+        // open set - not yet discovered nodes
+        PriorityQueue<Node> open_set = new PriorityQueue<>(10, Comparator.comparingInt((n) -> n.f));
+
+        Node init_node = new Node(null, passages.section_map[from.y][from.x], from, null, 0,
+                passages.getDistanceFrom(from, to), null);
+        open_set.add(init_node);
+
+        boolean explore;
+        LinkedList<Node> solution = new LinkedList<>();
+        while(!open_set.isEmpty()) {
+            explore = true;
+
+            Node current_node = open_set.poll();
+
+            if (!solution.isEmpty() && current_node.g > solution.getLast().g) {
+                return solution;
+            }
 
             // checking for goal state
             for (Section s : current_node.sections) {
                 if (s != null) {
                     if (s.contains(to)) {
-                        return extractPlan(current_node, to, s);
+                        LinkedList<Node> path = extractPlan(current_node, to, s);
+                        // if first time we find a solution
+                        if (solution.isEmpty()) {
+                            solution = path;
+                        }
+                        // if we find a better solution than we already have...
+                        if (!solution.isEmpty() && !path.isEmpty() && path.getLast().g < solution.getLast().g) {
+                            solution = path;
+                        }
+                        explore = false;
                     }
                 }
             }
@@ -50,23 +181,41 @@ public class RoomAStar {
             // putting current state to the closed set
             closed_set.add(current_node);
 
-            // generating successor states
-            ArrayList<Path> neighbour_sections = this.passages.getAllNeighbours(current_node.position);
-            if (neighbour_sections == null) return null; // beginning section doesn't have any neighbours AND goal is not in there.
+            if (explore) {
+                // generating successor states
+                ArrayList<Path> neighbour_sections = this.passages.getAllNeighbours(current_node.position);
+                if (neighbour_sections != null) {
+                    for(Path s : neighbour_sections) {
+                        int travel_distance = s.to.getDistanceFromPoint(current_node.position);
+                        Point p = s.to.getClosestPoint(current_node.position);
+                        Node n = new Node(current_node, passages.section_map[p.y][p.x], p, s.through,
+                                current_node.g + travel_distance, passages.getDistanceFrom(p, to), null);
 
-            for(Path s : neighbour_sections) {
-                int travel_distance = s.to.getDistanceFromPoint(current_node.position);
-                Point p = s.to.getClosestPoint(current_node.position);
-                Node n = new Node(current_node, passages.section_map[p.y][p.x], p, s.through,
-                        current_node.g + travel_distance, passages.getDistanceFrom(p, to));
+                        Node already_in_open_set = getAlreadyInList(open_set, n);
+                        Node already_in_closed_set = getAlreadyInList(closed_set, n);
 
-                // if not in frontier yet or not explored yet...
-                if (!open_set.contains(n) && !closed_set.contains(n)) {
-                    open_set.add(n);
+                        // Check if open set contains a node which equals with current one but it's g values is less
+                        if (already_in_open_set != null) {
+                            if (already_in_open_set.g > n.g) {
+                                open_set.remove(already_in_open_set);
+                                open_set.add(n);
+                            }
+                            // if open set doesn't contains similar node, check on the closed set. if closed set contains,
+                            // we should check whether closed set's g values is bigger
+                        } else if (already_in_closed_set != null) {
+                            if (already_in_closed_set.g > n.g) {
+                                open_set.add(n);
+                            }
+                            // If neither of them contains the node, then we should add it to the open set.
+                        } else {
+                            open_set.add(n);
+                        }
+                    }
                 }
             }
         }
 
+        if (!solution.isEmpty()) return solution;
         return null;
     }
 
@@ -74,7 +223,7 @@ public class RoomAStar {
         // System.err.print(goal_node.g + this.getDistance(goal_node.position, to) + "\n");
         LinkedList<Node> plan = new LinkedList<>();
         Node goal = new Node(goal_node, this.passages.section_map[to.y][to.x], to, goal_section,
-                goal_node.g + this.getDistance(goal_node.position, to), 0);
+                goal_node.g + this.getDistance(goal_node.position, to), 0, null);
         plan.addFirst(goal);
         Node n = goal_node;
         while (n.parent != null) {
@@ -83,12 +232,37 @@ public class RoomAStar {
         }
         return plan;
     }
+
+    private LinkedList<Node> extractRoomPathWithBoxesPlan(Node goal_node) {
+        LinkedList<Node> plan = new LinkedList<>();
+        Node n = goal_node;
+        while (n.parent != null) {
+            plan.addFirst(n);
+            n = n.parent;
+        }
+        return plan;
+    }
+
+    public Node getAlreadyInList(AbstractCollection<Node> list, Node n) {
+        for (Node n_inside: list) {
+            if (n_inside.equals(n)) return n_inside;
+        }
+        return null;
+    }
+
+    public int getEmptyPathEstimate(Point from, Point to) {
+        LinkedList<sampleclients.room_heuristics.Node> result = getEmptyRoomPath(from, to);
+        if(result == null) return Integer.MAX_VALUE;
+        else return result.	pollLast().g;
+    }
+
     public int getPathEstimate(Point originCoordinates, Point goalCoordinates) {
         LinkedList<sampleclients.room_heuristics.Node> result = getRoomPath(originCoordinates, goalCoordinates);
         if(result == null) return Integer.MAX_VALUE;
         else return result.	pollLast().g;
 
     }
+
     private int getDistance(Point from, Point to) {
         return Math.abs(from.x - to.x) + Math.abs(from.y - to.y);
     }
