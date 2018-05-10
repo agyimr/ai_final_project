@@ -56,9 +56,7 @@ public class SearchClient {
             LinkedList<Node> dummyPath = new LinkedList<>();
             dummyPath.add(new Node(null, new Command(), owner.getX(), owner.getY()));
             return dummyPath; // to prevent Agent from finding new path
-
         }
-
         if(currentRoom == null) return null;
         else if(nextRoom == null && getNextRoom()) {
             return getPathToNextRoom();
@@ -74,7 +72,8 @@ public class SearchClient {
                 return getPathToGoal();
         }
         else {
-            return FindPath(pushingBox, goalX, goalY);
+            return null;
+            //return FindPath(pushingBox, goalX, goalY);
 //            RandomWalkClient.roomMaster.passages.PrintMap();
 //            System.err.println(roomPath);
 //            System.err.println(currentRoom);

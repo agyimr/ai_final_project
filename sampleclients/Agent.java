@@ -377,19 +377,12 @@ public class Agent extends MovingObject {
         myPathIsBlocked = false;
         pathFindingEngine.pathBlocked = false;
     }
-    public void replan() {
+    private void replan() {
         clearPath();
         if(isBoxAttached()) {
             dropTheBox();
         }
         changeState(unassigned);
-    }
-    public void replanAndWait(int counter) {
-        clearPath();
-        if(isBoxAttached()) {
-            dropTheBox();
-        }
-        waitingProcedure(counter);
     }
     public Command getCommand(int i) {
         try{
@@ -459,11 +452,14 @@ public class Agent extends MovingObject {
             act();
         }
     }
-    public void handleConflict(int waitingTime, boolean conflictOrigin) {
+    public void handleConflict(int waitingTime, boolean conflictOrigin, boolean replanNeeded) {
         boolean needsToMove = false;
         if(hasMoved()) {
             revertMoveIntention(RandomWalkClient.nextStepGameBoard);
             needsToMove = true;
+        }
+        if(replanNeeded) {
+            clearPath();
         }
         waitingProcedure(waitingTime);
         if(needsToMove || conflictOrigin) {
