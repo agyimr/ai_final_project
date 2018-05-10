@@ -1,9 +1,9 @@
 package sampleclients;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import sampleclients.room_heuristics.Obstacle;
+import sampleclients.room_heuristics.PathWithObstacles;
+
+import java.util.*;
 
 import static sampleclients.RandomWalkClient.gameBoard;
 
@@ -15,6 +15,7 @@ public class ObstacleArbitrator {
                 BasicObject element = gameBoard.getElement(point.agentX, point.agentY);
                 if(element instanceof Box) {
                     Box obstacle = (Box) element;
+                    if(obstacle.assignedAgent != null) continue;
                     Agent closestAgent = null;
                     int closestDistance = Integer.MAX_VALUE;
                     for (Agent savior : MainBoard.AgentColorGroups.get(obstacle.getColor())) {
@@ -32,7 +33,16 @@ public class ObstacleArbitrator {
         }
         engine.immovableObstacles.clear();
     }
-
+    public static void processObstacles(Agent owner, ArrayList<Obstacle> obstacles) {
+        for(Obstacle current : obstacles) {
+            if(!owner.getColor().equals(current.obstacle.getColor()) &&current.obstacle.assignedAgent == null ) {
+                current.rescueAgent.scheduleObstacleRemoval(current.obstacle, current.pathLengthUntilObstacle);
+                helpersDictionary.put(current.rescueAgent, owner);
+                System.err.println("Rescue:" + current.rescueAgent + " BOX: " + current.obstacle);
+                //throw new NullPointerException();
+            }
+        }
+    }
     public static void jobIsDone(Agent savior) {
         Agent inTrouble = helpersDictionary.get(savior);
         if(inTrouble != null) {

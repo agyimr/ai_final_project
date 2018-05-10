@@ -9,18 +9,18 @@ public class Obstacle {
     public Box obstacle;
     public Agent rescueAgent;
     public Point waitingPosition;
-    public int estimatedWaitingTime;
+    public int pathLengthUntilObstacle;
 
-    Obstacle(Box obstacle, Agent rescueAgent, Point waitingPosition, int estimatedWaitingTime) {
+    Obstacle(Box obstacle, Agent rescueAgent, Point waitingPosition, int pathLengthUntilObstacle) {
         this.obstacle = obstacle;
         this.rescueAgent = rescueAgent;
         this.waitingPosition = waitingPosition;
-        this.estimatedWaitingTime = estimatedWaitingTime;
+        this.pathLengthUntilObstacle = pathLengthUntilObstacle;
     }
 
     @Override
     public String toString() {
-        return "Box: " + obstacle.toString() + ", Rescue Agent: " + rescueAgent.toString() + ", Waiting time: " +
-                estimatedWaitingTime + ", Waiting Position: " + waitingPosition.toString();
+        return "Box: " + obstacle.toString() + ", Rescue Agent: " + rescueAgent.toString() + ", Path length until obstacle: " +
+                pathLengthUntilObstacle + ", Waiting Position: " + waitingPosition.toString();
     }
 }
