@@ -21,7 +21,14 @@ public class MainBoard {
     }
 
     public int getWidth() {
-        return gameBoard.get(0).size();
+
+        int width = 0;
+
+        for(List<BasicObject> line : gameBoard) {
+            width = Math.max(width, line.size());
+        }
+
+        return width;
     }
 
     public List<List<BasicObject>> getGameBoard() {
