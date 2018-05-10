@@ -38,6 +38,7 @@ public class ObstacleArbitrator {
             if(!owner.getColor().equals(current.obstacle.getColor()) &&current.obstacle.assignedAgent == null ) {
                 current.rescueAgent.scheduleObstacleRemoval(current.obstacle, current.pathLengthUntilObstacle);
                 helpersDictionary.put(current.rescueAgent, owner);
+                System.err.println("owner:" + owner + " BOX: " + obstacles);
                 System.err.println("Rescue:" + current.rescueAgent + " BOX: " + current.obstacle);
                 //throw new NullPointerException();
             }

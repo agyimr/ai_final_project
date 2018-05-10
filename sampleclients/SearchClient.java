@@ -331,7 +331,7 @@ public class SearchClient {
 //        strategy.addToFrontier(new Node(owner.getX(), owner.getY(), owner.getColor(), Collections.emptyList()));
 //        LinkedList<Node> emptySearchResult = conductRoomSearch(searchRange,goalRoom, false);
 //        handleEmptyPathResults(emptySearchResult);
-        processObstacles(roomMaster.getObstacle(owner.getCoordinates(), goalRoom));
+        processObstacles(roomMaster.getObstacles(owner.getCoordinates(), goalRoom));
     }
 
     private void handleEmptyPathResults(LinkedList<Node> emptySearchResult) {

@@ -132,7 +132,7 @@ public class ConflictBFS {
 						nextMap.isWall(x,y) ||
 						(nextMap.isBox(x,y) && considerBoxes) ||
 						(nextMap.isAgent(x,y) && (considerAgents || nextMapBoxHasAgent)) ||
-						(containsList(sl,cand))
+						(containsList(sl,cand) && (considerAgents || considerBoxes))
 						){
 						return false;
 				}
