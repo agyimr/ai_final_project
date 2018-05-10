@@ -7,27 +7,41 @@ import java.util.*;
 import java.util.List;
 
 public class Estimator {
+    static int STRICT_PUNISHMENT_FOR_AGENT_USAGE = 10000;
+    static int MILD_PUNISHMENT_FOR_AGENT_USAGE = 1;
 
-    public static PathWithObstacles estimatePath(Point from, Section to, Section through, int beginning_path_length) {
+    public static PathWithObstacles estimatePath(Point from, Section to, Section through, int beginning_path_length,
+                                                 boolean strict) {
         Point closest_point = to.getClosestPoint(from);
         if (!containsBoxes(through) && !RandomWalkClient.gameBoard.isBox(closest_point.x, closest_point.y)) {
             return new PathWithObstacles(to.getDistanceFromPoint(from), new ArrayList<>(), closest_point);
         }
-        RoomNode goal_node = search(from, to, through, beginning_path_length);
+        int punishment = strict ? STRICT_PUNISHMENT_FOR_AGENT_USAGE : MILD_PUNISHMENT_FOR_AGENT_USAGE;
+
+        RoomNode goal_node = search(from, to, through, beginning_path_length, punishment);
         if (goal_node == null) return null;
-        return new PathWithObstacles(goal_node.g - beginning_path_length, goal_node.obstacles, goal_node.position);
+
+        int total_punishment = goal_node.obstacles.size() * punishment;
+        return new PathWithObstacles(goal_node.g - beginning_path_length - total_punishment,
+                goal_node.obstacles, goal_node.position);
     }
 
-    public static PathWithObstacles estimatePath(Point from, Point to, Section through, int beginning_path_length) {
+    public static PathWithObstacles estimatePath(Point from, Point to, Section through,
+                                                 int beginning_path_length, boolean strict) {
         if (!containsBoxes(through) && !RandomWalkClient.gameBoard.isBox(to.x, to.y)) {
             return new PathWithObstacles(getDistance(to, from), new ArrayList<>(), to);
         }
-        RoomNode goal_node = search(from, new Section(to, to), through, beginning_path_length);
+        int punishment = strict ? STRICT_PUNISHMENT_FOR_AGENT_USAGE : MILD_PUNISHMENT_FOR_AGENT_USAGE;
+
+        RoomNode goal_node = search(from, new Section(to, to), through, beginning_path_length, punishment);
         if (goal_node == null) return null;
-        return new PathWithObstacles(goal_node.g - beginning_path_length, goal_node.obstacles, to);
+
+        int total_punishment = goal_node.obstacles.size() * punishment;
+        return new PathWithObstacles(goal_node.g - beginning_path_length - total_punishment,
+                goal_node.obstacles, to);
     }
 
-    private static RoomNode search(Point from, Section to, Section through, int beginning_path_length) {
+    private static RoomNode search(Point from, Section to, Section through, int beginning_path_length, int agent_usage_punishment) {
         MainBoard map = RandomWalkClient.gameBoard;
         ArrayList<RoomNode> closed_set = new ArrayList<>();
         PriorityQueue<RoomNode> open_set = new PriorityQueue<>(10, Comparator.comparingInt((n) -> n.f));
@@ -64,20 +78,15 @@ public class Estimator {
                         Box box = (Box)map.getElement(neighbour.x, neighbour.y);
                         AgentBoxDistance helper_agent = getClosestFreeAgent(box);
 
-                        if (helper_agent != null) {
+                        if (helper_agent != null) { // if obstacle is movable...
                             ArrayList<Obstacle> obstacles = new ArrayList<>(current_node.obstacles);
 
-                            int waiting_time = 0;
                             int path_length_until_box = current_node.g;
-                            if (path_length_until_box < helper_agent.distance) {
-                                // If we want to take into account the agent's job here is the chance
-                                waiting_time = helper_agent.distance - path_length_until_box;
-                            }
-
-                            obstacles.add(new Obstacle(box, helper_agent.a, current_node.position, waiting_time));
+                            System.err.println(current_node.g);
+                            obstacles.add(new Obstacle(box, helper_agent.a, current_node.position, path_length_until_box));
 
                             RoomNode n = new RoomNode(current_node, neighbour,
-                                    current_node.g + waiting_time + 1,
+                                    current_node.g + agent_usage_punishment + 1,
                                     to.getDistanceFromPoint(neighbour), obstacles);
 
                             if (!open_set.contains(n) && !closed_set.contains(n)) {
@@ -121,8 +130,6 @@ public class Estimator {
         AgentBoxDistance abd = new AgentBoxDistance(null, null, Integer.MAX_VALUE);
 
         for(Agent a : agents) {
-            //if (a.isAvailableToHelp()) {
-
             // Estimate agent distance with empty room heuristics
             int distance = RandomWalkClient.roomMaster.getEmptyPathEstimate(a.getCoordinates(), box.getCoordinates());
 
