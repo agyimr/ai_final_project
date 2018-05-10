@@ -10,6 +10,7 @@ import sampleclients.Heuristic.*;
 import sampleclients.room_heuristics.*;
 
 import static sampleclients.RandomWalkClient.gameBoard;
+import static sampleclients.RandomWalkClient.roomMaster;
 import static sampleclients.room_heuristics.Estimator.estimatePath;
 
 public class SearchClient {
@@ -202,19 +203,18 @@ public class SearchClient {
 //        strategy.addToFrontier(new Node(owner.getX(), owner.getY(), owner.getColor(), Collections.emptyList()));
         //LinkedList<Node> emptySearchResult = conductSearch(searchRange, goalX, goalY, false);
         //handleEmptyPathResults(emptySearchResult);
-        PathWithObstacles result = Estimator.estimatePath(owner.getCoordinates(), new Point(goalX, goalY), currentRoom, 0, true);
-        processObstacles(result);
+        processObstacles(roomMaster.getObstacles(owner.getCoordinates(), new Point(goalX, goalY)));
     }
 
-    private void processObstacles(PathWithObstacles result) {
+    private void processObstacles(ArrayList<Obstacle> result) {
         if(result != null) {
-            if(result.obstacles.isEmpty()) {
+            if(result.isEmpty()) {
                 pathBlocked = false;
             }
             else {
-                beforeFirstImmovableObstacle = result.obstacles.get(0).waitingPosition;
+                beforeFirstImmovableObstacle = result.get(0).waitingPosition;
                 pathBlocked = true;
-                ObstacleArbitrator.processObstacles(owner, result.obstacles);
+                ObstacleArbitrator.processObstacles(owner, result);
             }
         }
         else {
@@ -331,8 +331,7 @@ public class SearchClient {
 //        strategy.addToFrontier(new Node(owner.getX(), owner.getY(), owner.getColor(), Collections.emptyList()));
 //        LinkedList<Node> emptySearchResult = conductRoomSearch(searchRange,goalRoom, false);
 //        handleEmptyPathResults(emptySearchResult);
-        PathWithObstacles result = Estimator.estimatePath(owner.getCoordinates(), goalRoom, currentRoom, 0, true);
-        processObstacles(result);
+        processObstacles(roomMaster.getObstacle(owner.getCoordinates(), goalRoom));
     }
 
     private void handleEmptyPathResults(LinkedList<Node> emptySearchResult) {

@@ -28,8 +28,8 @@ public class Agent extends MovingObject {
         pathBlocked,
         movingTowardsBox,
         movingBox,
-        removingObstacle,
-        inConflict
+        inConflict,
+        removingObstacle
     }
     String serverOutput = null;
     public Agent( char id, String color, int y, int x ) {
