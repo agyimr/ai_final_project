@@ -1,6 +1,7 @@
 package sampleclients;
 
 
+import sampleclients.room_heuristics.RoomAStar;
 
 import java.io.*;
 import java.util.*;
@@ -10,51 +11,45 @@ public class RandomWalkClient {
 
 	private static Random rand = new Random();
 	private BufferedReader in = new BufferedReader( new InputStreamReader( System.in ) );
-
     public static MainBoard gameBoard;
     public static MainBoard nextStepGameBoard;
-	public RandomWalkClient() throws IOException {
+    public static RoomAStar roomMaster;
+    public static AnticipationPlanning anticipationPlanning;
+
+	public RandomWalkClient() {
         gameBoard = new MainBoard(in); //map read in the constructor
         nextStepGameBoard = new MainBoard(gameBoard);
-/*		Agent someAgent = agents.get(2);
-        LinkedList<Node> path = someAgent.findPathToBox(BoxColorGroups.get(someAgent.getColor()).get(2));
-        System.err.println(path + " for Agent: " + someAgent);*/
+        GoalDependency.getGoalDependency();
+        roomMaster = new RoomAStar(gameBoard);
+        anticipationPlanning = new AnticipationPlanning(gameBoard);
 	}
 
 
 
 	public boolean update() throws IOException {
-		String jointAction = "[";
-		for ( int i = 0; i < MainBoard.agents.size(); i++ ) {
+	    //reset hasMoved for all agents
+        for (int i = 0; i < MainBoard.agents.size(); i++) {
             try {
-                System.err.println("Update agent: "+MainBoard.agents.get(i).getID());
-                jointAction += MainBoard.agents.get( i ).act() + ',';
-                System.err.println("Agent has path:");
-                if(MainBoard.agents.get(i).path != null){
-                    for (Node c : MainBoard.agents.get(i).path){
-                        System.err.println(c.action.toString());
-                    }
-                }
+                System.err.println("Update agent: " + MainBoard.agents.get(i).getID());
+                MainBoard.agents.get(i).act();
                 System.err.println();
-            }
-            catch(UnsupportedOperationException exc) {
-                //printBoard(NextMainBoard);
+            } catch (UnsupportedOperationException exc) {
                 System.err.println();
-                System.err.println("Conflict for agent: "+MainBoard.agents.get(i).getID()+" and action "+MainBoard.agents.get(i).path.get(0).action.toString());
-                System.err.println("path:");
-                System.err.println(MainBoard.agents.get(i).path.toString());
+                System.err.println("Conflict for agent: " + MainBoard.agents.get(i).getID() + " and action " + MainBoard.agents.get(i).path.get(0).action.toString());
                 System.err.println(MainBoard.agents.get(i).getAttachedBox());
+                System.err.println(nextStepGameBoard);
+                System.err.println(gameBoard);
                 Conflicts.delegateConflict(MainBoard.agents.get(i));
-                System.err.println("\nAgent acts after conflict:"+MainBoard.agents.get(i).getID());
-                jointAction += MainBoard.agents.get( i ).act() + ',';
                 System.err.println();
-                //--i;
-                //throw exc;
-
             }
         }
-		jointAction =  jointAction.substring(0,jointAction.length() - 1) +  "]";
 
+        String jointAction = "[";
+        // create joint actions
+        for(int i = 0; i < MainBoard.agents.size()-1; i++){
+            jointAction+=MainBoard.agents.get(i).collectServerOutput()+",";
+        }
+        jointAction+=MainBoard.agents.get(MainBoard.agents.size()-1).collectServerOutput()+"]";
 		// Place message in buffer
         System.err.println(jointAction);
 		System.out.println( jointAction );
@@ -79,8 +74,8 @@ public class RandomWalkClient {
                     MainBoard.agents.get(i).updatePosition();
                 }
                 else {
-                    MainBoard.agents.get(i).path = null;
-                }
+                    System.err.println( MainBoard.agents.get(i));
+                    throw new NumberFormatException();                }
             }
         }
         catch (UnsupportedOperationException exc) {
@@ -90,6 +85,10 @@ public class RandomWalkClient {
             System.err.println("------------ Update board failed -------");
             throw exc;
         }
+
+        System.err.println("Clock " + anticipationPlanning.getClock());
+        anticipationPlanning.incrementClock();
+        anticipationPlanning.displayBoard();
         return true;
     }
 
@@ -104,7 +103,7 @@ public class RandomWalkClient {
 			RandomWalkClient client = new RandomWalkClient();
             System.out.flush();
             System.err.println(client.in.readLine());
-			while ( client.update() ) {
+            while ( client.update() ) {
 			}
 		} catch ( IOException e ) {	
 			// Got nowhere to write to probably

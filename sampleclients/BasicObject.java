@@ -7,7 +7,7 @@ import java.util.*;
 
 public class BasicObject {
     private String ObjectType;
-    private int y = 0, x = 0;
+    private int y , x;
     private char id;
     public BasicObject(int y, int x, char id, String... ObjectType ) {
         this.y = y;
