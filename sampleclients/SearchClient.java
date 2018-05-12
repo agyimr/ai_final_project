@@ -99,7 +99,8 @@ public class SearchClient {
         beforeFirstImmovableObstacle = null;
         immovableObstacles.clear();
         roomPath = RandomWalkClient.roomMaster.getRoomPath(owner.getCoordinates(), new Point(goalX, goalY));
-        if(!roomPath.getLast().obstacles.isEmpty()) {
+        if(roomPath == null) return false; //TODO impossible to get there
+        if( !roomPath.getLast().obstacles.isEmpty()) {
 //            System.err.println("Goal coordinates: " + goalX + "' " + goalY);
 //            System.err.println(roomPath);
 //            System.err.println(owner);
@@ -111,7 +112,6 @@ public class SearchClient {
                 beforeFirstImmovableObstacle = firstSafeSpace;
             }
         }
-        if(roomPath == null) return false; //TODO impossible to get there
         currentRoom = roomPath.poll().through;
         return true;
     }

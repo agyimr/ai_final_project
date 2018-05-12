@@ -57,7 +57,7 @@ public abstract class Heuristic implements Comparator<Node> {
         if(n.boxX == -1) return h(n.parent);
         if(n.boxes[n.boxY][n.boxX] == owner.getAttachedBox()) {
             if(n.action.actType == Command.type.Pull) {
-                return distance + 2;
+                return distance + 3;
             }
             return distance;
         }
@@ -72,16 +72,15 @@ public abstract class Heuristic implements Comparator<Node> {
     private int getAgentHeuristic(Node n, int distance) {
         switch (n.action.actType) {
             case Move:
+            case Noop:
                 return distance;
             case Push:
             case Pull:
                 if(n.boxes[n.boxY][n.boxX].assignedAgent != null) return distance + 8;
                 else if(n.boxes[n.boxY][n.boxX].atGoalPosition()) return distance + 16;
                 else return distance + 4;
-            case Noop:
-                return distance + 1;
             default:
-                return distance + 8;
+                return Integer.MAX_VALUE;
         }
     }
 
