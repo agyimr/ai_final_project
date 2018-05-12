@@ -511,7 +511,6 @@ public class Agent extends MovingObject {
 
     }
     public boolean isMovingBox() { return currentState == movingBox;}
-    public String getCurrentState() { return "" + currentState;}
     public boolean isBoxAttached() {
     	return (attachedBox != null);
     }
@@ -595,7 +594,7 @@ public class Agent extends MovingObject {
         return attachedBox;
     }
     public boolean hasMoved() { return serverOutput != null;}
-    public boolean jobless() { return currentState == jobless;}
+    public boolean isJobless() { return currentState == jobless;}
     public void moveYourAss() {
         changeState(unassigned);
     }

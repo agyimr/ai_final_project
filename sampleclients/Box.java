@@ -54,9 +54,13 @@ public class Box extends MovingObject {
             theCurrentID.noGoalOnTheMap = false;
         }
         for(Agent sameColor : MainBoard.agents) {
-            if(sameColor.jobless()) sameColor.moveYourAss();
+            if(sameColor.isJobless()) sameColor.moveYourAss();
         }
 
 
+    }
+    public boolean isBeingMoved() {
+        if(assignedAgent == null) return false;
+        return assignedAgent.isMovingBox();
     }
 }
