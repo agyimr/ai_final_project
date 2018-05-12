@@ -7,16 +7,18 @@ import java.util.ArrayList;
 
 public class RoomNode {
     public Point position;
-    public int h, g, f;
+    public int h, g, f, punishment, p;
     public ArrayList<Obstacle> obstacles;
     public RoomNode parent;
 
-    RoomNode(RoomNode parent, Point position, int g, int h, ArrayList<Obstacle> obstacles) {
+    RoomNode(RoomNode parent, Point position, int g, int h, int punishment, ArrayList<Obstacle> obstacles) {
         this.parent = parent;
         this.position = position;
         this.h = h;
+        this.punishment = punishment;
         this.g = g;
-        this.f = h + g;
+        this.p = g + punishment;
+        this.f = h + g + punishment;
         this.obstacles = obstacles;
     }
 
