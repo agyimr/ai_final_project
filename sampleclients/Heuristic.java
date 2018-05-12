@@ -77,7 +77,7 @@ public abstract class Heuristic implements Comparator<Node> {
             case Push:
             case Pull:
                 if(n.boxes[n.boxY][n.boxX].assignedAgent != null) return distance + 8;
-                else if(n.boxes[n.boxY][n.boxX].atGoalPosition()) return distance + 8;
+                else if(n.boxes[n.boxY][n.boxX].atGoalPosition()) return distance + 4;
                 else return distance + 2;
             default:
                 return Integer.MAX_VALUE;

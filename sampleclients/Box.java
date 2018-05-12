@@ -1,7 +1,7 @@
 package sampleclients;
 import java.util.*;
 
-import static sampleclients.RandomWalkClient.assignGoals;
+
 
 public class Box extends MovingObject {
     public Goal assignedGoal = null;
@@ -23,8 +23,8 @@ public class Box extends MovingObject {
         List <Goal>goals = MainBoard.goalsByID.get(Character.toLowerCase(getID()));
         if(goals != null) {
             for(Goal current : goals) {
-                int currentDistance = RandomWalkClient.roomMaster.getPathEstimate(getCoordinates(), current.getCoordinates());
-                if(current.canBeSolved() && currentDistance < bestDistance && goalCloserToMe(current, currentDistance)) {
+                int currentDistance = RandomWalkClient.roomMaster.getEmptyPathEstimate(getCoordinates(), current.getCoordinates());
+                if(current.canBeSolved() && !current.solved() && currentDistance < bestDistance && goalCloserToMe(current, currentDistance)) {
                     bestDistance = currentDistance;
                     bestGoal = current;
                 }
@@ -46,14 +46,7 @@ public class Box extends MovingObject {
         return true;
     }
     public boolean atGoalPosition() {
-        if(assignedGoal == null) return false;
-        else if( getX() - assignedGoal.getX() == 0
-                && getY() - assignedGoal.getY() == 0 ) {
-            return true;
-        }
-        else {
-            return false;
-        }
+        return RandomWalkClient.gameBoard.isGoal(getX(), getY());
     }
     public void resetDependencies() {
         for(Box theCurrentBox : MainBoard.allBoxes) {
@@ -73,7 +66,7 @@ public class Box extends MovingObject {
         if(current.assignedBox == null) return true;
         else if(current.assignedBox.isBeingMoved()) return false;
         else {
-            int currentDistance = RandomWalkClient.roomMaster.getPathEstimate(current.getCoordinates(), current.assignedBox.getCoordinates());
+            int currentDistance = RandomWalkClient.roomMaster.getEmptyPathEstimate(current.getCoordinates(), current.assignedBox.getCoordinates());
             if(currentDistance > distance) {
                 return true;
             }
