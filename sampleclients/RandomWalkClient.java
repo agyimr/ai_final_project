@@ -25,9 +25,9 @@ public class RandomWalkClient {
         assignGoals();
 	}
 
-    public void assignGoals() {
+    public static void assignGoals() {
         for(Goal current : MainBoard.allGoals) {
-            if (current.canBeSolved() && current.assignedBox != null) {
+            if (current.canBeSolved()) {
                 current.findClosestBox();
             }
         }

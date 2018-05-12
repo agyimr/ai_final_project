@@ -37,18 +37,25 @@ public class ObstacleArbitrator {
     public static Point processObstacles(Agent owner, ArrayList<Obstacle> obstacles) {
         Point anythingProcessed = null;
         for(Obstacle current : obstacles) {
-            if(!owner.getColor().equals(current.obstacle.getColor())) {
-                if(anythingProcessed == null) {
-                    anythingProcessed = current.waitingPosition;
-
+            if(owner.getAttachedBox() != current.obstacle) {
+                owner.obstacles.add(current.obstacle);
+                if(!current.obstacle.isBeingMoved()) {
                     helpersDictionary.put(current.rescueAgent, owner);
+                    current.rescueAgent.scheduleObstacleRemoval(current.obstacle, current.pathLengthUntilObstacle);
+                }
+                if(anythingProcessed == null) {
+                    if(current.obstacle.isBeingMoved()) {
+                        anythingProcessed = FindSafeSpot.safeSpotBFS(current.waitingPosition);
+                        owner.rescueIsNotNeeded();
+                    }
+                    else {
+                        anythingProcessed = current.waitingPosition;
+                    }
+
                 }
                 else {
                     helpersDictionary.put(current.rescueAgent, null);
                 }
-                owner.obstacles.add(current.obstacle);
-                current.rescueAgent.scheduleObstacleRemoval(current.obstacle, current.pathLengthUntilObstacle);
-
                 System.err.println("owner:" + owner + "Offset: " + current.pathLengthUntilObstacle);
                 System.err.println("currently disclosed obstacles: " + owner.obstacles);
                 System.err.println("Rescue:" + current.rescueAgent + " BOX: " + current.obstacle);
@@ -60,7 +67,6 @@ public class ObstacleArbitrator {
     public static void jobIsDone(Agent savior) {
         System.err.println("job is done!\n\n");
         Agent inTrouble = helpersDictionary.get(savior);
-
 
         if(inTrouble != null) {
             inTrouble.youShallPass();

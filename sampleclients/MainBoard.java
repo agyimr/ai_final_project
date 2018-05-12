@@ -174,11 +174,13 @@ public class MainBoard {
     public boolean isGoal (int x, int y) {
         if(getElement(x, y) == null) return false;
         else if(getElement(x, y) instanceof MovingObject) {
-            System.err.println("Yupi!!!!");
             Goal res = steppedOnGoals.get(getElement(x, y));
             System.err.println(res);
             if(res != null) {
                 return true;
+            }
+            else {
+                return false;
             }
         }
         return (isGoal(getElement(x, y).getID()));

@@ -17,14 +17,14 @@ public class SearchClient {
     private boolean pushingBox;
     private int goalX;
     private int goalY;
-    private final int searchIncrement = MainBoard.MainBoardYDomain * MainBoard.MainBoardXDomain ;
+    private final int searchIncrement = MainBoard.MainBoardYDomain * MainBoard.MainBoardXDomain  + 10;
     private int searchRange =searchIncrement * 20;
     private boolean recursionTriggered = false;
     public LinkedList<LinkedList<Node>> immovableObstacles = new LinkedList<>();
     public boolean pathBlocked = false;
     public boolean pathInaccessible = false;
     public Point beforeFirstImmovableObstacle = null;
-
+    boolean straightToGoal = false;
     private LinkedList<sampleclients.room_heuristics.Node> roomPath;
     private Section currentRoom = null;
     private Section nextRoom = null;
@@ -41,7 +41,9 @@ public class SearchClient {
         strategy.clear();
         strategy.heuristic.initializeSearch(pushing, goalRoom);
     }
-
+    public boolean inGoalRoom() {
+        return straightToGoal;
+    }
     public LinkedList<Node> continuePath() { //TODO overwrite path at the end
         System.err.println("trying to continue path");
         LinkedList<Node> localPath = getNextRoomPath();
@@ -82,16 +84,19 @@ public class SearchClient {
         }
     }
     private LinkedList<Node> getPathToNextRoom() {
+        straightToGoal = false;
         System.err.println("finding path to next room!");
         return FindRoomPath(pushingBox, nextRoom);
     }
     private LinkedList<Node> getPathToGoal() {
+        straightToGoal = true;
         System.err.println("in the goal room!");
         return FindPath(pushingBox, goalX, goalY);
     }
 
     public boolean getPath(boolean pushingBox, int goalX, int goalY) {
         System.err.println("finding new path");
+        straightToGoal = false;
         this.pushingBox = pushingBox;
         this.goalX = goalX;
         this.goalY = goalY;
@@ -160,7 +165,7 @@ public class SearchClient {
             }
             else {
                 int oldRange = searchRange;
-                searchRange *= 30;
+                searchRange *= 50;
                 recursionTriggered = true;
                 System.err.println("bigger range search: ");
                 LinkedList<Node> mustBeTrue = FindPath(pushing, goalX, goalY);
