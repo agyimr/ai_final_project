@@ -52,6 +52,7 @@ public class SearchClient {
     private LinkedList<Node> getNextRoomPath() {
         if(pathBlocked) {
             pathBlocked = false;
+            beforeFirstImmovableObstacle = null;
             owner.waitForObstacleToBeRemoved();
             LinkedList<Node> dummyPath = new LinkedList<>();
             dummyPath.add(new Node(null, new Command(), owner.getX(), owner.getY()));

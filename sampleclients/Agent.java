@@ -47,14 +47,17 @@ public class Agent extends MovingObject {
         System.err.println("Starting CurrentState: "+currentState);
         while(serverOutput == null) {
             switch (currentState) {
+                case jobless:
+                    serverOutput = "NoOp";
+                    break;
                 case waiting:
                     waitForSomeMiracle();
                     break;
                 case unassigned:
                     searchForJob();
                     break;
-                case jobless:
-                    serverOutput = "NoOp";
+                case pathBlocked:
+                    checkPath();
                     break;
                 case inConflict:
                     resolveConflict();
@@ -64,9 +67,6 @@ public class Agent extends MovingObject {
                     break;
                 case movingBox:
                     moveWithTheBox();
-                    break;
-                case pathBlocked:
-                    checkPath();
                     break;
                 case removingObstacle:
                     removeObstacle();
@@ -412,13 +412,6 @@ public class Agent extends MovingObject {
         myPathIsBlocked = false;
         pathFindingEngine.pathBlocked = false;
     }
-    private void finishTheJob() {
-        clearPath();
-        if(isBoxAttached()) {
-            dropTheBox();
-        }
-        changeState(unassigned);
-    }
     public Command getCommand(int i) {
         try{
             if(path == null) return null;
@@ -427,6 +420,13 @@ public class Agent extends MovingObject {
         catch (IndexOutOfBoundsException exc) {
             return null;
         }
+    }
+    private void finishTheJob() {
+        clearPath();
+        if(isBoxAttached()) {
+            dropTheBox();
+        }
+        changeState(unassigned);
     }
     public void scheduleObstacleRemoval(Box issue, int offset) {
         if(issue == attachedBox) {
