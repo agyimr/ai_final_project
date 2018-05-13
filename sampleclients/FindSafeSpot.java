@@ -133,12 +133,16 @@ public class FindSafeSpot {
             int nextBooking = anticiObj.getEarliestOccupation(spot);
 
             if(nextBooking == -1) {
-                nextBooking = anticiObj.getClock() + RandomWalkClient.gameBoard.getHeight() + RandomWalkClient.gameBoard.getWidth();
+                nextBooking = anticiObj.getClock() + RandomWalkClient.gameBoard.getHeight() + RandomWalkClient.gameBoard.getWidth(); //TODO replace with large value
             }
 
-            int bookingDistance = nextBooking - anticiObj.getClock() - geoDistance;
+            int bookingDistance = (nextBooking - anticiObj.getClock()) - geoDistance;
 
-            if(bookingDistance - geoDistance < 0) {
+            if(IamBox && map.isBox(spot.x, spot.y)) {
+                //TODO not select this one if possible
+            }
+
+            if(bookingDistance < 0) {
                 return 0;
             }
 
@@ -155,9 +159,9 @@ public class FindSafeSpot {
             return score;
         }
 
-        private static int getSpacenessAround(Point spot) {
-            if(spot.x == 0 || spot.x == map.getWidth() - 1 || spot.y == 0 || spot.y == map.getHeight() - 1) {
-                return 0;
+        private static int getSpacenessAround(Point spot) {//TODO check all 8 places
+                if(spot.x == 0 || spot.x == map.getWidth() - 1 || spot.y == 0 || spot.y == map.getHeight() - 1) {
+                    return 0;
             }
 
             int space = 0;
@@ -192,7 +196,7 @@ public class FindSafeSpot {
         private static boolean isAllowed (Point cand){
             int x = cand.x;
             int y = cand.y;
-            if (notWithinMapConstraints(x, y) || map.isWall(x, y) || ( IamBox && map.isBox(x, y)) || (!IamBox && (map.isBox(x, y) || map.isAgent(x, y)))) {
+            if (notWithinMapConstraints(x, y) || map.isWall(x, y) || ( IamBox ) || (!IamBox && (map.isBox(x, y) || map.isAgent(x, y)))) {
                 return false;
             }
 

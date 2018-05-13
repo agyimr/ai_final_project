@@ -31,8 +31,8 @@ public class Agent extends MovingObject {
         pathBlocked,
         movingTowardsBox,
         movingBox,
-        inConflict,
-        removingObstacle
+        removingObstacle,
+        inConflict
     }
     String serverOutput = null;
     public Agent( char id, String color, int y, int x ) {
@@ -367,6 +367,7 @@ public class Agent extends MovingObject {
         nextBoxToPush = null;
         pendingHelp = false;
         findObstaclePath();
+
     }
     private void findObstaclePath() {
         if (isBoxAttached()) {
@@ -374,7 +375,8 @@ public class Agent extends MovingObject {
                 if (attachedBox.assignedGoal == null && !attachedBox.tryToFindAGoal()) {
                     safeSpot = FindSafeSpot.safeSpotBFS(new Point(attachedBox.getX(), attachedBox.getY()));
                     findPathWithBox(safeSpot.x, safeSpot.y);
-
+                    System.err.println(safeSpot);
+                    throw new NullPointerException();
 
                 } else {
                     if (findPathWithBox(attachedBox.assignedGoal.getX(), attachedBox.assignedGoal.getY())) {
@@ -382,7 +384,8 @@ public class Agent extends MovingObject {
                     } else {
                         safeSpot = FindSafeSpot.safeSpotBFS(new Point(attachedBox.getX(), attachedBox.getY()));
                         findPathWithBox(safeSpot.x, safeSpot.y);
-
+                        System.err.println(safeSpot);
+                        throw new NullPointerException();
                     }
                 }
                 ObstacleArbitrator.jobIsDone(this);
