@@ -1,6 +1,8 @@
 package sampleclients;
 import java.util.*;
 
+
+
 public class Box extends MovingObject {
     public Goal assignedGoal = null;
     public Agent assignedAgent = null;
@@ -21,8 +23,8 @@ public class Box extends MovingObject {
         List <Goal>goals = MainBoard.goalsByID.get(Character.toLowerCase(getID()));
         if(goals != null) {
             for(Goal current : goals) {
-                int currentDistance = RandomWalkClient.roomMaster.getPathEstimate(getCoordinates(), current.getCoordinates());
-                if(current.assignedBox == null && current.canBeSolved() && currentDistance < bestDistance) {
+                int currentDistance = RandomWalkClient.roomMaster.getEmptyPathEstimate(getCoordinates(), current.getCoordinates());
+                if(current.canBeSolved() && !current.solved() && currentDistance < bestDistance && goalCloserToMe(current, currentDistance)) {
                     bestDistance = currentDistance;
                     bestGoal = current;
                 }
@@ -33,25 +35,22 @@ public class Box extends MovingObject {
             assignedAgent = null;
             return false;
         }
-        else {
-            bestGoal.assignedBox = this;
-            assignedGoal = bestGoal;
-            return true;
+        else if(bestGoal.assignedBox != null){
+            if(bestGoal.assignedBox.assignedAgent != null) {
+                bestGoal.assignedBox.assignedAgent.finishTheJob();
+            }
+            bestGoal.assignedBox.assignedGoal = null;
         }
+        bestGoal.assignedBox = this;
+        assignedGoal = bestGoal;
+        return true;
     }
     public boolean atGoalPosition() {
-        if(assignedGoal == null) return false;
-        else if( getX() - assignedGoal.getX() == 0
-                && getY() - assignedGoal.getY() == 0 ) {
-            return true;
-        }
-        else {
-            return false;
-        }
+        return RandomWalkClient.gameBoard.isGoal(getX(), getY()) && assignedGoal.getCoordinates().equals(getCoordinates());
     }
     public void resetDependencies() {
-        for(Box theCurrentID : MainBoard.allBoxes) {
-            theCurrentID.noGoalOnTheMap = false;
+        for(Box theCurrentBox : MainBoard.allBoxes) {
+            theCurrentBox.noGoalOnTheMap = false;
         }
         for(Agent sameColor : MainBoard.agents) {
             if(sameColor.isJobless()) sameColor.moveYourAss();
@@ -62,5 +61,16 @@ public class Box extends MovingObject {
     public boolean isBeingMoved() {
         if(assignedAgent == null) return false;
         return assignedAgent.isMovingBox();
+    }
+    private boolean goalCloserToMe(Goal current, int distance) {
+        if(current.assignedBox == null) return true;
+        else if(current.assignedBox.isBeingMoved()) return false;
+        else {
+            int currentDistance = RandomWalkClient.roomMaster.getEmptyPathEstimate(current.getCoordinates(), current.assignedBox.getCoordinates());
+            if(currentDistance > distance) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -17,14 +17,14 @@ public class SearchClient {
     private boolean pushingBox;
     private int goalX;
     private int goalY;
-    private final int searchIncrement = MainBoard.MainBoardYDomain * MainBoard.MainBoardXDomain ;
+    private final int searchIncrement = MainBoard.MainBoardYDomain * MainBoard.MainBoardXDomain  + 10;
     private int searchRange =searchIncrement * 20;
     private boolean recursionTriggered = false;
     public LinkedList<LinkedList<Node>> immovableObstacles = new LinkedList<>();
     public boolean pathBlocked = false;
     public boolean pathInaccessible = false;
     public Point beforeFirstImmovableObstacle = null;
-
+    boolean straightToGoal = false;
     private LinkedList<sampleclients.room_heuristics.Node> roomPath;
     private Section currentRoom = null;
     private Section nextRoom = null;
@@ -41,7 +41,9 @@ public class SearchClient {
         strategy.clear();
         strategy.heuristic.initializeSearch(pushing, goalRoom);
     }
-
+    public boolean inGoalRoom() {
+        return straightToGoal;
+    }
     public LinkedList<Node> continuePath() { //TODO overwrite path at the end
         System.err.println("trying to continue path");
         LinkedList<Node> localPath = getNextRoomPath();
@@ -82,16 +84,19 @@ public class SearchClient {
         }
     }
     private LinkedList<Node> getPathToNextRoom() {
+        straightToGoal = false;
         System.err.println("finding path to next room!");
         return FindRoomPath(pushingBox, nextRoom);
     }
     private LinkedList<Node> getPathToGoal() {
+        straightToGoal = true;
         System.err.println("in the goal room!");
         return FindPath(pushingBox, goalX, goalY);
     }
 
     public boolean getPath(boolean pushingBox, int goalX, int goalY) {
         System.err.println("finding new path");
+        straightToGoal = false;
         this.pushingBox = pushingBox;
         this.goalX = goalX;
         this.goalY = goalY;
@@ -107,7 +112,7 @@ public class SearchClient {
 //            System.err.println(owner);
 //            System.err.println(owner.getAttachedBox());
 //            System.err.println(roomPath.getLast().obstacles);
-            Point firstSafeSpace = ObstacleArbitrator.processObstacles(owner, roomPath.getLast().obstacles);
+            Point firstSafeSpace = ObstacleArbitrator.processObstacles(owner, roomPath.getLast().obstacles, gameBoard.getElement(goalX, goalY));
             if(firstSafeSpace != null) {
                 //throw new NullPointerException();
                 beforeFirstImmovableObstacle = firstSafeSpace;
@@ -160,7 +165,7 @@ public class SearchClient {
             }
             else {
                 int oldRange = searchRange;
-                searchRange *= 30;
+                searchRange *= 50;
                 recursionTriggered = true;
                 System.err.println("bigger range search: ");
                 LinkedList<Node> mustBeTrue = FindPath(pushing, goalX, goalY);
@@ -176,6 +181,7 @@ public class SearchClient {
         recursionTriggered = true;
         System.err.println("POSITION BEFORE OBSTACLE: X: " + beforeFirstImmovableObstacle.x + ", Y: " + beforeFirstImmovableObstacle.y);
         LinkedList<Node> mustBeTrue = FindPath(pushing, beforeFirstImmovableObstacle.x, beforeFirstImmovableObstacle.y);
+        System.err.println(mustBeTrue);
         if(mustBeTrue != null && mustBeTrue.isEmpty()) {
             mustBeTrue.add(new Node(null, new Command(), owner.getX(), owner.getY()));
         }
@@ -218,7 +224,7 @@ public class SearchClient {
 
     private void processObstacles(ArrayList<Obstacle> result) {
         if(result != null) {
-            Point firstSafeSpace = ObstacleArbitrator.processObstacles(owner, result);
+            Point firstSafeSpace = ObstacleArbitrator.processObstacles(owner, result, gameBoard.getElement(goalX, goalY));
             if(firstSafeSpace != null) {
                 pathBlocked = true;
                 beforeFirstImmovableObstacle = firstSafeSpace;

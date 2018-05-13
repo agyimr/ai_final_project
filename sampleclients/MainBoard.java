@@ -147,7 +147,23 @@ public class MainBoard {
             ++MainBoardYDomain;
         }
         Collections.sort(agents, (left, right) -> left.getID() - right.getID());
-
+        replaceBoxesWithoutAgentWithAWall();
+    }
+    private void replaceBoxesWithoutAgentWithAWall() {
+        ListIterator<Box> iterator = allBoxes.listIterator();
+        while(iterator.hasNext()) {
+            Box current = iterator.next();
+            if(AgentColorGroups.get(current.getColor()) == null) {
+                if(boxesByID.get(current.getID()) != null) {
+                    boxesByID.remove(current.getID());
+                }
+                if(BoxColorGroups.get(current.getColor()) != null) {
+                    BoxColorGroups.remove(current.getColor());
+                }
+                iterator.remove();
+                setElement( current.getX(), current.getY(), new Wall('+', current.getX(), current.getY()));
+            }
+        }
     }
     public static boolean isAgent (char id) { return ( '0' <= id && id <= '9' );}
     public static boolean isBox (char id) { return ( 'A' <= id && id <= 'Z' );}
@@ -174,11 +190,12 @@ public class MainBoard {
     public boolean isGoal (int x, int y) {
         if(getElement(x, y) == null) return false;
         else if(getElement(x, y) instanceof MovingObject) {
-            System.err.println("Yupi!!!!");
             Goal res = steppedOnGoals.get(getElement(x, y));
-            System.err.println(res);
             if(res != null) {
                 return true;
+            }
+            else {
+                return false;
             }
         }
         return (isGoal(getElement(x, y).getID()));

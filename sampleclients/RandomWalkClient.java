@@ -23,12 +23,18 @@ public class RandomWalkClient {
         roomMaster = new RoomAStar(gameBoard);
         anticipationPlanning = new AnticipationPlanning(gameBoard);
         assignGoals();
+        System.err.println(gameBoard);
+        System.err.println(nextStepGameBoard);
+        //throw new NullPointerException(); //TODO stop here for debugging in preprocessing
 	}
 
-    public void assignGoals() {
+    public static void assignGoals() {
         for(Goal current : MainBoard.allGoals) {
-            if (current.canBeSolved() && current.assignedBox != null) {
+            if (current.canBeSolved()) {
                 current.findClosestBox();
+            }
+            else {
+                System.err.println("Goal: "+ current + " is in dependency, dependencies: " + current.deps);
             }
         }
     }

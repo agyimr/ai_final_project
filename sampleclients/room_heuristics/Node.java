@@ -12,8 +12,11 @@ public class Node {
     public int f;
     public int g;
     public int h;
+    public int p;
+    public int punishment;
 
-    Node(Node parent, Section[] sections, Point position, Section through, int g, int h, ArrayList<Obstacle> obstacles) {
+    Node(Node parent, Section[] sections, Point position, Section through, int g, int h,
+         int punishment, ArrayList<Obstacle> obstacles) {
         this.obstacles = obstacles;
         this.through = through;
         this.parent = parent;
@@ -21,7 +24,9 @@ public class Node {
         this.position = position;
         this.h = h;
         this.g = g;
-        this.f = this.h + this.g;
+        this.punishment = punishment;
+        this.p = punishment + g;
+        this.f = this.h + this.g + this.punishment;
     }
 
     @Override

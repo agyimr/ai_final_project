@@ -6,7 +6,6 @@ import java.awt.Point;
 import java.util.*;
 
 public class RoomAStar {
-    static int STRICT_PUNISHMENT_FOR_AGENT_USAGE = 10000;
 
     private Map map;
     public Passage passages;
@@ -42,7 +41,7 @@ public class RoomAStar {
         ArrayList<Node> closed_set = new ArrayList<>();
         PriorityQueue<Node> open_set = new PriorityQueue<>(10, Comparator.comparingInt((n) -> n.f));
         Node init_node = new Node(null, passages.section_map[from.y][from.x], from, null, 0,
-                to.getDistanceFromPoint(from), new ArrayList<>());
+                to.getDistanceFromPoint(from),0, new ArrayList<>());
         open_set.add(init_node);
 
         boolean explore;
@@ -53,8 +52,8 @@ public class RoomAStar {
 
             Node current_node = open_set.poll();
 
-            if (!solution.isEmpty() && current_node.g > solution.getLast().g) {
-                return removePunishment(solution);
+            if (!solution.isEmpty() && current_node.p > solution.getLast().p) {
+                return solution;
             }
 
             // checking for goal state
@@ -65,7 +64,7 @@ public class RoomAStar {
                     solution = path;
                 }
                 // if we find a better solution than we already have...
-                if (!solution.isEmpty() && !path.isEmpty() && path.getLast().g < solution.getLast().g) {
+                if (!solution.isEmpty() && !path.isEmpty() && path.getLast().p < solution.getLast().p) {
                     solution = path;
                 }
                 explore = false;
@@ -79,7 +78,7 @@ public class RoomAStar {
                 ArrayList<Path> neighbour_sections = this.passages.getAllNeighbours(current_node.position);
                 if (neighbour_sections != null) {
                     for(Path s : neighbour_sections) {
-                        PathWithObstacles path = Estimator.estimatePath(current_node.position, s.to, s.through, current_node.g, true);
+                        PathWithObstacles path = Estimator.estimatePath(current_node.position, s.to, s.through, current_node.g);
                         if (path != null) { // if path exists...
                             Point p = path.arrivingPosition;
                             //System.err.println(distance);
@@ -87,21 +86,22 @@ public class RoomAStar {
 
                             obstacles.addAll(path.obstacles);
                             Node n = new Node(current_node, passages.section_map[p.y][p.x], p, s.through,
-                                    current_node.g + path.distance, to.getDistanceFromPoint(p), obstacles);
+                                    current_node.g + path.distance, to.getDistanceFromPoint(p),
+                                    current_node.punishment + path.punishment, obstacles);
 
                             Node already_in_open_set = getAlreadyInList(open_set, n);
                             Node already_in_closed_set = getAlreadyInList(closed_set, n);
 
                             // Check if open set contains a node which equals with current one but it's g values is less
                             if (already_in_open_set != null) {
-                                if (already_in_open_set.g > n.g) {
+                                if (already_in_open_set.p > n.p) {
                                     open_set.remove(already_in_open_set);
                                     open_set.add(n);
                                 }
                                 // if open set doesn't contains similar node, check on the closed set. if closed set contains,
                                 // we should check whether closed set's g values is bigger
                             } else if (already_in_closed_set != null) {
-                                if (already_in_closed_set.g > n.g) {
+                                if (already_in_closed_set.p > n.p) {
                                     open_set.add(n);
                                 }
                                 // If neither of them contains the node, then we should add it to the open set.
@@ -114,7 +114,7 @@ public class RoomAStar {
             }
         }
 
-        if (!solution.isEmpty()) return removePunishment(solution);
+        if (!solution.isEmpty()) return solution;
         return null;
     }
 
@@ -122,7 +122,7 @@ public class RoomAStar {
         ArrayList<Node> closed_set = new ArrayList<>();
         PriorityQueue<Node> open_set = new PriorityQueue<>(10, Comparator.comparingInt((n) -> n.f));
         Node init_node = new Node(null, passages.section_map[from.y][from.x], from, null, 0,
-                passages.getDistanceFrom(from, to), new ArrayList<>());
+                passages.getDistanceFrom(from, to), 0, new ArrayList<>());
         open_set.add(init_node);
 
         boolean explore;
@@ -132,9 +132,9 @@ public class RoomAStar {
             explore = true;
 
             Node current_node = open_set.poll();
-
-            if (!solution.isEmpty() && current_node.g > solution.getLast().g) {
-                return removePunishment(solution);
+            //.err.println(current_node);
+            if (!solution.isEmpty() && current_node.p > solution.getLast().p) {
+                return solution;
             }
 
             // checking for goal state
@@ -145,7 +145,7 @@ public class RoomAStar {
                     solution = path;
                 }
                 // if we find a better solution than we already have...
-                if (!solution.isEmpty() && !path.isEmpty() && path.getLast().g < solution.getLast().g) {
+                if (!solution.isEmpty() && !path.isEmpty() && path.getLast().p < solution.getLast().p) {
                     solution = path;
                 }
                 explore = false;
@@ -158,27 +158,28 @@ public class RoomAStar {
             for (Section s : current_node.sections) {
                 if (s != null) {
                     if (s.contains(to)) {
-                        PathWithObstacles path = Estimator.estimatePath(current_node.position, to, s, current_node.g,true);
+                        PathWithObstacles path = Estimator.estimatePath(current_node.position, to, s, current_node.g);
                         if (path != null) { // if path exists...
                             ArrayList<Obstacle> obstacles = new ArrayList<>(current_node.obstacles);
                             obstacles.addAll(path.obstacles);
 
                             Node n = new Node(current_node, passages.section_map[to.y][to.x], to, s,
-                                    current_node.g + path.distance, 0, obstacles);
+                                    current_node.g + path.distance, 0,
+                                    current_node.punishment + path.punishment, obstacles);
 
                             Node already_in_open_set = getAlreadyInList(open_set, n);
                             Node already_in_closed_set = getAlreadyInList(closed_set, n);
 
                             // Check if open set contains a node which equals with current one but it's g values is less
                             if (already_in_open_set != null) {
-                                if (already_in_open_set.g > n.g) {
+                                if (already_in_open_set.p > n.p) {
                                     open_set.remove(already_in_open_set);
                                     open_set.add(n);
                                 }
                                 // if open set doesn't contains similar node, check on the closed set. if closed set contains,
                                 // we should check whether closed set's g values is bigger
                             } else if (already_in_closed_set != null) {
-                                if (already_in_closed_set.g > n.g) {
+                                if (already_in_closed_set.p > n.p) {
                                     open_set.add(n);
                                 }
                                 // If neither of them contains the node, then we should add it to the open set.
@@ -195,7 +196,7 @@ public class RoomAStar {
                 ArrayList<Path> neighbour_sections = this.passages.getAllNeighbours(current_node.position);
                 if (neighbour_sections != null) {
                     for(Path s : neighbour_sections) {
-                        PathWithObstacles path = Estimator.estimatePath(current_node.position, s.to, s.through, current_node.g, true);
+                        PathWithObstacles path = Estimator.estimatePath(current_node.position, s.to, s.through, current_node.g);
                         if (path != null) { // if path exists...
                             Point p = path.arrivingPosition;
                             //System.err.println(distance);
@@ -203,21 +204,22 @@ public class RoomAStar {
 
                             obstacles.addAll(path.obstacles);
                             Node n = new Node(current_node, passages.section_map[p.y][p.x], p, s.through,
-                                    current_node.g + path.distance, passages.getDistanceFrom(p, to), obstacles);
+                                    current_node.g + path.distance, passages.getDistanceFrom(p, to),
+                                    current_node.punishment + path.punishment, obstacles);
 
                             Node already_in_open_set = getAlreadyInList(open_set, n);
                             Node already_in_closed_set = getAlreadyInList(closed_set, n);
 
                             // Check if open set contains a node which equals with current one but it's g values is less
                             if (already_in_open_set != null) {
-                                if (already_in_open_set.g > n.g) {
+                                if (already_in_open_set.p > n.p) {
                                     open_set.remove(already_in_open_set);
                                     open_set.add(n);
                                 }
                                 // if open set doesn't contains similar node, check on the closed set. if closed set contains,
                                 // we should check whether closed set's g values is bigger
                             } else if (already_in_closed_set != null) {
-                                if (already_in_closed_set.g > n.g) {
+                                if (already_in_closed_set.p > n.p) {
                                     open_set.add(n);
                                 }
                                 // If neither of them contains the node, then we should add it to the open set.
@@ -230,18 +232,8 @@ public class RoomAStar {
             }
         }
 
-        if (!solution.isEmpty()) return removePunishment(solution);
+        if (!solution.isEmpty()) return solution;
         return null;
-    }
-
-    private LinkedList<Node> removePunishment(LinkedList<Node> path) {
-        LinkedList<Node> real_path = new LinkedList<>();
-        for(Node n: path) {
-            Node n_transformed = new Node(null, n.sections, n.position, n.through,
-                    n.g - n.obstacles.size() * STRICT_PUNISHMENT_FOR_AGENT_USAGE, n.h, n.obstacles);
-            real_path.addLast(n_transformed);
-        }
-        return real_path;
     }
 
     public LinkedList<Node> getEmptyRoomPath(Point from, Point to) {
@@ -252,7 +244,7 @@ public class RoomAStar {
         PriorityQueue<Node> open_set = new PriorityQueue<>(10, Comparator.comparingInt((n) -> n.f));
 
         Node init_node = new Node(null, passages.section_map[from.y][from.x], from, null, 0,
-                passages.getDistanceFrom(from, to), null);
+                passages.getDistanceFrom(from, to), 0, null);
         open_set.add(init_node);
 
         boolean explore;
@@ -295,7 +287,8 @@ public class RoomAStar {
                         int travel_distance = s.to.getDistanceFromPoint(current_node.position);
                         Point p = s.to.getClosestPoint(current_node.position);
                         Node n = new Node(current_node, passages.section_map[p.y][p.x], p, s.through,
-                                current_node.g + travel_distance, passages.getDistanceFrom(p, to), null);
+                                current_node.g + travel_distance, passages.getDistanceFrom(p, to), 0,
+                                null);
 
                         Node already_in_open_set = getAlreadyInList(open_set, n);
                         Node already_in_closed_set = getAlreadyInList(closed_set, n);
@@ -329,7 +322,7 @@ public class RoomAStar {
         // System.err.print(goal_node.g + this.getDistance(goal_node.position, to) + "\n");
         LinkedList<Node> plan = new LinkedList<>();
         Node goal = new Node(goal_node, this.passages.section_map[to.y][to.x], to, goal_section,
-                goal_node.g + this.getDistance(goal_node.position, to), 0, null);
+                goal_node.g + this.getDistance(goal_node.position, to), 0, 0, null);
         plan.addFirst(goal);
         Node n = goal_node;
         while (n.parent != null) {

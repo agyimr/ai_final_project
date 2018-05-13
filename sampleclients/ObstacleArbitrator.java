@@ -10,45 +10,29 @@ import static sampleclients.RandomWalkClient.gameBoard;
 
 public class ObstacleArbitrator {
     public static Map<Agent, Agent> helpersDictionary= new HashMap<>();
-    public static void findSaviors(SearchClient engine, Agent inNeed) {
-        for(LinkedList<Node> list : engine.immovableObstacles) {
-            for(Node point : list) {
-                BasicObject element = gameBoard.getElement(point.agentX, point.agentY);
-                if(element instanceof Box) {
-                    Box obstacle = (Box) element;
-                    if(obstacle.assignedAgent != null) continue;
-                    Agent closestAgent = null;
-                    int closestDistance = Integer.MAX_VALUE;
-                    for (Agent savior : MainBoard.AgentColorGroups.get(obstacle.getColor())) {
-                        int distance = RandomWalkClient.roomMaster.getPathEstimate(savior.getCoordinates(), obstacle.getCoordinates());
-                        if(distance < closestDistance) {
-                            closestAgent = savior;
-                            closestDistance = distance;
-                        }
-                    }
-                    closestAgent.scheduleObstacleRemoval(obstacle, closestDistance - point.timeFrame);
-                    helpersDictionary.put(closestAgent, inNeed);
-                }
 
-            }
-        }
-        engine.immovableObstacles.clear();
-    }
-    public static Point processObstacles(Agent owner, ArrayList<Obstacle> obstacles) {
+    public static Point processObstacles(Agent owner, ArrayList<Obstacle> obstacles, BasicObject goalObject) {
         Point anythingProcessed = null;
         for(Obstacle current : obstacles) {
-            if(!owner.getColor().equals(current.obstacle.getColor())) {
-                if(anythingProcessed == null) {
-                    anythingProcessed = current.waitingPosition;
-
+            if(owner.getAttachedBox().getID() != current.obstacle.getID()) {
+                owner.obstacles.add(current.obstacle);
+                if(!current.obstacle.isBeingMoved()) {
                     helpersDictionary.put(current.rescueAgent, owner);
+                    current.rescueAgent.scheduleObstacleRemoval(current.obstacle, current.pathLengthUntilObstacle);
+                }
+                if(anythingProcessed == null) {
+                    if(current.obstacle.isBeingMoved()) {
+                        anythingProcessed = FindSafeSpot.safeSpotBFS(current.waitingPosition);
+                        owner.rescueIsNotNeeded();
+                    }
+                    else {
+                        anythingProcessed = current.waitingPosition;
+                    }
+
                 }
                 else {
                     helpersDictionary.put(current.rescueAgent, null);
                 }
-                owner.obstacles.add(current.obstacle);
-                current.rescueAgent.scheduleObstacleRemoval(current.obstacle, current.pathLengthUntilObstacle);
-
                 System.err.println("owner:" + owner + "Offset: " + current.pathLengthUntilObstacle);
                 System.err.println("currently disclosed obstacles: " + owner.obstacles);
                 System.err.println("Rescue:" + current.rescueAgent + " BOX: " + current.obstacle);
@@ -60,7 +44,6 @@ public class ObstacleArbitrator {
     public static void jobIsDone(Agent savior) {
         System.err.println("job is done!\n\n");
         Agent inTrouble = helpersDictionary.get(savior);
-
 
         if(inTrouble != null) {
             inTrouble.youShallPass();
