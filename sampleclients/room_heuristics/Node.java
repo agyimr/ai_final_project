@@ -42,7 +42,7 @@ public class Node {
         if (this.through != null ) {
             return "X: " + position.x + ", Y: " + position.y + "; " + "Room: " +
                     this.through.id.charAt(0) + ", g: " + g + ", h: " + h + ", f: " + f +
-                    " Obstacles: \n" + obstacles.toString();
+                    " Obstacles: \n" + (obstacles == null ? "null" : obstacles.toString());
         }
         return "X: " + position.x + ", Y: " + position.y + "\n" + "Room: start";
     }
