@@ -108,7 +108,7 @@ public class RandomWalkClient {
 
 	public static void main( String[] args ) {
 
-        new Debugger("levels/MAobstaclemedium.lvl", 150);
+        new Debugger("levels/MAgeneralAI.lvl", 150);
 
         // Use stderr to print to console
 

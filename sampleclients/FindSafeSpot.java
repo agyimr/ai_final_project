@@ -7,6 +7,9 @@ public class FindSafeSpot {
     private static MainBoard map;
     private static AnticipationPlanning anticiObj;
     private static boolean IamBox;
+
+    private static final int MAX_DEPTH = 10;
+
     public static Point safeSpotBFS(Point startPos) {
         System.err.println("ENTERING SAFESPOT \n");
         System.err.println("START POS: " + startPos + "\n");
@@ -17,10 +20,12 @@ public class FindSafeSpot {
         List<ConflictNode> frontier = new ArrayList<ConflictNode>();
         List<ConflictNode> explored = new ArrayList<ConflictNode>();
 
+        int startClock = anticiObj.getClock();
+
         //Add the current agent position to explored
         frontier.add(new ConflictNode(startPos, anticiObj.getClock()));
 
-        double bestEstimation = 0;
+        double bestEstimation = -99999999;
         Point bestSpot = null;
 
         //continue search as long as there are points in the firstfrontier
@@ -29,14 +34,18 @@ public class FindSafeSpot {
             ConflictNode cur = frontier.get(0);
             frontier.remove(0);
             //goal check - Is this an empty spot? with perhabs area around it? or perhabs the highest anticipation clock relative to position,
-            if(isMySpot(cur.getAgent())){
-                System.err.println("SAFESPOT: " + cur.getAgent());
-                return cur.getAgent();
-//                throw new NullPointerException();
+//            if(isMySpot(cur.getAgent())){
+//                System.err.println("SAFESPOT: " + cur.getAgent());
+//                return cur.getAgent();
+////                throw new NullPointerException();
+//            }
+            if(cur.getClock() - startClock >= MAX_DEPTH) {
+                break;
             }
 
             if(bestSpot == null) {
                 bestSpot = cur.getAgent();
+                bestEstimation =  estimateSpot(cur.getAgent(), cur.getClock());
             } else {
                 double estimation = estimateSpot(cur.getAgent(), cur.getClock());
 
@@ -73,6 +82,7 @@ public class FindSafeSpot {
             return maxNode.getAgent();
         }
         */
+        System.err.println("Hello ?");
         System.err.println("safeSpot " + startPos + " -> " + bestSpot);
         if(bestSpot.x == startPos.x && bestSpot.y == startPos.y){
             System.err.println("SAFESPOT NOT FOUND");
@@ -161,13 +171,17 @@ public class FindSafeSpot {
                 return -99999995;
             }
 
-            // More the score is high, more the spot is atractive
+            // More the score is high, more the spot is attractive
             // maximize nextBooking
             // maximize space
             // minimize geoDistance
-            double score = nextBooking * space / geoDistance;
+            double score = nextBooking * Math.pow(2, space) / geoDistance;
 
             return score;
+        }
+
+        private static boolean isStaticCell(int x, int y) {
+            return map.isWall(x, y) || (map.getElement(x, y) instanceof Box && ((Box) map.getElement(x, y)).assignedAgent == null);
         }
 
         private static int getSpacenessAround(Point spot) {
@@ -177,33 +191,14 @@ public class FindSafeSpot {
 
             int space = 0;
 
-            if(!map.isWall(spot.x+1, spot.y)) { //right
-                space++;
-            }
-            if(!map.isWall(spot.x-1, spot.y)) { //left
-                space++;
-            }
-
-            if(!map.isWall(spot.x, spot.y-1)) {//top
-                space++;
-            }
-            if(!map.isWall(spot.x, spot.y+1)) {  //bottom
-                space++;
+            for(int dy=-1;dy<=1;dy++) {
+                for (int dx = -1; dx <= 1; dx++) {
+                    if(dx != 0 && dy != 0 && !isStaticCell(spot.x + dx, spot.y + dy)) {
+                        space++;
+                    }
+                }
             }
 
-            if(!map.isWall(spot.x+1, spot.y-1)) { //top right
-                space++;
-            }
-            if(!map.isWall(spot.x-1, spot.y+1)) { //bottom left
-                space++;
-            }
-
-            if(!map.isWall(spot.x-1, spot.y-1)) { //top left
-                space++;
-            }
-            if(!map.isWall(spot.x+1, spot.y+1)) { //bottom right
-                space++;
-            }
             return space;
         }
 

@@ -408,7 +408,7 @@ public class Agent extends MovingObject {
             }
         }
         catch (NullPointerException exc) {
-            System.err.println("Can't remove obstacle");
+            System.err.println("NullPointer : Can't remove obstacle");
             ObstacleArbitrator.jobIsDone(this);
             changeState(unassigned);
         }
