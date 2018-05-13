@@ -142,7 +142,7 @@ public class FindSafeSpot {
 
            // int score = (bookingDistance - geoDistance) * Math.min((space-2)/2,1) + 3 * -geoDistance;
 
-            double score = Math.max(0, space-2)^3 - (1-geoDistance)^2 //(1-geoDistance) + (1+geoDistance) * Math.max(space-2, 0);
+            double score = Math.max(0, space-2)^3 - (1-geoDistance)^2;//(1-geoDistance) + (1+geoDistance) * Math.max(space-2, 0);
 
             if(geoDistance * 2 < nextBooking) {
                 score *= 1.5;
@@ -194,7 +194,7 @@ public class FindSafeSpot {
         private static boolean isAllowed (Point cand){
             int x = cand.x;
             int y = cand.y;
-            if (x < 0 || x >= map.getWidth() || y < 0 || y >= map.getHeight() || map.isWall(x, y) || map.isBox(x, y)) {
+            if (x < 0 || x >= map.getWidth() || y < 0 || y >= map.getHeight() || map.isWall(x, y) || map.isBox(x, y) || map.isAgent(x, y)) {
                 return false;
             }
 
