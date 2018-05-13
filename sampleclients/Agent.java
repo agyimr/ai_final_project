@@ -540,7 +540,7 @@ public class Agent extends MovingObject {
         else {
             System.err.println("Help is pending!");
             pendingHelp = true;
-            if(isJobless()) {
+            if(hasMoved() && isJobless()) {
                 act();
             }
         }
