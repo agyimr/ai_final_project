@@ -76,6 +76,9 @@ public class FindSafeSpot {
         }
         */
         System.err.println("safeSpot " + startPos + " -> " + bestSpot);
+        if(bestSpot.x == startPos.x && bestSpot.y == startPos.y){
+            return null;
+        }
         return bestSpot;
         //return null;
     }
