@@ -6,14 +6,14 @@ public class FindSafeSpot {
 
     private static MainBoard map;
     private static AnticipationPlanning anticiObj;
-
+    private static boolean IamBox;
     public static Point safeSpotBFS(Point startPos) {
-
+        System.err.println("ENTERING SAFESPOT \n");
 
 
         map = RandomWalkClient.gameBoard;
         anticiObj = RandomWalkClient.anticipationPlanning;
-
+        IamBox = map.isBox(startPos.x, startPos.y);
         List<ConflictNode> frontier = new ArrayList<ConflictNode>();
         List<ConflictNode> explored = new ArrayList<ConflictNode>();
 
@@ -192,12 +192,16 @@ public class FindSafeSpot {
         private static boolean isAllowed (Point cand){
             int x = cand.x;
             int y = cand.y;
-            if (x < 0 || x >= map.getWidth() || y < 0 || y >= map.getHeight() || map.isWall(x, y) || map.isBox(x, y) || map.isAgent(x, y)) {
+            if (notWithinMapConstraints(x, y) || map.isWall(x, y) || ( IamBox && map.isBox(x, y)) || (!IamBox && (map.isBox(x, y) || map.isAgent(x, y)))) {
                 return false;
             }
 
             return true;
         }
+
+    private static boolean notWithinMapConstraints(int x, int y) {
+        return x < 0 || x >= map.getWidth() || y < 0 || y >= map.getHeight();
+    }
 
 }
 
