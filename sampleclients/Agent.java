@@ -540,7 +540,12 @@ public class Agent extends MovingObject {
     }
     private boolean pathSmallerThanOffset(int offset) {
         int pathLength;
-        pathLength = this.path.size();
+        if(path != null) {
+            pathLength = this.path.size();
+        }
+        else {
+            pathLength = 0;
+        }
         if(! pathFindingEngine.inGoalRoom()) {
             pathLength += pathFindingEngine.getNextRoomPathLengthEstimate();
         }
