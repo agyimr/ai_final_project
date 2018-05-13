@@ -26,8 +26,8 @@ public class SearchClient {
     public Point beforeFirstImmovableObstacle = null;
     boolean straightToGoal = false;
     private LinkedList<sampleclients.room_heuristics.Node> roomPath;
-    private Section currentRoom = null;
-    private Section nextRoom = null;
+    private sampleclients.room_heuristics.Node currentRoom = null;
+    private sampleclients.room_heuristics.Node nextRoom = null;
 
     public SearchClient(Agent owner) {
         this.owner = owner;
@@ -44,11 +44,17 @@ public class SearchClient {
     public boolean inGoalRoom() {
         return straightToGoal;
     }
+    public int getNextRoomPathLengthEstimate() {
+        if(nextRoom != null) {
+            return nextRoom.g;
+        }
+        else return 0;
+    }
     public LinkedList<Node> continuePath() { //TODO overwrite path at the end
         System.err.println("trying to continue path");
         LinkedList<Node> localPath = getNextRoomPath();
         System.err.println(localPath);
-        Agent possibleConflictingAgent  = RandomWalkClient.anticipationPlanning.addPath(localPath, owner);
+        Agent possibleConflictingAgent = RandomWalkClient.anticipationPlanning.addPath(localPath, owner);
         return localPath;
     }
     private LinkedList<Node> getNextRoomPath() {
@@ -64,10 +70,10 @@ public class SearchClient {
         else if(nextRoom == null && getNextRoom()) {
             return getPathToNextRoom();
         }
-        else if(currentRoom.contains(new Point(goalX, goalY))) {
+        else if(currentRoom.through.contains(new Point(goalX, goalY))) {
             return getPathToGoal();
         }
-        else if(nextRoom != null && (nextRoom.contains(owner.getCoordinates()) || (owner.isBoxAttached() && nextRoom.contains(owner.getAttachedBox().getCoordinates())))) {
+        else if(nextRoom != null && (nextRoom.through.contains(owner.getCoordinates()) || (owner.isBoxAttached() && nextRoom.through.contains(owner.getAttachedBox().getCoordinates())))) {
             currentRoom = nextRoom;
             if(getNextRoom())
                 return getPathToNextRoom();
@@ -86,7 +92,7 @@ public class SearchClient {
     private LinkedList<Node> getPathToNextRoom() {
         straightToGoal = false;
         System.err.println("finding path to next room!");
-        return FindRoomPath(pushingBox, nextRoom);
+        return FindRoomPath(pushingBox, nextRoom.through);
     }
     private LinkedList<Node> getPathToGoal() {
         straightToGoal = true;
@@ -118,13 +124,13 @@ public class SearchClient {
                 beforeFirstImmovableObstacle = firstSafeSpace;
             }
         }
-        currentRoom = roomPath.poll().through;
+        currentRoom = roomPath.poll();
         return true;
     }
 
     private boolean getNextRoom() {
         if(roomPath!= null && !roomPath.isEmpty()) {
-            nextRoom = roomPath.poll().through;
+            nextRoom = roomPath.poll();
             return true;
         }
         else {
