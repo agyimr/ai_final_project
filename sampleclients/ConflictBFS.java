@@ -23,7 +23,16 @@ public class ConflictBFS {
 		PriorityQueue<Cnode> explored = new PriorityQueue<Cnode>();
 		PriorityQueue<Cnode> frontier = new PriorityQueue<Cnode>();
 		List<Command> path = new ArrayList<Command>();
-		
+
+		System.err.println("\n locked");
+		for(Point p : locked){
+			System.err.println(p.toString());
+		}
+		System.err.println("\n startlocked");
+		for(Point p : startLocked){
+			System.err.println(p.toString());
+		}
+
 		//Add the current agent position to explored
 		frontier.add(new Cnode(pos,0));
 

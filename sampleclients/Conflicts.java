@@ -74,7 +74,7 @@ public class Conflicts {
 
 
 		System.err.println(rec+" Conflict partner:" + conflictPartner.toString() );
-		if(conflictPartner.isMovingBox()){
+		if(conflictPartner.isWithBox()){
             System.err.println("With box "+conflictPartner.getAttachedBox().toString());
         }
 
@@ -120,7 +120,7 @@ public class Conflicts {
         }
 		List<Point> agentPos = new ArrayList<Point>();
 		agentPos.add(agent1.getCoordinates());
-		if (agent1.isMovingBox()) {
+		if (agent1.isWithBox()) {
             System.err.println("isMovingBox");
 			agentPos.add(agent1.getAttachedBox().getCoordinates());
 		}
@@ -235,7 +235,7 @@ public class Conflicts {
         List<Point> pos = new ArrayList<Point>();
         startLocked.add(posKing);
         pos.add(posKing);
-        if (kingAgent.isBoxAttached()) {
+        if (kingAgent.isWithBox()) {
             Point posBox = kingAgent.getAttachedBox().getCoordinates();
             pos.add(posBox);
             startLocked.add(posBox);
@@ -243,13 +243,14 @@ public class Conflicts {
 
         List<Point> pawnAgentPos = new LinkedList<Point>();
         pawnAgentPos.add(new Point(pawnAgent.getX(), pawnAgent.getY()));
-        if (pawnAgent.isMovingBox()) {
+        if (pawnAgent.isWithBox()) {
             pawnAgentPos.add(pawnAgent.getAttachedBox().getCoordinates());
         }
-
+        System.err.println("\n posKing: "+posKing.toString());
         List<Point> locked = new ArrayList<Point>();
         Command tmpC;
         locked.addAll(pos);
+
         if(mps == -1){
             mps = kingAgent.path.size();
         }else {
@@ -257,6 +258,7 @@ public class Conflicts {
                 mps = kingAgent.path.size();
             }
         }
+        System.err.println("mps:"+mps);
         for (int i = 0; i < mps; i++) {
             tmpC = kingAgent.getCommand(i);
             pos = tmpC.getNext(pos);
@@ -268,7 +270,10 @@ public class Conflicts {
 
         }
 
-
+        if(mps == kingAgent.path.size()){
+            mps = -1;
+        }
+        System.err.println("mps:"+mps);
         List<Command> solution = ConflictBFS.doBFS(locked, pawnAgentPos, startLocked,true,true,reversed);
         if (solution.size() == 0) {
             System.err.println("\nPLANMERGE FOUND NO SOLUTION while considering other agents");
@@ -291,6 +296,11 @@ public class Conflicts {
                         System.err.println("PROBLEM ! UNSAFE HANDLE CONFLICT");
                     }
                     pawnAgent.handleConflict(solution,false);
+                    System.err.println("\n path before reversion");
+                    System.err.println("size: "+solution.size());
+                    for(Command n : solution){
+                        System.err.println(n.toString());
+                    }
                     System.err.println("---- PLANMERGE end ----");
                     return planMerge(pawnAgent,kingAgent,mps,true,involved,original,rec);
                 }
