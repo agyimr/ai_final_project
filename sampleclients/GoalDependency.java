@@ -28,12 +28,6 @@ public class GoalDependency {
                     }
                 }
 
-
-
-                //if (mainBoard.isGoal((int)cur.getPos().getX(),(int)cur.getPos().getY())) {
-                //   obstructions.put(g, cur.getGoalSet());
-                //}
-
                 LinkedList<GDNode> neighbours = getNeighbours(cur, goals); //TODO:board change again
 
                 for (GDNode n : neighbours) {
@@ -48,6 +42,7 @@ public class GoalDependency {
         tmp = checkDoubleDependencies(tmp);
         for (Goal key : tmp.keySet()) {//Loop through goalSet
             key.deps = tmp.get(key);
+            key.obs = obstructions.get(key);
         }
 
         System.err.println("-----------------------------------------------");
@@ -159,21 +154,13 @@ public class GoalDependency {
                 pos = new Point(cur.getPos().x+1,cur.getPos().y);
             }
             BasicObject mapEntry = mainBoard.getElement(pos.x,pos.y);
-            //if(mapEntry != null) {
-            // int mapEntryX = mapEntry.getX();
-            //int mapEntryY = mapEntry.getY();
             if (!mainBoard.isWall((int)pos.getX(), (int)pos.getY())) {
                 List<Goal> s = cur.getGoalSet();
                 if (mainBoard.isGoal((int)pos.getX(), (int)pos.getY())){
-                    //for (Goal g : goals) {
-                    // if (g.getX() == pos.x && g.getY() == pos.y) {
                     s.add((Goal)mapEntry);
-                    //  }
-                    // }
                 }
                 neighbours.add(new GDNode(pos, cur, s));
             }
-            // }
         }
         return neighbours;
     }
