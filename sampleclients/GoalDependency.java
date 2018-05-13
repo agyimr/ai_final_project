@@ -8,8 +8,11 @@ public class GoalDependency {
     public static MainBoard mainBoard = RandomWalkClient.gameBoard;
     public static void getGoalDependency(){
         System.err.println( "GoalDep started" );
+        boolean pathToClosestBoxFound = false;
+        boolean pathToClosestAgentFoud = false;
         List<Goal> goals = MainBoard.allGoals;
         Map<Goal,List<Goal>> obstructions = new HashMap<Goal,List<Goal>>();
+        String boxColor = getBoxColor();
 
         for (Goal g : goals) {
             PriorityQueue<GDNode> explored = new PriorityQueue<GDNode>();
@@ -21,12 +24,20 @@ public class GoalDependency {
                 GDNode cur = frontier.poll();
                 explored.add(cur);
 
-                if(mainBoard.isBox((int)cur.getPos().getX(),(int)cur.getPos().getY())){
-                    if(Character.toLowerCase(mainBoard.getElement((int)cur.getPos().getX(),(int)cur.getPos().getY()).getID()) == g.getID()){
-                        obstructions.put(g, cur.getGoalSet());
+                if(!pathToClosestBoxFound && mainBoard.isBox((int)cur.getPos().getX(),(int)cur.getPos().getY()) && Character.toLowerCase(mainBoard.getElement((int)cur.getPos().getX(),(int)cur.getPos().getY()).getID()) == g.getID()){
+                        pathToClosestBoxFound = true;
                         continue;
-                    }
                 }
+
+                if(!pathToClosestAgentFoud && mainBoard.isAgent((int)cur.getPos().getX(),(int)cur.getPos().getY()) && ((Agent) mainBoard.getElement((int)cur.getPos().getX(),(int)cur.getPos().getY())).getColor().equals() ){
+                    pathToClosestAgentFoud = true;
+                    continue;
+                }
+
+                if(pathToClosestAgentFoud && pathToClosestBoxFound) {
+                    obstructions.put(g, cur.getGoalSet());
+                }
+
 
                 LinkedList<GDNode> neighbours = getNeighbours(cur, goals); //TODO:board change again
 
