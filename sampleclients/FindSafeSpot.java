@@ -76,6 +76,9 @@ public class FindSafeSpot {
         }
         */
         System.err.println("safeSpot " + startPos + " -> " + bestSpot);
+        if(bestSpot.x == startPos.x && bestSpot.y == startPos.y){
+            return null;
+        }
         return bestSpot;
         //return null;
     }
@@ -224,7 +227,7 @@ public class FindSafeSpot {
         private static boolean isAllowed (Point cand){
             int x = cand.x;
             int y = cand.y;
-            if (notWithinMapConstraints(x, y) || map.isWall(x, y) || ( IamBox && map.isBox(x, y)) || (!IamBox && (map.isBox(x, y) || map.isAgent(x, y)))) {
+            if (notWithinMapConstraints(x, y) || map.isWall(x, y) || (!IamBox && (map.isBox(x, y) || map.isAgent(x, y)))) {
                 return false;
             }
 

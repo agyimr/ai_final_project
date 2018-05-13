@@ -8,7 +8,7 @@ import java.util.List;
 
 public class Estimator {
     static int STRICT_PUNISHMENT_FOR_AGENT_USAGE = 10000;
-    static int MILD_PUNISHMENT_FOR_AGENT_USAGE = 1;
+    static int MILD_PUNISHMENT_FOR_AGENT_USAGE = 5;
 
     public static PathWithObstacles estimatePath(Point from, Section to, Section through, int beginning_path_length) {
         Point closest_point = to.getClosestPoint(from);

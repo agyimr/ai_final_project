@@ -24,6 +24,7 @@ public class RoomAStar {
     }
 
     public ArrayList<Obstacle> getObstacles(Point from, Point to) {
+        if (from.equals(to)) return new ArrayList<>();
         LinkedList<Node> path = this.getRoomPath(from, to);
         if (path == null) return null; // meaning there is no possible path there.
         if (path.size() == 0) throw new NullPointerException("Something is really wrong...");
@@ -31,6 +32,7 @@ public class RoomAStar {
     }
 
     public ArrayList<Obstacle> getObstacles(Point from, Section to) {
+        if (to.contains(from)) return new ArrayList<>();
         LinkedList<Node> path = this.getRoomPathToSection(from, to);
         if (path == null) return null; // meaning no path possible there.
         if (path.size() == 0) throw new NullPointerException("Something is really wrong...");
@@ -38,6 +40,7 @@ public class RoomAStar {
     }
 
     private LinkedList<Node> getRoomPathToSection(Point from, Section to) {
+
         ArrayList<Node> closed_set = new ArrayList<>();
         PriorityQueue<Node> open_set = new PriorityQueue<>(10, Comparator.comparingInt((n) -> n.f));
         Node init_node = new Node(null, passages.section_map[from.y][from.x], from, null, 0,
@@ -119,6 +122,23 @@ public class RoomAStar {
     }
 
     public LinkedList<Node> getRoomPath(Point from, Point to) {
+        // if the same then return current room
+        if (from.equals(to)) {
+            Section s = null;
+            for (Section s_c : passages.section_map[from.y][from.x]) {
+                if (s_c != null) s = s_c;
+            }
+            Node current_room = new Node(null, passages.section_map[from.y][from.x], from, s,
+                    0, 0, 0, new ArrayList<>());
+            LinkedList<Node> n = new LinkedList<>();
+            n.add(current_room);
+            return n;
+        }
+
+        // checking whether it is even possible.
+        LinkedList<Node> emptyRoomPath = getEmptyRoomPath(from, to);
+        if (emptyRoomPath == null) return null;
+
         ArrayList<Node> closed_set = new ArrayList<>();
         PriorityQueue<Node> open_set = new PriorityQueue<>(10, Comparator.comparingInt((n) -> n.f));
         Node init_node = new Node(null, passages.section_map[from.y][from.x], from, null, 0,
