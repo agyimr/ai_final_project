@@ -112,6 +112,7 @@ public class Agent extends MovingObject {
             if(RandomWalkClient.gameBoard.isGoal(getX(), getY())) {
                 safeSpot = FindSafeSpot.safeSpotBFS(new Point(getX(), getY()));
                 if(safeSpot.x == getX() && safeSpot.y == getY()) {
+                    safeSpot = null;
                     changeState(jobless);
                 } else {
                     findPathToSpot(safeSpot.x, safeSpot.y);
@@ -374,12 +375,14 @@ public class Agent extends MovingObject {
                     safeSpot = FindSafeSpot.safeSpotBFS(new Point(attachedBox.getX(), attachedBox.getY()));
                     findPathWithBox(safeSpot.x, safeSpot.y);
 
+
                 } else {
                     if (findPathWithBox(attachedBox.assignedGoal.getX(), attachedBox.assignedGoal.getY())) {
                         changeState(possibleStates.movingBox);
                     } else {
                         safeSpot = FindSafeSpot.safeSpotBFS(new Point(attachedBox.getX(), attachedBox.getY()));
                         findPathWithBox(safeSpot.x, safeSpot.y);
+
                     }
                 }
                 ObstacleArbitrator.jobIsDone(this);
@@ -390,7 +393,6 @@ public class Agent extends MovingObject {
             safeSpot = FindSafeSpot.safeSpotBFS(new Point(getX(), getY()));
             findPathToSpot(safeSpot.x, safeSpot.y);
             ObstacleArbitrator.jobIsDone(this);
-            throw new NegativeArraySizeException();
         }
     }
     private void removeObstacle() {
