@@ -59,9 +59,9 @@ public class Box extends MovingObject {
             if(sameColor.isJobless()) sameColor.moveYourAss();
         }
         System.err.println(assignedGoal.obs);
-        if(!assignedGoal.obs.isEmpty()) {
-            throw new NullPointerException();
-        }
+//        if(!assignedGoal.obs.isEmpty()) {
+//            throw new NullPointerException();
+//        }
     }
     public boolean isBeingMoved() {
         if(assignedAgent == null) return false;

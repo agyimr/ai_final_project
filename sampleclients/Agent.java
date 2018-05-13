@@ -7,7 +7,7 @@ import java.util.List;
 
 import static sampleclients.Agent.possibleStates.*;
 import static sampleclients.Command.type;
-
+//TODO reset goal and box upon completion of job
 public class Agent extends MovingObject {
     private Box attachedBox = null;
     private SearchClient pathFindingEngine;
@@ -114,7 +114,7 @@ public class Agent extends MovingObject {
             System.err.println("Cant find box: ");
             if(RandomWalkClient.gameBoard.isGoal(getX(), getY())) {
                 safeSpot = FindSafeSpot.safeSpotBFS(new Point(getX(), getY()));
-                if(safeSpot.x == getX() && safeSpot.y == getY()) {
+                if(safeSpot == null || (safeSpot.x == getX() && safeSpot.y == getY())) {
                     safeSpot = null;
                     changeState(jobless);
                 } else {
@@ -382,28 +382,35 @@ public class Agent extends MovingObject {
 
     }
     private void findObstaclePath() {
-        if (isBoxAttached()) {
-            if (nextToBox(attachedBox)) {
-                if (attachedBox.assignedGoal == null && !attachedBox.tryToFindAGoal()) {
-                    safeSpot = FindSafeSpot.safeSpotBFS(new Point(attachedBox.getX(), attachedBox.getY()));
-                    findPathWithBox(safeSpot.x, safeSpot.y);
-
-                } else {
-                    if (findPathWithBox(attachedBox.assignedGoal.getX(), attachedBox.assignedGoal.getY())) {
-                        changeState(possibleStates.movingBox);
-                    } else {
+        try {
+            if (isBoxAttached()) {
+                if (nextToBox(attachedBox)) {
+                    if (attachedBox.assignedGoal == null && !attachedBox.tryToFindAGoal()) {
                         safeSpot = FindSafeSpot.safeSpotBFS(new Point(attachedBox.getX(), attachedBox.getY()));
                         findPathWithBox(safeSpot.x, safeSpot.y);
+
+                    } else {
+                        if (findPathWithBox(attachedBox.assignedGoal.getX(), attachedBox.assignedGoal.getY())) {
+                            changeState(possibleStates.movingBox);
+                        } else {
+                            safeSpot = FindSafeSpot.safeSpotBFS(new Point(attachedBox.getX(), attachedBox.getY()));
+                            findPathWithBox(safeSpot.x, safeSpot.y);
+                        }
                     }
+                    ObstacleArbitrator.jobIsDone(this);
+                } else {
+                    findPathToBox(attachedBox);
                 }
-                ObstacleArbitrator.jobIsDone(this);
             } else {
-                findPathToBox(attachedBox);
+                safeSpot = FindSafeSpot.safeSpotBFS(new Point(getX(), getY()));
+                findPathToSpot(safeSpot.x, safeSpot.y);
+                ObstacleArbitrator.jobIsDone(this);
             }
-        } else {
-            safeSpot = FindSafeSpot.safeSpotBFS(new Point(getX(), getY()));
-            findPathToSpot(safeSpot.x, safeSpot.y);
+        }
+        catch (NullPointerException exc) {
+            System.err.println("Can't remove obstacle");
             ObstacleArbitrator.jobIsDone(this);
+            changeState(unassigned);
         }
     }
     private void removeObstacle() {
@@ -429,8 +436,8 @@ public class Agent extends MovingObject {
                     changeState(unassigned);
                 }
                 else {
-                    safeSpot = FindSafeSpot.safeSpotBFS(new Point(getX(), getY()));
-                    findPathToSpot(safeSpot.x, safeSpot.y);
+                    safeSpot = null;
+                    findObstaclePath();
                 }
             }
         }
