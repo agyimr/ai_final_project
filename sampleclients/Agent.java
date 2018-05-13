@@ -407,6 +407,7 @@ public class Agent extends MovingObject {
         }
     }
     private void removeObstacle() {
+        System.err.println(attachedBox);
         if(!executePath()) {
             if (safeSpot == null) { // I either just arrived at the box position or havent found a path at all
                 findObstaclePath();
@@ -546,7 +547,7 @@ public class Agent extends MovingObject {
         return (pathLength < offset);
     }
     public void rescueIsNotNeeded() {
-        obstacleCounter = 1;
+        obstacleCounter = 2;
     }
     public void handleConflict(List<Command> commands, boolean conflictOrigin) {
         boolean needsToMove = false;
