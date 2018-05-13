@@ -12,12 +12,21 @@ public class GoalDependency {
         boolean pathToClosestAgentFoud = false;
         List<Goal> goals = MainBoard.allGoals;
         Map<Goal,List<Goal>> obstructions = new HashMap<Goal,List<Goal>>();
-        String boxColor = getBoxColor();
+        String boxColor;
 
         for (Goal g : goals) {
             PriorityQueue<GDNode> explored = new PriorityQueue<GDNode>();
             PriorityQueue<GDNode> frontier = new PriorityQueue<GDNode>();
-
+            boxColor = getBoxColor(g);
+            System.err.println("\n current goal");
+            System.err.println(g.toString());
+            System.err.println(boxColor);
+            pathToClosestBoxFound = false;
+            pathToClosestAgentFoud = false;
+            if(boxColor == null){
+                System.err.println("No box for this goal");
+                throw new NegativeArraySizeException();
+            }
             //add start to frontier
             frontier.add(new GDNode(new Point(g.getX(), g.getY()), null, new ArrayList<Goal>()));
             while (!frontier.isEmpty()) {
@@ -25,17 +34,26 @@ public class GoalDependency {
                 explored.add(cur);
 
                 if(!pathToClosestBoxFound && mainBoard.isBox((int)cur.getPos().getX(),(int)cur.getPos().getY()) && Character.toLowerCase(mainBoard.getElement((int)cur.getPos().getX(),(int)cur.getPos().getY()).getID()) == g.getID()){
-                        pathToClosestBoxFound = true;
-                        continue;
+                    pathToClosestBoxFound = true;
+                    System.err.println("\n Box found");
+                    System.err.println(g.toString());
+                    System.err.println(((Box) mainBoard.getElement((int)cur.getPos().getX(),(int)cur.getPos().getY())).toString());
                 }
 
-                if(!pathToClosestAgentFoud && mainBoard.isAgent((int)cur.getPos().getX(),(int)cur.getPos().getY()) && ((Agent) mainBoard.getElement((int)cur.getPos().getX(),(int)cur.getPos().getY())).getColor().equals() ){
+                if(!pathToClosestAgentFoud && mainBoard.isAgent((int)cur.getPos().getX(),(int)cur.getPos().getY()) && ((Agent) mainBoard.getElement((int)cur.getPos().getX(),(int)cur.getPos().getY())).getColor().equals(boxColor) ){
                     pathToClosestAgentFoud = true;
-                    continue;
+                    System.err.println("\n Agent found");
+                    System.err.println(g.toString());
+                    System.err.println(((Agent) mainBoard.getElement((int)cur.getPos().getX(),(int)cur.getPos().getY())).toString());
                 }
 
                 if(pathToClosestAgentFoud && pathToClosestBoxFound) {
                     obstructions.put(g, cur.getGoalSet());
+                    System.err.println("obstructions found");
+                    for(Goal g2 : cur.getGoalSet()){
+                        System.err.println(g2.toString());
+                    }
+                    break;
                 }
 
 
@@ -121,7 +139,14 @@ public class GoalDependency {
             return tmpReturn;
         }
 
-
+    private static String getBoxColor(Goal g){
+        for (Box b : MainBoard.allBoxes){
+            if(Character.toLowerCase(b.getID()) == g.getID()){
+                return b.getColor();
+            }
+        }
+        return null;
+    }
 
 
 
