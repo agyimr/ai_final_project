@@ -142,7 +142,7 @@ public class Node {
         return (this.boxes[y][x] == null) && !RandomWalkClient.gameBoard.isWall(x, y);
     }
 
-    private boolean boxAt(int x, int y) {
+    public boolean boxAt(int x, int y) {
         return this.boxes[y][x] != null;
     }
 
@@ -188,6 +188,9 @@ public class Node {
             return false;
         Node other = (Node) obj;
         if (this.agentY != other.agentY || this.agentX != other.agentX)
+            return false;
+        if(this.action.actType == type.Noop && other.action.actType == type.Noop &&
+                this.timeFrame != other.timeFrame)
             return false;
         return Arrays.deepEquals(this.boxes, other.boxes);
     }

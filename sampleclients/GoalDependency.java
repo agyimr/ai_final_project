@@ -76,7 +76,6 @@ public class GoalDependency {
 
                 if (tmp.containsKey(g)) {
                    // System.err.println("rech: "+g.getID());
-                    System.err.println();
                     if(tmp.get(g).contains(key)){
                         System.err.println("Doubledep Reached :)");
 

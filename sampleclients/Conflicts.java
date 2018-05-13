@@ -152,7 +152,7 @@ public class Conflicts {
 	private static boolean noopFix(Agent pawnAgent, Agent kingAgent,char original,List<Agent> involved,int mps, int rec){
         System.err.println("----- NoopFix start -------");
 		//Find next two points for king, if intersects with pawnAgent pos, return false, else true.
-        if(kingAgent.isWaiting() || pawnAgent.isWaiting() || pawnAgent.path.isEmpty() || kingAgent.path.isEmpty()){
+        if(kingAgent.isWaiting() || pawnAgent.isWaiting() ||  pawnAgent.path.isEmpty() || kingAgent.path.isEmpty()){
             System.err.println("----- NoopFix end -------");
             return false;
         }
@@ -319,7 +319,7 @@ public class Conflicts {
             System.err.println("---- PLANMERGE end ----");
             return false;
         }
-        if(!kingAgent.hasMoved() && kingAgent.path!= null && kingAgent.path.peek().action.actType != Command.type.Noop) {
+        if(!kingAgent.hasMoved() && kingAgent.path!= null && !kingAgent.path.isEmpty() && kingAgent.path.peek().action.actType != Command.type.Noop) {
             kingAgent.handleConflict(rec, kingAgent.getID() == original,false);
         }
 

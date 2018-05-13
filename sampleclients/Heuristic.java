@@ -32,10 +32,7 @@ public abstract class Heuristic implements Comparator<Node> {
 
 
         if(goalRoom != null) {
-            if(n.action.actType == Command.type.Noop && n.parent != null) {
-                value = goalRoom.getDistanceFromPoint(new Point(n.boxX, n.boxY));
-            }
-            else if(pushingBox) {
+            if(pushingBox) {
                 value = getBoxHeuristic(n, goalRoom.getDistanceFromPoint(new Point(n.boxX, n.boxY)));
             }
             else {
@@ -43,10 +40,7 @@ public abstract class Heuristic implements Comparator<Node> {
             }
         }
         else {
-            if(n.action.actType == Command.type.Noop && n.parent != null) {
-                value = ManhattanDistance(n.boxX, n.boxY, goalX, goalY);
-            }
-            else if(pushingBox) {
+            if(pushingBox) {
                 value = getBoxHeuristic(n, ManhattanDistance(n.boxX, n.boxY, goalX, goalY));
             }
             else {
@@ -63,25 +57,31 @@ public abstract class Heuristic implements Comparator<Node> {
         if(n.boxX == -1) return h(n.parent);
         if(n.boxes[n.boxY][n.boxX] == owner.getAttachedBox()) {
             if(n.action.actType == Command.type.Pull) {
-                return distance + 2;
+                return distance + 1;
             }
             return distance;
         }
         else if(n.boxes[n.boxY][n.boxX].assignedAgent != null) {
-            return h(n.parent) + 8;
-        }
-        else{
             return h(n.parent) + 4;
+        }
+        else if(n.boxes[n.boxY][n.boxX].atGoalPosition()) return h(n.parent) + 4;
+        else{
+            return h(n.parent) + 1;
         }
     }
     private int getAgentHeuristic(Node n, int distance) {
-        if (n.action.actType == Command.type.Move )
-            return distance;
-        else if(n.boxX != -1){
-            if(n.boxes[n.boxY][n.boxX].assignedAgent != null) return distance + 4;
-            else if(n.boxes[n.boxY][n.boxX].atGoalPosition()) return distance + 8;
+        switch (n.action.actType) {
+            case Move:
+            case Noop:
+                return distance;
+            case Push:
+            case Pull:
+                if(n.boxes[n.boxY][n.boxX].assignedAgent != null) return distance + 8;
+                else if(n.boxes[n.boxY][n.boxX].atGoalPosition()) return distance + 4;
+                else return distance + 2;
+            default:
+                return Integer.MAX_VALUE;
         }
-        return distance + 2;
     }
 
     int ManhattanDistance(int x1, int y1, int x2, int y2) {

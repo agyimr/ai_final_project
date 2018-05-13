@@ -5,13 +5,11 @@ import java.awt.Point;
 public class FindSafeSpot {
 
     private static MainBoard map;
-    private static MainBoard nextMap;
     private static AnticipationPlanning anticiObj;
 
     public static Point safeSpotBFS(Point startPos) {
 
         map = RandomWalkClient.gameBoard;
-        nextMap = RandomWalkClient.nextStepGameBoard;
         anticiObj = RandomWalkClient.anticipationPlanning;
 
         List<ConflictNode> frontier = new ArrayList<ConflictNode>();
@@ -30,7 +28,9 @@ public class FindSafeSpot {
             frontier.remove(0);
             //goal check - Is this an empty spot? with perhabs area around it? or perhabs the highest anticipation clock relative to position,
             if(isMySpot(cur.getAgent())){
+                System.err.println(cur.getAgent());
                 return cur.getAgent();
+//                throw new NullPointerException();
             }
 
             if(bestSpot == null) {
@@ -46,7 +46,8 @@ public class FindSafeSpot {
 
             //Get neighbour states of cur
             List<ConflictNode> neighbours = getNeighbours(cur);
-
+            System.err.println("NEIGHBOURS: ");
+            System.err.println(neighbours);
             //add the current ConflictNode to explored
             explored.add(cur);
 
@@ -105,7 +106,7 @@ public class FindSafeSpot {
         private static boolean isMySpot(Point spot){
         //Maybe add area clear around spot, or maybe consider
             int earliestOcc = anticiObj.getEarliestOccupation(spot);
-            if(earliestOcc==-1 && isSpaceAround(spot)){
+            if(earliestOcc == -1 && isSpaceAround(spot) && map.isFree(spot.x, spot.y) && !map.isGoal(spot.x, spot.y)){
                 return true;
             }
             return false;
@@ -193,7 +194,7 @@ public class FindSafeSpot {
         private static boolean isAllowed (Point cand){
             int x = cand.x;
             int y = cand.y;
-            if (x < 0 || x >= map.getWidth() || y < 0 || y >= map.getHeight() || ( !map.isFree(x, y))) {
+            if (x < 0 || x >= map.getWidth() || y < 0 || y >= map.getHeight() || map.isWall(x, y) || map.isBox(x, y)) {
                 return false;
             }
 
@@ -205,7 +206,6 @@ public class FindSafeSpot {
 class ConflictNode {
     private final Point pos;
     private ConflictNode parent = null;
-    private Command c = null;
     private int Clock;
 
     public ConflictNode(Point pos, int Clock) {
@@ -219,13 +219,6 @@ class ConflictNode {
     }
     public ConflictNode getParent() {
         return parent;
-    }
-
-    public void setCommand(Command c) {
-        this.c = c;
-    }
-    public Command getCommand() {
-        return c;
     }
 
     public int getClock(){

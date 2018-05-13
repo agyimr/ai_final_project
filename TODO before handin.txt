@@ -1,0 +1,7 @@
+goal dependencies need to be improved. testing ground: MAIamGreedy.
+
+FindSafeSpot needs to be fixed
+
+Conflicts throw unhandled exceptions
+
+Room heuristics is slow as fuck
