@@ -42,8 +42,8 @@ public class Conflicts {
             if(!a.hasMoved()){
                 System.err.println("----FAIL SAFE Start----");
                 System.err.println("Agent "+a.getID()+" emergency acts");
-                //a.handleConflict(1,true,false);
-                a.act();
+                a.handleConflict(1,true,false);
+                //a.act();
                 System.err.println("----FAIL SAFE end----");
             }
         }
@@ -134,7 +134,9 @@ public class Conflicts {
 			}
 		}
 
-
+        if(conflictPos == null){
+		    return null;
+        }
 		BasicObject b = RandomWalkClient.gameBoard.getElement((int) conflictPos.getX(), (int) conflictPos.getY());
 		if(b == null){
 			b = RandomWalkClient.nextStepGameBoard.getElement((int) conflictPos.getX(), (int) conflictPos.getY());
