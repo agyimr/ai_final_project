@@ -9,6 +9,8 @@ public class FindSafeSpot {
 
     public static Point safeSpotBFS(Point startPos) {
 
+
+
         map = RandomWalkClient.gameBoard;
         anticiObj = RandomWalkClient.anticipationPlanning;
 
@@ -73,7 +75,7 @@ public class FindSafeSpot {
             return maxNode.getAgent();
         }
         */
-
+        System.err.println("safeSpot " + startPos + " -> " + bestSpot);
         return bestSpot;
         //return null;
     }
@@ -140,17 +142,13 @@ public class FindSafeSpot {
                 return 0;
             }
 
-           // int score = (bookingDistance - geoDistance) * Math.min((space-2)/2,1) + 3 * -geoDistance;
-
             double score = Math.max(0, space-2)^3 - (1-geoDistance)^2;//(1-geoDistance) + (1+geoDistance) * Math.max(space-2, 0);
 
             if(geoDistance * 2 < nextBooking) {
                 score *= 1.5;
             }
 
-            //score = bookingDistance * -geoDistance * space;
 
-            //System.err.println(spot.getX() + " " + spot.getY() + " " + score);
 //            minimize geoDistance = maximize -geoDistance
 //            maximize (bookingDistance - geoDistance)
 //            maximize space
