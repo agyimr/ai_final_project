@@ -84,7 +84,7 @@ public class Agent extends MovingObject {
     }
     private void checkPath() {
 
-        if(--obstacleCounter <= 0) {
+        if(--obstacleCounter > 0) {
             if(!myPathIsBlocked) {
                 obstacleCounter = 1;
             }
@@ -94,7 +94,7 @@ public class Agent extends MovingObject {
         else {
             myPathIsBlocked = false;
             clearPath();
-            changeState(beforeObstacleState);
+            changeState(beforeObstacleState); //Causes problems with looping. TODO
             beforeObstacleState = null;
         }
     }
@@ -115,7 +115,7 @@ public class Agent extends MovingObject {
             if(RandomWalkClient.gameBoard.isGoal(getX(), getY())) {
                 safeSpot = FindSafeSpot.safeSpotBFS(new Point(getX(), getY()));
                 if(safeSpot == null || (safeSpot.x == getX() && safeSpot.y == getY())) {
-                    safeSpot = null;
+                    safeSpot = null; //wat TODO
                     changeState(jobless);
                 } else {
                     findPathToSpot(safeSpot.x, safeSpot.y);
