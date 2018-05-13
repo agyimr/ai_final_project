@@ -227,6 +227,7 @@ public class Agent extends MovingObject {
     private void revertState() {
         if(previousState == waiting || previousState == inConflict) previousState = unassigned;
         if(previousState == null) throw new NegativeArraySizeException();
+        System.err.println("reverting state " + currentState + " to " + previousState);
         currentState = previousState;
         previousState = null;
     }
@@ -506,14 +507,25 @@ public class Agent extends MovingObject {
             issue.assignedAgent.finishTheJob();
         }
         nextBoxToPush = issue;
-        if(this.isMovingBox() && pathFindingEngine.inGoalRoom() && path.size() < offset) {
+        if(this.isMovingBox() && pathSmallerThanOffset(offset) ) {
             System.err.println("Finishing job first!");
             //just finish the job
         }
         else {
             System.err.println("Help is pending!");
             pendingHelp = true;
+            if(isJobless()) {
+                act();
+            }
         }
+    }
+    private boolean pathSmallerThanOffset(int offset) {
+        int pathLength;
+        pathLength = this.path.size();
+        if(! pathFindingEngine.inGoalRoom()) {
+            pathLength += pathFindingEngine.getNextRoomPathLengthEstimate();
+        }
+        return (pathLength < offset);
     }
     public void rescueIsNotNeeded() {
         obstacleCounter = 1;
