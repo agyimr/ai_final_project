@@ -630,4 +630,7 @@ public class Agent extends MovingObject {
     public boolean isWaiting(){
         return currentState == waiting || currentState == jobless || currentState == pathBlocked || currentState == unassigned;
     }
+    public boolean isWithBox(){
+        return isMovingBox() || (isBoxAttached() && nextToBox(attachedBox));
+    }
 }
