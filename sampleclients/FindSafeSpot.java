@@ -123,14 +123,14 @@ public class FindSafeSpot {
             // We try to maximize the score we return (0 = Simba, you must never there)
 
             if(RandomWalkClient.gameBoard.isGoal((int) spot.getX(), (int) spot.getY())) {
-                return 0;
+                return -99999999;
             }
 
             // Geographical distance until the spot
             int geoDistance = localClock - anticiObj.getClock();
 
             if(geoDistance == 0) {
-                return 0;
+                return -99999998;
             }
 
             // Number of free case around the spot
@@ -149,19 +149,23 @@ public class FindSafeSpot {
 
             // If cell was booked between the instant I start to my position and I arrive on the cell
             if(bookingDistance - geoDistance < 0) {
-                return 0;
+                return -99999997;
             }
 
             // If I am a box and I want to reach a box
             if( IamBox && map.isBox(spot.x, spot.y)) {
-                return 0;
+                return -99999996;
+            }
+
+            if(space <= 2) {
+                return -99999995;
             }
 
             // More the score is high, more the spot is atractive
 
-            double score = Math.max(0, space-2)^3; // A tunnel don't attract, a cell with a lot of space around attract
+           // double score = Math.max(0, space-2)^3; // A tunnel don't attract, a cell with a lot of space around attract
 
-            score += nextBooking;
+            double score = -nextBooking / space * geoDistance;
 
             //double score = Math.max(0, space-2)^3 ;//- (1-geoDistance)^2;//(1-geoDistance) + (1+geoDistance) * Math.max(space-2, 0);
 /*
