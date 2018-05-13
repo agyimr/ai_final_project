@@ -42,7 +42,8 @@ public class Conflicts {
             if(!a.hasMoved()){
                 System.err.println("----FAIL SAFE Start----");
                 System.err.println("Agent "+a.getID()+" emergency acts");
-                a.handleConflict(1,true,false);
+                //a.handleConflict(1,true,false);
+                a.act();
                 System.err.println("----FAIL SAFE end----");
             }
         }
