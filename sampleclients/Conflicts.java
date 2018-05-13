@@ -121,6 +121,7 @@ public class Conflicts {
         }
 		List<Point> agentPos = new ArrayList<Point>();
 		agentPos.add(agent1.getCoordinates());
+        System.err.println(agent1.getAttachedBox().toString());
 		if (agent1.isWithBox()) {
             System.err.println("isMovingBox");
 			agentPos.add(agent1.getAttachedBox().getCoordinates());
