@@ -9,7 +9,7 @@ public class FindSafeSpot {
     private static boolean IamBox;
     public static Point safeSpotBFS(Point startPos) {
         System.err.println("ENTERING SAFESPOT \n");
-
+        System.err.println("START POS: " + startPos + "\n");
 
         map = RandomWalkClient.gameBoard;
         anticiObj = RandomWalkClient.anticipationPlanning;
@@ -30,7 +30,7 @@ public class FindSafeSpot {
             frontier.remove(0);
             //goal check - Is this an empty spot? with perhabs area around it? or perhabs the highest anticipation clock relative to position,
             if(isMySpot(cur.getAgent())){
-                System.err.println(cur.getAgent());
+                System.err.println("SAFESPOT: " + cur.getAgent());
                 return cur.getAgent();
 //                throw new NullPointerException();
             }
@@ -48,8 +48,6 @@ public class FindSafeSpot {
 
             //Get neighbour states of cur
             List<ConflictNode> neighbours = getNeighbours(cur);
-            System.err.println("NEIGHBOURS: ");
-            System.err.println(neighbours);
             //add the current ConflictNode to explored
             explored.add(cur);
 
@@ -77,8 +75,10 @@ public class FindSafeSpot {
         */
         System.err.println("safeSpot " + startPos + " -> " + bestSpot);
         if(bestSpot.x == startPos.x && bestSpot.y == startPos.y){
+            System.err.println("SAFESPOT NOT FOUND");
             return null;
         }
+        System.err.println("SAFESPOT: " + bestSpot);
         return bestSpot;
         //return null;
     }
