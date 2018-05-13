@@ -162,21 +162,11 @@ public class FindSafeSpot {
             }
 
             // More the score is high, more the spot is atractive
+            // maximize nextBooking
+            // maximize space
+            // minimize geoDistance
+            double score = nextBooking * space / geoDistance;
 
-           // double score = Math.max(0, space-2)^3; // A tunnel don't attract, a cell with a lot of space around attract
-
-            double score = -nextBooking / space * geoDistance;
-
-            //double score = Math.max(0, space-2)^3 ;//- (1-geoDistance)^2;//(1-geoDistance) + (1+geoDistance) * Math.max(space-2, 0);
-/*
-            if(geoDistance * 2 < nextBooking) {
-                score *= 1.5;
-            }*/
-
-
-//            minimize geoDistance = maximize -geoDistance
-//            maximize (bookingDistance - geoDistance)
-//            maximize space
             return score;
         }
 

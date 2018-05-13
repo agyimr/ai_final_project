@@ -7,6 +7,7 @@ import java.util.*;
 public class Goal extends BasicObject {
     public Box assignedBox = null;
     public List<Goal> deps = new ArrayList<Goal>();
+    public List<Goal> obs = new ArrayList<>();
     public Goal( char id, int y, int x ) {
         super( y, x,id, "Goal");
     }
