@@ -119,6 +119,10 @@ public class RoomAStar {
     }
 
     public LinkedList<Node> getRoomPath(Point from, Point to) {
+        // checking whether it is even possible.
+        LinkedList<Node> emptyRoomPath = getEmptyRoomPath(from, to);
+        if (emptyRoomPath == null) return null;
+
         ArrayList<Node> closed_set = new ArrayList<>();
         PriorityQueue<Node> open_set = new PriorityQueue<>(10, Comparator.comparingInt((n) -> n.f));
         Node init_node = new Node(null, passages.section_map[from.y][from.x], from, null, 0,
