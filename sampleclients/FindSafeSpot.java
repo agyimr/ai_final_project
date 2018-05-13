@@ -117,40 +117,54 @@ public class FindSafeSpot {
 
         private static double estimateSpot(Point spot, int localClock) {
 
+            // We try to maximize the score we return (0 = Simba, you must never there)
 
             if(RandomWalkClient.gameBoard.isGoal((int) spot.getX(), (int) spot.getY())) {
                 return 0;
             }
 
+            // Geographical distance until the spot
             int geoDistance = localClock - anticiObj.getClock();
 
             if(geoDistance == 0) {
                 return 0;
             }
 
+            // Number of free case around the spot
             int space = getSpacenessAround(spot);
 
+            // Get the next instant where spot will be booked
             int nextBooking = anticiObj.getEarliestOccupation(spot);
 
+            // If no booking then next booking will be in a far futur
             if(nextBooking == -1) {
-                nextBooking = anticiObj.getClock() + RandomWalkClient.gameBoard.getHeight() + RandomWalkClient.gameBoard.getWidth(); //TODO replace with large value
+                nextBooking = anticiObj.getClock() + 10000;
             }
 
-            int bookingDistance = (nextBooking - anticiObj.getClock()) - geoDistance;
+            // Distance to next booking WHEN I will reach the spot
+            int bookingDistance = nextBooking - anticiObj.getClock();
 
-            if(IamBox && map.isBox(spot.x, spot.y)) {
-                //TODO not select this one if possible
-            }
-
-            if(bookingDistance < 0) {
+            // If cell was booked between the instant I start to my position and I arrive on the cell
+            if(bookingDistance - geoDistance < 0) {
                 return 0;
             }
 
-            double score = Math.max(0, space-2)^3 - (1-geoDistance)^2;//(1-geoDistance) + (1+geoDistance) * Math.max(space-2, 0);
+            // If I am a box and I want to reach a box
+            if( IamBox && map.isBox(spot.x, spot.y)) {
+                return 0;
+            }
 
+            // More the score is high, more the spot is atractive
+
+            double score = Math.max(0, space-2)^3; // A tunnel don't attract, a cell with a lot of space around attract
+
+            score += nextBooking;
+
+            //double score = Math.max(0, space-2)^3 ;//- (1-geoDistance)^2;//(1-geoDistance) + (1+geoDistance) * Math.max(space-2, 0);
+/*
             if(geoDistance * 2 < nextBooking) {
                 score *= 1.5;
-            }
+            }*/
 
 
 //            minimize geoDistance = maximize -geoDistance
@@ -159,19 +173,20 @@ public class FindSafeSpot {
             return score;
         }
 
-        private static int getSpacenessAround(Point spot) {//TODO check all 8 places
-                if(spot.x == 0 || spot.x == map.getWidth() - 1 || spot.y == 0 || spot.y == map.getHeight() - 1) {
-                    return 0;
+        private static int getSpacenessAround(Point spot) {
+            if(spot.x == 0 || spot.x == map.getWidth() - 1 || spot.y == 0 || spot.y == map.getHeight() - 1) {
+                return 0;
             }
 
             int space = 0;
-            //Unassigned boxes TODO
+
             if(!map.isWall(spot.x+1, spot.y)) { //right
                 space++;
             }
             if(!map.isWall(spot.x-1, spot.y)) { //left
                 space++;
             }
+
             if(!map.isWall(spot.x, spot.y-1)) {//top
                 space++;
             }
@@ -179,6 +194,19 @@ public class FindSafeSpot {
                 space++;
             }
 
+            if(!map.isWall(spot.x+1, spot.y-1)) { //top right
+                space++;
+            }
+            if(!map.isWall(spot.x-1, spot.y+1)) { //bottom left
+                space++;
+            }
+
+            if(!map.isWall(spot.x-1, spot.y-1)) { //top left
+                space++;
+            }
+            if(!map.isWall(spot.x+1, spot.y+1)) { //bottom right
+                space++;
+            }
             return space;
         }
 
@@ -196,7 +224,7 @@ public class FindSafeSpot {
         private static boolean isAllowed (Point cand){
             int x = cand.x;
             int y = cand.y;
-            if (notWithinMapConstraints(x, y) || map.isWall(x, y) || ( IamBox ) || (!IamBox && (map.isBox(x, y) || map.isAgent(x, y)))) {
+            if (notWithinMapConstraints(x, y) || map.isWall(x, y) || ( IamBox && map.isBox(x, y)) || (!IamBox && (map.isBox(x, y) || map.isAgent(x, y)))) {
                 return false;
             }
 
