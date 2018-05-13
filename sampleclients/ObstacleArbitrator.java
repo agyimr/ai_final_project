@@ -11,10 +11,10 @@ import static sampleclients.RandomWalkClient.gameBoard;
 public class ObstacleArbitrator {
     public static Map<Agent, Agent> helpersDictionary= new HashMap<>();
 
-    public static Point processObstacles(Agent owner, ArrayList<Obstacle> obstacles) {
+    public static Point processObstacles(Agent owner, ArrayList<Obstacle> obstacles, BasicObject goalObject) {
         Point anythingProcessed = null;
         for(Obstacle current : obstacles) {
-            if(owner.getAttachedBox() != current.obstacle) {
+            if(owner.getAttachedBox().getID() != current.obstacle.getID()) {
                 owner.obstacles.add(current.obstacle);
                 if(!current.obstacle.isBeingMoved()) {
                     helpersDictionary.put(current.rescueAgent, owner);

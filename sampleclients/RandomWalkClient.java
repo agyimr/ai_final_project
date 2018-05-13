@@ -25,7 +25,7 @@ public class RandomWalkClient {
         assignGoals();
         System.err.println(gameBoard);
         System.err.println(nextStepGameBoard);
-        //throw new NullPointerException(); TODO stop here for debugging in preprocessing
+        //throw new NullPointerException(); //TODO stop here for debugging in preprocessing
 	}
 
     public static void assignGoals() {
