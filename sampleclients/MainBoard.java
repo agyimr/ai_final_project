@@ -200,6 +200,15 @@ public class MainBoard {
         }
         return (isGoal(getElement(x, y).getID()));
     }
+    public Goal getGoal (int x, int y) {
+        BasicObject element = getElement(x, y);
+        if(element instanceof Goal) return (Goal) element;
+        if(element instanceof MovingObject) {
+            Goal res = steppedOnGoals.get(element);
+            return res;
+        }
+        return null;
+    }
     public boolean isWall (int x, int y) {
         if(getElement(x, y) == null) return false;
         return (isWall(getElement(x, y).getID()));

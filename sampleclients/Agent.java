@@ -100,9 +100,11 @@ public class Agent extends MovingObject {
     }
     private void searchForJob() {
         if(nextBoxToPush != null) {
+            System.err.println("Obstacle scheduled, removing: " + nextBoxToPush);
             startObstacleRemoval();
         }
         else if(isBoxAttached()) {
+            System.err.println("Box already attached: " + attachedBox);
             if(nextToBox(attachedBox)) {
                 changeState(movingBox);
             }
@@ -151,10 +153,10 @@ public class Agent extends MovingObject {
         }
     }
     private void moveWithTheBox() {
-        if ((attachedBox.unassignedGoal() && !attachedBox.tryToFindAGoal())) {
+        if ((attachedBox.unassignedGoal() && !attachedBox.tryToFindAGoal()) || !attachedBox.assignedGoal.canBeSolved()) {
             finishTheJob();
         }
-        else if(attachedBox.atGoalPosition()) {
+        else if(attachedBox.reachedAssignedGoal()) {
             attachedBox.resetDependencies();
             finishTheJob();
         }
@@ -174,6 +176,7 @@ public class Agent extends MovingObject {
         attachedBox = null;
     }
     private boolean findClosestBox() {
+        System.err.println("finding some box");
         Box newBox;
         Box bestBox = null;
         int bestPath = Integer.MAX_VALUE;
@@ -181,10 +184,11 @@ public class Agent extends MovingObject {
         for(MovingObject currentBox : MainBoard.BoxColorGroups.get(getColor())) {
             if(currentBox instanceof Box) {
                 newBox = (Box) currentBox;
-                if(newBox.assignedGoal == null && !newBox.tryToFindAGoal()) {
+                if(newBox.atGoalPosition() || newBox.noGoalOnTheMap || (newBox.assignedAgent != null)
+                        || ((!newBox.tryToFindAGoal()))) {
                     continue;
                 }
-                if (!newBox.atGoalPosition() && (newBox.assignedAgent == null) && !newBox.noGoalOnTheMap) {
+                else if(newBox.assignedGoal.canBeSolved()) {
                     if(nextToBox(newBox)) { // can find a path to box, or is next to!
                         attachedBox = newBox;
                         attachedBox.assignedAgent = this;
@@ -201,6 +205,7 @@ public class Agent extends MovingObject {
             }
         }
         if(bestBox != null) {
+            System.err.println("Found box: " + bestBox + " with a goal: " + bestBox.assignedGoal);
             attachedBox = bestBox;
             if(findPathToBox(bestBox)) {
                 attachedBox.assignedAgent = this;
@@ -385,7 +390,7 @@ public class Agent extends MovingObject {
         try {
             if (isBoxAttached()) {
                 if (nextToBox(attachedBox)) {
-                    if (attachedBox.assignedGoal == null && !attachedBox.tryToFindAGoal()) {
+                    if (attachedBox.unassignedGoal() && !attachedBox.tryToFindAGoal()) {
                         safeSpot = FindSafeSpot.safeSpotBFS(new Point(attachedBox.getX(), attachedBox.getY()));
                         findPathWithBox(safeSpot.x, safeSpot.y);
 

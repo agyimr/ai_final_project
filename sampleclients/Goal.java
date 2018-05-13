@@ -46,6 +46,7 @@ public class Goal extends BasicObject {
             assignedBox = null;
         }
         else {
+            bestBox.noGoalOnTheMap = false;
             if(bestBox.assignedGoal != null) {
                 Goal imSorry = bestBox.assignedGoal;
                 imSorry.assignedBox = null;

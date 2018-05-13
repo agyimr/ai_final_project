@@ -19,15 +19,18 @@ public class Box extends MovingObject {
         return assignedGoal == null;
     }
     boolean tryToFindAGoal() {
+        if(assignedGoal != null) return  true;
         int bestDistance = Integer.MAX_VALUE;
         Goal bestGoal = null;
         List <Goal>goals = MainBoard.goalsByID.get(Character.toLowerCase(getID()));
         if(goals != null) {
             for(Goal current : goals) {
-                int currentDistance = RandomWalkClient.roomMaster.getEmptyPathEstimate(getCoordinates(), current.getCoordinates());
-                if(current.canBeSolved() && !current.solved() && currentDistance < bestDistance && goalCloserToMe(current, currentDistance)) {
-                    bestDistance = currentDistance;
-                    bestGoal = current;
+                if(current.canBeSolved() && !current.solved()) {
+                    int currentDistance = RandomWalkClient.roomMaster.getEmptyPathEstimate(getCoordinates(), current.getCoordinates());
+                    if( currentDistance < bestDistance && goalCloserToMe(current, currentDistance) ) { // remember, deleting this estimation crashes everything.
+                        bestDistance = currentDistance;
+                        bestGoal = current;
+                    }
                 }
             }
         }
@@ -47,23 +50,28 @@ public class Box extends MovingObject {
         return true;
     }
     public boolean atGoalPosition() {
-        return RandomWalkClient.gameBoard.isGoal(getX(), getY()) && assignedGoal.getCoordinates().equals(getCoordinates());
+        return RandomWalkClient.gameBoard.isGoal(getX(), getY())
+                && (RandomWalkClient.gameBoard.getGoal(getX(), getY()).getID() == Character.toLowerCase(getID()));
+    }
+    public boolean reachedAssignedGoal() {
+        return assignedGoal != null && assignedGoal.getCoordinates().equals(getCoordinates());
     }
     public void resetDependencies() {
+        System.err.println("Resetting box: " + this + " and goal: " + assignedGoal);
+        assignedGoal.assignedBox = null;
+        assignedGoal = null;
         for(Box current: MainBoard.allBoxes) {
             current.noGoalOnTheMap = false;
         }
-
 //        for(Goal obstruction : assignedGoal.obs) {
 //            for(Box issue : MainBoard.boxesByID.get(Character.toUpperCase(obstruction.getID()))) {
 //                issue.noGoalOnTheMap = false;
 //                System.err.println("Issue: " + issue);
 //            }
 //        }
-        for(Agent sameColor : MainBoard.agents) {
-            if(sameColor.isJobless()) sameColor.moveYourAss();
+        for(Agent every : MainBoard.agents) {
+            if(every.isJobless()) every.moveYourAss();
         }
-        System.err.println(assignedGoal.obs);
 //        if(!assignedGoal.obs.isEmpty()) {
 //            throw new NullPointerException();
 //        }

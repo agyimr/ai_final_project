@@ -29,6 +29,9 @@ public class RandomWalkClient {
 	}
 
     public static void assignGoals() {
+	    for(Box current: MainBoard.allBoxes) {
+	        current.noGoalOnTheMap = true;
+        }
         for(Goal current : MainBoard.allGoals) {
             if (current.canBeSolved()) {
                 current.findClosestBox();
@@ -100,9 +103,9 @@ public class RandomWalkClient {
             throw exc;
         }
 
-        System.err.println("Clock " + anticipationPlanning.getClock());
+        //System.err.println("Clock " + anticipationPlanning.getClock());
         anticipationPlanning.incrementClock();
-        anticipationPlanning.displayBoard();
+        //anticipationPlanning.displayBoard();
         return true;
     }
 

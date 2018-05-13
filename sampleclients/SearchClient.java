@@ -140,7 +140,7 @@ public class SearchClient {
     }
 
     private LinkedList<Node> FindPath(boolean pushing, int goalX, int goalY) {
-        //System.err.format("Search starting for agent at pos: %d, %d, goal: %d, %d.\n", owner.getX(), owner.getY(), goalX, goalY);
+        System.err.format("Search starting for agent at pos: %d, %d, goal: %d, %d.\n", owner.getX(), owner.getY(), goalX, goalY);
         initializeSearch(pushing, goalX, goalY);
         if(pushing) {
             strategy.addToFrontier(new Node(owner.getX(), owner.getY(),

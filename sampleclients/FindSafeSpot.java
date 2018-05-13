@@ -30,6 +30,7 @@ public class FindSafeSpot {
             frontier.remove(0);
             //goal check - Is this an empty spot? with perhabs area around it? or perhabs the highest anticipation clock relative to position,
             if(isMySpot(cur.getAgent())){
+                //TODO delete this code and just prioritize this situation. another situation, when box is next to a wall, but there is a way around it should be even more prioritized and chosen over this one.
                 System.err.println("SAFESPOT: " + cur.getAgent());
                 return cur.getAgent();
 //                throw new NullPointerException();
