@@ -111,8 +111,13 @@ public class Agent extends MovingObject {
             System.err.println("Cant find box: ");
             if(RandomWalkClient.gameBoard.isGoal(getX(), getY())) {
                 safeSpot = FindSafeSpot.safeSpotBFS(new Point(getX(), getY()));
-                findPathToSpot(safeSpot.x, safeSpot.y);
-                changeState(removingObstacle);
+                if(safeSpot.x == getX() && safeSpot.y == getY()) {
+                    changeState(jobless);
+                } else {
+                    findPathToSpot(safeSpot.x, safeSpot.y);
+                    changeState(removingObstacle);
+                }
+
             }
             else {
                 changeState(jobless);
