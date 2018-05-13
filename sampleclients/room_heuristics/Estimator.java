@@ -7,8 +7,8 @@ import java.util.*;
 import java.util.List;
 
 public class Estimator {
-    static int STRICT_PUNISHMENT_FOR_AGENT_USAGE = 10000;
-    static int MILD_PUNISHMENT_FOR_AGENT_USAGE = 5;
+    static int STRICT_PUNISHMENT_FOR_AGENT_USAGE = 3;
+    static int MILD_PUNISHMENT_FOR_AGENT_USAGE = 2;
 
     public static PathWithObstacles estimatePath(Point from, Section to, Section through, int beginning_path_length) {
         Point closest_point = to.getClosestPoint(from);
@@ -129,10 +129,10 @@ public class Estimator {
 
         for(Agent a : agents) {
             // Estimate agent distance with manhattan distance
-            // int distance = getDistance(a.getCoordinates(), box.getCoordinates());
+            int distance = getDistance(a.getCoordinates(), box.getCoordinates());
 
             // Estimate agent distance with empty room heuristics
-            int distance = RandomWalkClient.roomMaster.getEmptyPathEstimate(a.getCoordinates(), box.getCoordinates());
+            //int distance = RandomWalkClient.roomMaster.getEmptyPathEstimate(a.getCoordinates(), box.getCoordinates());
 
             if (distance != Integer.MAX_VALUE) {
                 if (abd.a != null) {
