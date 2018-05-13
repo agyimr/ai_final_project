@@ -46,7 +46,7 @@ public class Box extends MovingObject {
         return true;
     }
     public boolean atGoalPosition() {
-        return RandomWalkClient.gameBoard.isGoal(getX(), getY());
+        return RandomWalkClient.gameBoard.isGoal(getX(), getY()) && assignedGoal.getCoordinates().equals(getCoordinates());
     }
     public void resetDependencies() {
         for(Box theCurrentBox : MainBoard.allBoxes) {

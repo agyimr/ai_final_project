@@ -112,7 +112,7 @@ public class SearchClient {
 //            System.err.println(owner);
 //            System.err.println(owner.getAttachedBox());
 //            System.err.println(roomPath.getLast().obstacles);
-            Point firstSafeSpace = ObstacleArbitrator.processObstacles(owner, roomPath.getLast().obstacles);
+            Point firstSafeSpace = ObstacleArbitrator.processObstacles(owner, roomPath.getLast().obstacles, gameBoard.getElement(goalX, goalY));
             if(firstSafeSpace != null) {
                 //throw new NullPointerException();
                 beforeFirstImmovableObstacle = firstSafeSpace;
@@ -181,6 +181,7 @@ public class SearchClient {
         recursionTriggered = true;
         System.err.println("POSITION BEFORE OBSTACLE: X: " + beforeFirstImmovableObstacle.x + ", Y: " + beforeFirstImmovableObstacle.y);
         LinkedList<Node> mustBeTrue = FindPath(pushing, beforeFirstImmovableObstacle.x, beforeFirstImmovableObstacle.y);
+        System.err.println(mustBeTrue);
         if(mustBeTrue != null && mustBeTrue.isEmpty()) {
             mustBeTrue.add(new Node(null, new Command(), owner.getX(), owner.getY()));
         }
@@ -223,7 +224,7 @@ public class SearchClient {
 
     private void processObstacles(ArrayList<Obstacle> result) {
         if(result != null) {
-            Point firstSafeSpace = ObstacleArbitrator.processObstacles(owner, result);
+            Point firstSafeSpace = ObstacleArbitrator.processObstacles(owner, result, gameBoard.getElement(goalX, goalY));
             if(firstSafeSpace != null) {
                 pathBlocked = true;
                 beforeFirstImmovableObstacle = firstSafeSpace;
