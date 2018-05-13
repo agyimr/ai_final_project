@@ -157,6 +157,11 @@ public class Conflicts {
             System.err.println("----- NoopFix end -------");
             return false;
         }
+        System.err.println("\nKing agent state: "+kingAgent.getCurrentState());
+        System.err.println("path: "+kingAgent.path.toString());
+        System.err.println("\npawn agent state: "+pawnAgent.getCurrentState());
+        System.err.println("path: "+pawnAgent.path.toString());
+
 
 
 		List<Point> pawnArea = new ArrayList<Point>();		
@@ -196,7 +201,7 @@ public class Conflicts {
 
 		pawnAgent.handleConflict(3, pawnAgent.getID() == original,false);
 		if(kingAgent.getID() == original){
-		    try{
+    		    try{
                 kingAgent.act();
             }catch (UnsupportedOperationException exc){
                 System.err.println("\n move Cant be applied after conflict!");

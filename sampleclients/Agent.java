@@ -642,4 +642,8 @@ public class Agent extends MovingObject {
     public boolean isWithBox(){
         return isMovingBox() || (isBoxAttached() && nextToBox(attachedBox));
     }
+
+    public possibleStates getCurrentState() {
+        return currentState;
+    }
 }
