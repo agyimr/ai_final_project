@@ -83,13 +83,16 @@ public class Agent extends MovingObject {
         return serverOutput;
     }
     private void checkPath() {
-        if(myPathIsBlocked) {
-            if(--obstacleCounter <= 0) myPathIsBlocked = false;
+
+        if(--obstacleCounter <= 0) {
+            if(!myPathIsBlocked) {
+                obstacleCounter = 1;
+            }
             System.err.println(ObstacleArbitrator.helpersDictionary);
-            System.err.println(obstacles);
             serverOutput = "NoOp";
         }
         else {
+            myPathIsBlocked = false;
             clearPath();
             changeState(beforeObstacleState);
             beforeObstacleState = null;
@@ -325,6 +328,9 @@ public class Agent extends MovingObject {
         return true;
     }
     private boolean findPathToBox(Box BoxToMoveTo) {
+        if(nextToBox(BoxToMoveTo)) {
+            return true;
+        }
         if( ! pathFindingEngine.getPath(false, BoxToMoveTo.getX(), BoxToMoveTo.getY())) return false;
         continuePath();
         if(path != null)
@@ -337,6 +343,9 @@ public class Agent extends MovingObject {
         path = pathFindingEngine.continuePath();
     }
     private boolean findPathWithBox(int goalX, int goalY) {
+        if(attachedBox.getX() == goalX && attachedBox.getY() == goalY) {
+            return true;
+        }
         if( ! pathFindingEngine.getPath(true, goalX, goalY)) return false;
         continuePath();
         if(path != null)
@@ -345,6 +354,9 @@ public class Agent extends MovingObject {
             return false;
     }
     private boolean findPathToSpot(int goalX, int goalY) {
+        if(getX() == goalX && getY() == goalY) {
+            return true;
+        }
         if( ! pathFindingEngine.getPath(false, goalX, goalY)) return false;
         continuePath();
         if(path != null)
@@ -375,8 +387,6 @@ public class Agent extends MovingObject {
                 if (attachedBox.assignedGoal == null && !attachedBox.tryToFindAGoal()) {
                     safeSpot = FindSafeSpot.safeSpotBFS(new Point(attachedBox.getX(), attachedBox.getY()));
                     findPathWithBox(safeSpot.x, safeSpot.y);
-                    System.err.println(safeSpot);
-                    throw new NullPointerException();
 
                 } else {
                     if (findPathWithBox(attachedBox.assignedGoal.getX(), attachedBox.assignedGoal.getY())) {
@@ -384,8 +394,6 @@ public class Agent extends MovingObject {
                     } else {
                         safeSpot = FindSafeSpot.safeSpotBFS(new Point(attachedBox.getX(), attachedBox.getY()));
                         findPathWithBox(safeSpot.x, safeSpot.y);
-                        System.err.println(safeSpot);
-                        throw new NullPointerException();
                     }
                 }
                 ObstacleArbitrator.jobIsDone(this);

@@ -196,7 +196,7 @@ public class FindSafeSpot {
         private static boolean isAllowed (Point cand){
             int x = cand.x;
             int y = cand.y;
-            if (notWithinMapConstraints(x, y) || map.isWall(x, y) || ( IamBox ) || (!IamBox && (map.isBox(x, y) || map.isAgent(x, y)))) {
+            if (notWithinMapConstraints(x, y) || map.isWall(x, y) || (!IamBox && (map.isBox(x, y) || map.isAgent(x, y)))) {
                 return false;
             }
 
