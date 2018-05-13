@@ -1,4 +1,5 @@
 package sampleclients;
+
 import java.util.*;
 
 
@@ -49,12 +50,16 @@ public class Box extends MovingObject {
         return RandomWalkClient.gameBoard.isGoal(getX(), getY()) && assignedGoal.getCoordinates().equals(getCoordinates());
     }
     public void resetDependencies() {
-        for(Goal obstruction : assignedGoal.obs) {
-            for(Box issue : MainBoard.boxesByID.get(Character.toUpperCase(obstruction.getID()))) {
-                issue.noGoalOnTheMap = false;
-                System.err.println("Issue: " + issue);
-            }
+        for(Box current: MainBoard.allBoxes) {
+            current.noGoalOnTheMap = false;
         }
+
+//        for(Goal obstruction : assignedGoal.obs) {
+//            for(Box issue : MainBoard.boxesByID.get(Character.toUpperCase(obstruction.getID()))) {
+//                issue.noGoalOnTheMap = false;
+//                System.err.println("Issue: " + issue);
+//            }
+//        }
         for(Agent sameColor : MainBoard.agents) {
             if(sameColor.isJobless()) sameColor.moveYourAss();
         }
