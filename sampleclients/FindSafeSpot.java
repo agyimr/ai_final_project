@@ -141,8 +141,7 @@ public class FindSafeSpot {
 
            // int score = (bookingDistance - geoDistance) * Math.min((space-2)/2,1) + 3 * -geoDistance;
 
-            double score = (1-geoDistance) + (1+geoDistance) * Math.max(space-2, 0);
-            score =  Math.max(0, space-2)^3 - (1-geoDistance)^2;
+            double score = Math.max(0, space-2)^3 - (1-geoDistance)^2 //(1-geoDistance) + (1+geoDistance) * Math.max(space-2, 0);
 
             if(geoDistance * 2 < nextBooking) {
                 score *= 1.5;
@@ -163,7 +162,7 @@ public class FindSafeSpot {
             }
 
             int space = 0;
-
+            //Unassigned boxes TODO
             if(!map.isWall(spot.x+1, spot.y)) { //right
                 space++;
             }
