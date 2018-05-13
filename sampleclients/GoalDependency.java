@@ -8,31 +8,54 @@ public class GoalDependency {
     public static MainBoard mainBoard = RandomWalkClient.gameBoard;
     public static void getGoalDependency(){
         System.err.println( "GoalDep started" );
+        boolean pathToClosestBoxFound = false;
+        boolean pathToClosestAgentFoud = false;
         List<Goal> goals = MainBoard.allGoals;
         Map<Goal,List<Goal>> obstructions = new HashMap<Goal,List<Goal>>();
+        String boxColor;
 
         for (Goal g : goals) {
             PriorityQueue<GDNode> explored = new PriorityQueue<GDNode>();
             PriorityQueue<GDNode> frontier = new PriorityQueue<GDNode>();
-
+            boxColor = getBoxColor(g);
+            System.err.println("\n current goal");
+            System.err.println(g.toString());
+            System.err.println(boxColor);
+            pathToClosestBoxFound = false;
+            pathToClosestAgentFoud = false;
+            if(boxColor == null){
+                System.err.println("No box for this goal");
+                throw new NegativeArraySizeException();
+            }
             //add start to frontier
             frontier.add(new GDNode(new Point(g.getX(), g.getY()), null, new ArrayList<Goal>()));
             while (!frontier.isEmpty()) {
                 GDNode cur = frontier.poll();
                 explored.add(cur);
 
-                if(mainBoard.isBox((int)cur.getPos().getX(),(int)cur.getPos().getY())){
-                    if(Character.toLowerCase(mainBoard.getElement((int)cur.getPos().getX(),(int)cur.getPos().getY()).getID()) == g.getID()){
-                        obstructions.put(g, cur.getGoalSet());
-                        continue;
-                    }
+                if(!pathToClosestBoxFound && mainBoard.isBox((int)cur.getPos().getX(),(int)cur.getPos().getY()) && Character.toLowerCase(mainBoard.getElement((int)cur.getPos().getX(),(int)cur.getPos().getY()).getID()) == g.getID()){
+                    pathToClosestBoxFound = true;
+                    System.err.println("\n Box found");
+                    System.err.println(g.toString());
+                    System.err.println(((Box) mainBoard.getElement((int)cur.getPos().getX(),(int)cur.getPos().getY())).toString());
                 }
 
+                if(!pathToClosestAgentFoud && mainBoard.isAgent((int)cur.getPos().getX(),(int)cur.getPos().getY()) && ((Agent) mainBoard.getElement((int)cur.getPos().getX(),(int)cur.getPos().getY())).getColor().equals(boxColor) ){
+                    pathToClosestAgentFoud = true;
+                    System.err.println("\n Agent found");
+                    System.err.println(g.toString());
+                    System.err.println(((Agent) mainBoard.getElement((int)cur.getPos().getX(),(int)cur.getPos().getY())).toString());
+                }
 
+                if(pathToClosestAgentFoud && pathToClosestBoxFound) {
+                    obstructions.put(g, cur.getGoalSet());
+                    System.err.println("obstructions found");
+                    for(Goal g2 : cur.getGoalSet()){
+                        System.err.println(g2.toString());
+                    }
+                    break;
+                }
 
-                //if (mainBoard.isGoal((int)cur.getPos().getX(),(int)cur.getPos().getY())) {
-                //   obstructions.put(g, cur.getGoalSet());
-                //}
 
                 LinkedList<GDNode> neighbours = getNeighbours(cur, goals); //TODO:board change again
 
@@ -48,6 +71,7 @@ public class GoalDependency {
         tmp = checkDoubleDependencies(tmp);
         for (Goal key : tmp.keySet()) {//Loop through goalSet
             key.deps = tmp.get(key);
+            key.obs = obstructions.get(key);
         }
 
         System.err.println("-----------------------------------------------");
@@ -115,7 +139,14 @@ public class GoalDependency {
             return tmpReturn;
         }
 
-
+    private static String getBoxColor(Goal g){
+        for (Box b : MainBoard.allBoxes){
+            if(Character.toLowerCase(b.getID()) == g.getID()){
+                return b.getColor();
+            }
+        }
+        return null;
+    }
 
 
 
@@ -159,21 +190,13 @@ public class GoalDependency {
                 pos = new Point(cur.getPos().x+1,cur.getPos().y);
             }
             BasicObject mapEntry = mainBoard.getElement(pos.x,pos.y);
-            //if(mapEntry != null) {
-            // int mapEntryX = mapEntry.getX();
-            //int mapEntryY = mapEntry.getY();
             if (!mainBoard.isWall((int)pos.getX(), (int)pos.getY())) {
                 List<Goal> s = cur.getGoalSet();
                 if (mainBoard.isGoal((int)pos.getX(), (int)pos.getY())){
-                    //for (Goal g : goals) {
-                    // if (g.getX() == pos.x && g.getY() == pos.y) {
                     s.add((Goal)mapEntry);
-                    //  }
-                    // }
                 }
                 neighbours.add(new GDNode(pos, cur, s));
             }
-            // }
         }
         return neighbours;
     }
