@@ -10,9 +10,16 @@ public class FindSafeSpot {
 
     private static final int MAX_DEPTH = 10;
 
+    private static int startClock;
+
     public static Point safeSpotBFS(Point startPos) {
         System.err.println("ENTERING SAFESPOT \n");
         System.err.println("START POS: " + startPos + "\n");
+
+        RandomWalkClient.heatMap.initialize(true);
+        RandomWalkClient.heatMap.iterate(MAX_DEPTH);
+        System.err.println(RandomWalkClient.heatMap);
+
 
         map = RandomWalkClient.gameBoard;
         anticiObj = RandomWalkClient.anticipationPlanning;
@@ -20,13 +27,15 @@ public class FindSafeSpot {
         List<ConflictNode> frontier = new ArrayList<ConflictNode>();
         List<ConflictNode> explored = new ArrayList<ConflictNode>();
 
-        int startClock = anticiObj.getClock();
+        startClock = anticiObj.getClock();
 
         //Add the current agent position to explored
         frontier.add(new ConflictNode(startPos, anticiObj.getClock()));
 
-        double bestEstimation = -99999999;
-        Point bestSpot = null;
+
+        Point bestSpot = startPos;
+        double startEstimation = estimateSpot(startPos, anticiObj.getClock());
+        double bestEstimation = -999999999;
 
         //continue search as long as there are points in the firstfrontier
         while (!frontier.isEmpty()) {
@@ -43,17 +52,14 @@ public class FindSafeSpot {
                 break;
             }
 
-            if(bestSpot == null) {
-                bestSpot = cur.getAgent();
-                bestEstimation =  estimateSpot(cur.getAgent(), cur.getClock());
-            } else {
-                double estimation = estimateSpot(cur.getAgent(), cur.getClock());
 
-                if(estimation > bestEstimation) {
-                    bestEstimation = estimation;
-                    bestSpot = cur.getAgent();
-                }
+            double estimation = estimateSpot(cur.getAgent(), cur.getClock());
+
+            if(estimation < startEstimation && estimation > bestEstimation) {
+                bestEstimation = estimation;
+                bestSpot = cur.getAgent();
             }
+
 
             //Get neighbour states of cur
             List<ConflictNode> neighbours = getNeighbours(cur);
@@ -130,54 +136,19 @@ public class FindSafeSpot {
 
         private static double estimateSpot(Point spot, int localClock) {
 
-            // We try to maximize the score we return (0 = Simba, you must never there)
+            int geoDistancce = localClock - startClock;
 
-            if(RandomWalkClient.gameBoard.isGoal((int) spot.getX(), (int) spot.getY())) {
-                return -99999999;
+            if(geoDistancce < 2) {
+                return 99999999;
             }
 
-            // Geographical distance until the spot
-            int geoDistance = localClock - anticiObj.getClock();
-
-            if(geoDistance == 0) {
-                return -99999998;
+            if(RandomWalkClient.anticipationPlanning.isThereNextBooking(spot, localClock)) {
+                return 999999999;
             }
 
-            // Number of free case around the spot
-            int space = getSpacenessAround(spot);
+            double estimation = RandomWalkClient.heatMap.getHeat(spot.x, spot.y) / geoDistancce;
 
-            // Get the next instant where spot will be booked
-            int nextBooking = anticiObj.getEarliestOccupation(spot);
-
-            // If no booking then next booking will be in a far futur
-            if(nextBooking == -1) {
-                nextBooking = anticiObj.getClock() + 10000;
-            }
-
-            // Distance to next booking WHEN I will reach the spot
-            int bookingDistance = nextBooking - anticiObj.getClock();
-
-            // If cell was booked between the instant I start to my position and I arrive on the cell
-            if(bookingDistance - geoDistance < 0) {
-                return -99999997;
-            }
-
-            // If I am a box and I want to reach a box
-            if( IamBox && map.isBox(spot.x, spot.y)) {
-                return -99999996;
-            }
-
-            if(space <= 2) {
-                return -99999995;
-            }
-
-            // More the score is high, more the spot is attractive
-            // maximize nextBooking
-            // maximize space
-            // minimize geoDistance
-            double score = nextBooking * Math.pow(2, space) / geoDistance;
-
-            return score;
+            return estimation;
         }
 
         private static boolean isStaticCell(int x, int y) {

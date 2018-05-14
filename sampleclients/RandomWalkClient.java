@@ -15,6 +15,7 @@ public class RandomWalkClient {
     public static MainBoard nextStepGameBoard;
     public static RoomAStar roomMaster;
     public static AnticipationPlanning anticipationPlanning;
+    public static HeatMap heatMap;
 
 	public RandomWalkClient() {
         gameBoard = new MainBoard(in); //map read in the constructor
@@ -22,6 +23,8 @@ public class RandomWalkClient {
         GoalDependency.getGoalDependency();
         roomMaster = new RoomAStar(gameBoard);
         anticipationPlanning = new AnticipationPlanning(gameBoard);
+        heatMap = new HeatMap(gameBoard);
+
         assignGoals();
         System.err.println(gameBoard);
         System.err.println(nextStepGameBoard);
@@ -108,7 +111,7 @@ public class RandomWalkClient {
 
 	public static void main( String[] args ) {
 
-        new Debugger("levels/MAgeneralAI.lvl", 150);
+        new Debugger("levels/MAdependency.lvl", 150);
 
         // Use stderr to print to console
 
