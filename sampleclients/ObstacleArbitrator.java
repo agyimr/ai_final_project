@@ -14,7 +14,8 @@ public class ObstacleArbitrator {
     public static Point processObstacles(Agent owner, ArrayList<Obstacle> obstacles, BasicObject goalObject) {
         Point anythingProcessed = null;
         for(Obstacle current : obstacles) {
-            if(owner.getAttachedBox().getID() != current.obstacle.getID()) {
+            System.err.println(current);
+            if(owner.getAttachedBox().getID() != current.obstacle.getID() && current.rescueAgent != null) {
                 owner.obstacles.add(current.obstacle);
                 if(!current.obstacle.isBeingMoved()) {
                     helpersDictionary.put(current.rescueAgent, owner);

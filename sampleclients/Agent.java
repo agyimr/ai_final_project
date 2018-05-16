@@ -196,7 +196,7 @@ public class Agent extends MovingObject {
 
                         return true;
                     }
-                    int currentPath = RandomWalkClient.roomMaster.getPathEstimate(getCoordinates(), newBox.getCoordinates());
+                    int currentPath = RandomWalkClient.roomMaster.getPathEstimate(getCoordinates(), newBox.getCoordinates(), getColor());
                     if(currentPath < bestPath) {
                         bestPath = currentPath;
                         bestBox = newBox;

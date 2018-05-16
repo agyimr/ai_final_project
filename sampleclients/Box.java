@@ -26,7 +26,7 @@ public class Box extends MovingObject {
         if(goals != null) {
             for(Goal current : goals) {
                 if(current.canBeSolved() && !current.solved()) {
-                    int currentDistance = RandomWalkClient.roomMaster.getEmptyPathEstimate(getCoordinates(), current.getCoordinates());
+                    int currentDistance = RandomWalkClient.roomMaster.getPathEstimate(getCoordinates(), current.getCoordinates(), getColor());
                     if( currentDistance < bestDistance && goalCloserToMe(current, currentDistance) ) { // remember, deleting this estimation crashes everything.
                         bestDistance = currentDistance;
                         bestGoal = current;
@@ -84,7 +84,7 @@ public class Box extends MovingObject {
         if(current.assignedBox == null) return true;
         else if(current.assignedBox.isBeingMoved()) return false;
         else {
-            int currentDistance = RandomWalkClient.roomMaster.getEmptyPathEstimate(current.getCoordinates(), current.assignedBox.getCoordinates());
+            int currentDistance = RandomWalkClient.roomMaster.getPathEstimate(current.getCoordinates(), current.assignedBox.getCoordinates(), getColor());
             if(currentDistance > distance) {
                 return true;
             }

@@ -110,7 +110,7 @@ public class SearchClient {
         pathBlocked = false;
         beforeFirstImmovableObstacle = null;
         immovableObstacles.clear();
-        roomPath = RandomWalkClient.roomMaster.getRoomPath(owner.getCoordinates(), new Point(goalX, goalY));
+        roomPath = RandomWalkClient.roomMaster.getRoomPath(owner.getCoordinates(), new Point(goalX, goalY), owner.getColor());
         if(roomPath == null) return false; //TODO impossible to get there
         if( !roomPath.getLast().obstacles.isEmpty()) {
 //            System.err.println("Goal coordinates: " + goalX + "' " + goalY);
@@ -160,7 +160,7 @@ public class SearchClient {
                 pathBlocked = true;
                 return findPathBeforeObstacle(pushing);
             }
-            processObstacles(roomMaster.getObstacles(owner.getCoordinates(), new Point(goalX, goalY)));
+            processObstacles(roomMaster.getObstacles(owner.getCoordinates(), new Point(goalX, goalY), owner.getColor()));
             if(beforeFirstImmovableObstacle != null) {
                 System.err.println("Path Blocked");
                 return findPathBeforeObstacle(pushing);
@@ -264,7 +264,7 @@ public class SearchClient {
                 pathBlocked = true;
                 return findPathBeforeObstacle(pushingBox);
             }
-            processObstacles(roomMaster.getObstacles(owner.getCoordinates(), goalRoom));
+            processObstacles(roomMaster.getObstacles(owner.getCoordinates(), goalRoom, owner.getColor()));
             if(beforeFirstImmovableObstacle != null) {
                 return findPathBeforeObstacle(pushingBox);
             }

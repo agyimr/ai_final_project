@@ -7,35 +7,40 @@ import java.util.*;
 import java.util.List;
 
 public class Estimator {
-    static int STRICT_PUNISHMENT_FOR_AGENT_USAGE = 10000;
-    static int MILD_PUNISHMENT_FOR_AGENT_USAGE = 5;
+    static int STRICT_PUNISHMENT_FOR_GOAL_DESTRUCTION = 10;
+    static int STRICT_PUNISHMENT_FOR_AGENT_USAGE = 3;
+    static int MILD_PUNISHMENT_FOR_AGENT_USAGE = 1;
+    static int MILD_PUNISHMENT_FOR_SAME_COLOR_BOX_PUSHING = 0;
 
-    public static PathWithObstacles estimatePath(Point from, Section to, Section through, int beginning_path_length) {
+    public static PathWithObstacles estimatePath(Point from, Section to, Section through,
+                                                 int beginning_path_length, String agentColor) {
         Point closest_point = to.getClosestPoint(from);
         if (!containsBoxes(through) && !RandomWalkClient.gameBoard.isBox(closest_point.x, closest_point.y)) {
             return new PathWithObstacles(to.getDistanceFromPoint(from), 0, new ArrayList<>(), closest_point);
         }
 
-        RoomNode goal_node = search(from, to, through, beginning_path_length);
+        RoomNode goal_node = search(from, to, through, beginning_path_length, agentColor);
         if (goal_node == null) return null;
 
         return new PathWithObstacles(goal_node.g - beginning_path_length, goal_node.punishment,
                 goal_node.obstacles, goal_node.position);
     }
 
-    public static PathWithObstacles estimatePath(Point from, Point to, Section through, int beginning_path_length) {
+    public static PathWithObstacles estimatePath(Point from, Point to, Section through,
+                                                 int beginning_path_length, String agentColor) {
         if (!containsBoxes(through) && !RandomWalkClient.gameBoard.isBox(to.x, to.y)) {
             return new PathWithObstacles(getDistance(to, from), 0, new ArrayList<>(), to);
         }
 
-        RoomNode goal_node = search(from, new Section(to, to), through, beginning_path_length);
+        RoomNode goal_node = search(from, new Section(to, to), through, beginning_path_length, agentColor);
         if (goal_node == null) return null;
 
         return new PathWithObstacles(goal_node.g - beginning_path_length, goal_node.punishment,
                 goal_node.obstacles, to);
     }
 
-    private static RoomNode search(Point from, Section to, Section through, int beginning_path_length) {
+    private static RoomNode search(Point from, Section to, Section through,
+                                   int beginning_path_length, String agentColor) {
         MainBoard map = RandomWalkClient.gameBoard;
         ArrayList<RoomNode> closed_set = new ArrayList<>();
         PriorityQueue<RoomNode> open_set = new PriorityQueue<>(10, Comparator.comparingInt((n) -> n.f));
@@ -44,65 +49,60 @@ public class Estimator {
         RoomNode initial_node = new RoomNode(null, from, beginning_path_length, to.getDistanceFromPoint(from),
                 0, new ArrayList<>());
         open_set.add(initial_node);
-        RoomNode goalNode = null;
-        boolean explore;
 
         // search
         while(!open_set.isEmpty()) {
-            explore = true;
             RoomNode current_node = open_set.poll();
 
-            // leave search only if all the possible open set nodes are worse than our solution
-            if (goalNode != null && current_node.p > goalNode.p) {
-                return goalNode;
-            }
-
-            // if a solution found, check whether it's better than our current one
+            // leave search at the first time we encounter a goal node (greedy behaviour)
             if (to.contains(current_node.position)) {
-                if (goalNode == null) goalNode = current_node;
-                if (goalNode != null && goalNode.p > current_node.p) goalNode = current_node;
-                explore = false;
+                return current_node;
             }
 
             closed_set.add(current_node);
 
-            if (explore) {
-                ArrayList<Point> neighbours = getValidNeighbours(current_node.position, through, to);
-                for (Point neighbour: neighbours) {
-                    if (map.isBox(neighbour.x, neighbour.y)) {
-                        Box box = (Box)map.getElement(neighbour.x, neighbour.y);
-                        AgentBoxDistance helper_agent = getClosestFreeAgent(box, current_node.g);
+            ArrayList<Point> neighbours = getValidNeighbours(current_node.position, through, to);
+            for (Point neighbour: neighbours) {
+                if (map.isBox(neighbour.x, neighbour.y)) {
+                    Box box = (Box)map.getElement(neighbour.x, neighbour.y);
+                    AgentBoxDistance helper_agent = getClosestFreeAgent(box, current_node.g, agentColor);
 
-                        if (helper_agent != null) { // if obstacle is movable...
-                            ArrayList<Obstacle> obstacles = new ArrayList<>(current_node.obstacles);
+                    if (helper_agent != null) { // if obstacle is movable...
+                        ArrayList<Obstacle> obstacles = new ArrayList<>(current_node.obstacles);
 
-                            int path_length_until_box = current_node.g;
-                            obstacles.add(new Obstacle(box, helper_agent.a, current_node.position, path_length_until_box));
+                        int path_length_until_box = current_node.g;
+                        obstacles.add(new Obstacle(box, helper_agent.a, current_node.position, path_length_until_box));
 
-                            int punishment = helper_agent.a.isJobless() || helper_agent.b.isBeingMoved()
-                                    ? MILD_PUNISHMENT_FOR_AGENT_USAGE
-                                    : STRICT_PUNISHMENT_FOR_AGENT_USAGE;
 
-                            RoomNode n = new RoomNode(current_node, neighbour,
-                                    current_node.g + 1, to.getDistanceFromPoint(neighbour),
-                                    current_node.punishment + punishment, obstacles);
+                        // calculating punishment
+                        int punishment;
+                        if (map.getGoal(neighbour.x, neighbour.y) != null &&
+                                map.getGoal(neighbour.x, neighbour.y).solved()) punishment = STRICT_PUNISHMENT_FOR_GOAL_DESTRUCTION;
+                        else if (!helper_agent.sameColor) {
+                            punishment = helper_agent.a.isJobless() || box.isBeingMoved()
+                                ? MILD_PUNISHMENT_FOR_AGENT_USAGE
+                                : STRICT_PUNISHMENT_FOR_AGENT_USAGE;
+                        } else punishment = MILD_PUNISHMENT_FOR_SAME_COLOR_BOX_PUSHING;
 
-                            if (!open_set.contains(n) && !closed_set.contains(n)) {
-                                open_set.add(n);
-                            }
-                        }
-                    } else {
-                        RoomNode n = new RoomNode(current_node, neighbour, current_node.g + 1,
-                                to.getDistanceFromPoint(neighbour), current_node.punishment, current_node.obstacles);
+
+                        RoomNode n = new RoomNode(current_node, neighbour,
+                                current_node.g + 1, to.getDistanceFromPoint(neighbour),
+                                current_node.punishment + punishment, obstacles);
+
                         if (!open_set.contains(n) && !closed_set.contains(n)) {
                             open_set.add(n);
                         }
+                    }
+                } else {
+                    RoomNode n = new RoomNode(current_node, neighbour, current_node.g + 1,
+                            to.getDistanceFromPoint(neighbour), current_node.punishment, current_node.obstacles);
+                    if (!open_set.contains(n) && !closed_set.contains(n)) {
+                        open_set.add(n);
                     }
                 }
             }
         }
 
-        if (goalNode != null) return goalNode;
         return null;
     }
 
@@ -122,17 +122,18 @@ public class Estimator {
         return neighbours;
     }
 
-    private static AgentBoxDistance getClosestFreeAgent(Box box, int path_length) {
+    private static AgentBoxDistance getClosestFreeAgent(Box box, int path_length, String agentColor) {
+        if (box.getColor().equals(agentColor)) return new AgentBoxDistance(null, box, 0, true);
         List<Agent> agents = RandomWalkClient.gameBoard.AgentColorGroups.get(box.getColor());
         if (agents == null) return null;
-        AgentBoxDistance abd = new AgentBoxDistance(null, null, Integer.MAX_VALUE);
+        AgentBoxDistance abd = new AgentBoxDistance(null, null, Integer.MAX_VALUE, false);
 
         for(Agent a : agents) {
-            // Estimate agent distance with manhattan distance
-            // int distance = getDistance(a.getCoordinates(), box.getCoordinates());
+            // Estimate helper agent distance with manhattan distance
+            int distance = getDistance(a.getCoordinates(), box.getCoordinates());
 
             // Estimate agent distance with empty room heuristics
-            int distance = RandomWalkClient.roomMaster.getEmptyPathEstimate(a.getCoordinates(), box.getCoordinates());
+            //int distance = RandomWalkClient.roomMaster.getEmptyPathEstimate(a.getCoordinates(), box.getCoordinates());
 
             if (distance != Integer.MAX_VALUE) {
                 if (abd.a != null) {
@@ -190,10 +191,12 @@ class AgentBoxDistance {
     Agent a;
     Box b;
     int distance;
+    boolean sameColor;
 
-    AgentBoxDistance(Agent a, Box b, int distance) {
+    AgentBoxDistance(Agent a, Box b, int distance, boolean sameColor) {
         this.a = a;
         this.b = b;
         this.distance = distance;
+        this.sameColor = sameColor;
     }
 }
