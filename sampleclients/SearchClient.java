@@ -118,7 +118,7 @@ public class SearchClient {
 //            System.err.println(owner);
 //            System.err.println(owner.getAttachedBox());
 //            System.err.println(roomPath.getLast().obstacles);
-            Point firstSafeSpace = ObstacleArbitrator.processObstacles(owner, roomPath.getLast().obstacles, gameBoard.getElement(goalX, goalY));
+            Point firstSafeSpace = ObstacleArbitrator.processObstacles(owner, roomPath.getLast().obstacles);
             if(firstSafeSpace != null) {
                 //throw new NullPointerException();
                 beforeFirstImmovableObstacle = firstSafeSpace;
@@ -230,7 +230,7 @@ public class SearchClient {
 
     private void processObstacles(ArrayList<Obstacle> result) {
         if(result != null) {
-            Point firstSafeSpace = ObstacleArbitrator.processObstacles(owner, result, gameBoard.getElement(goalX, goalY));
+            Point firstSafeSpace = ObstacleArbitrator.processObstacles(owner, result);
             if(firstSafeSpace != null) {
                 pathBlocked = true;
                 beforeFirstImmovableObstacle = firstSafeSpace;

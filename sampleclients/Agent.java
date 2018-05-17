@@ -9,16 +9,30 @@ import static sampleclients.Agent.possibleStates.*;
 import static sampleclients.Command.type;
 //TODO reset goal and box upon completion of job
 public class Agent extends MovingObject {
+    private class ScheduledObstacle {
+        Box obstacle;
+        Agent inTrouble;
+        public ScheduledObstacle(Box obstacle, Agent inTrouble) {
+            this.obstacle = obstacle;
+            this.inTrouble = inTrouble;
+        }
+    }
     private Box attachedBox = null;
     private SearchClient pathFindingEngine;
     private int waitingCounter = 0;
     public int conflictSteps = 0;
-    private Box nextBoxToPush = null;
-    public HashSet<Box> obstacles = new HashSet<>();
+
+    private LinkedList<ScheduledObstacle> scheduledObstacles = new LinkedList<>();
     private boolean pendingHelp = false;
+    public Agent inTrouble = null;
+    private boolean obstacleForced = false;
+    private boolean rescueNotNeeded = false;
+
     private boolean handlingConflict = false;
+
     private boolean myPathIsBlocked = false;
     private int obstacleCounter = 0;
+
     public LinkedList<Node> path;
     private possibleStates currentState = unassigned;
     private possibleStates previousState = currentState;
@@ -83,24 +97,22 @@ public class Agent extends MovingObject {
         return serverOutput;
     }
     private void checkPath() {
-
         if(--obstacleCounter > 0) {
             if(!myPathIsBlocked) {
                 obstacleCounter = 1;
             }
-            System.err.println(ObstacleArbitrator.helpersDictionary);
+            //System.err.println(ObstacleArbitrator.helpersDictionary);
             serverOutput = "NoOp";
         }
         else {
-            myPathIsBlocked = false;
             clearPath();
             changeState(beforeObstacleState); //Causes problems with looping. TODO
             beforeObstacleState = null;
         }
     }
     private void searchForJob() {
-        if(nextBoxToPush != null) {
-            System.err.println("Obstacle scheduled, removing: " + nextBoxToPush);
+        if(!scheduledObstacles.isEmpty()) {
+            System.err.println("Obstacle scheduled, removing: " + scheduledObstacles.peek());
             startObstacleRemoval();
         }
         else if(isBoxAttached()) {
@@ -116,8 +128,7 @@ public class Agent extends MovingObject {
             System.err.println("Cant find box: ");
             if(RandomWalkClient.gameBoard.isGoal(getX(), getY())) {
                 safeSpot = FindSafeSpot.safeSpotBFS(new Point(getX(), getY()));
-                if(safeSpot == null || (safeSpot.x == getX() && safeSpot.y == getY())) {
-                    safeSpot = null; //wat TODO
+                if(safeSpot == null ) {
                     changeState(jobless);
                 } else {
                     findPathToSpot(safeSpot.x, safeSpot.y);
@@ -184,11 +195,13 @@ public class Agent extends MovingObject {
         for(MovingObject currentBox : MainBoard.BoxColorGroups.get(getColor())) {
             if(currentBox instanceof Box) {
                 newBox = (Box) currentBox;
-                if(newBox.atGoalPosition() || newBox.noGoalOnTheMap || (newBox.assignedAgent != null)
+                if(newBox.noGoalOnTheMap || (newBox.assignedAgent != null || newBox.atGoalPosition() )
                         || ((!newBox.tryToFindAGoal()))) {
+                    System.err.println("not for me!");
                     continue;
                 }
                 else if(newBox.assignedGoal.canBeSolved()) {
+                    System.err.println("here's my box!");
                     if(nextToBox(newBox)) { // can find a path to box, or is next to!
                         attachedBox = newBox;
                         attachedBox.assignedAgent = this;
@@ -196,7 +209,7 @@ public class Agent extends MovingObject {
 
                         return true;
                     }
-                    int currentPath = RandomWalkClient.roomMaster.getPathEstimate(getCoordinates(), newBox.getCoordinates());
+                    int currentPath = RandomWalkClient.roomMaster.getEmptyPathEstimate(getCoordinates(), newBox.getCoordinates());
                     if(currentPath < bestPath) {
                         bestPath = currentPath;
                         bestBox = newBox;
@@ -380,13 +393,15 @@ public class Agent extends MovingObject {
             dropTheBox();
         }
         changeState(removingObstacle);
-        attachedBox = nextBoxToPush;
-        nextBoxToPush = null;
+        ScheduledObstacle obs = scheduledObstacles.poll();
+        attachedBox = obs.obstacle;
+        this.inTrouble = obs.inTrouble;
         pendingHelp = false;
         findObstaclePath();
 
     }
     private void findObstaclePath() {
+        System.err.println("Agent: " + this + "Trying to remove obstacle:" + getAttachedBox());
         try {
             if (isBoxAttached()) {
                 if (nextToBox(attachedBox)) {
@@ -395,28 +410,41 @@ public class Agent extends MovingObject {
                         findPathWithBox(safeSpot.x, safeSpot.y);
 
                     } else {
-                        if (findPathWithBox(attachedBox.assignedGoal.getX(), attachedBox.assignedGoal.getY())) {
+                        if (findPathWithBox(attachedBox.assignedGoal.getX(), attachedBox.assignedGoal.getY())
+                                && !agentOnMyPathWithBox()) {
                             changeState(possibleStates.movingBox);
                         } else {
                             safeSpot = FindSafeSpot.safeSpotBFS(new Point(attachedBox.getX(), attachedBox.getY()));
                             findPathWithBox(safeSpot.x, safeSpot.y);
+                            releaseTroubledAgent();
                         }
                     }
-                    ObstacleArbitrator.jobIsDone(this);
+                    releaseTroubledAgent();
                 } else {
                     findPathToBox(attachedBox);
                 }
             } else {
                 safeSpot = FindSafeSpot.safeSpotBFS(new Point(getX(), getY()));
                 findPathToSpot(safeSpot.x, safeSpot.y);
-                ObstacleArbitrator.jobIsDone(this);
+                releaseTroubledAgent();
             }
         }
         catch (NullPointerException exc) {
             System.err.println("Can't remove obstacle");
-            ObstacleArbitrator.jobIsDone(this);
-            changeState(unassigned);
+            obstacleJobIsDone();
+            throw new NegativeArraySizeException();
         }
+    }
+    private boolean agentOnMyPathWithBox() {
+        for(Node step : path) {
+            if(RandomWalkClient.gameBoard.getElement(step.agentX, step.agentY) == inTrouble ||
+                    RandomWalkClient.gameBoard.getElement(step.boxX, step.boxY) == inTrouble) {
+                System.err.println("Agent: " + inTrouble + " is on my path, and I'm trying to save him. Reverting to safeSpot");
+                return true;
+                //throw new NegativeArraySizeException();
+            }
+        }
+        return false;
     }
     private void removeObstacle() {
         System.err.println(attachedBox);
@@ -427,24 +455,32 @@ public class Agent extends MovingObject {
             else {
                 if(isBoxAttached()) {
                     if( attachedBox.getCoordinates().equals(safeSpot)) {
-                        ObstacleArbitrator.jobIsDone(this);
-                        safeSpot = null;
-                        changeState(unassigned);
+                        obstacleJobIsDone();
                     }
                     else {
                         findPathWithBox(safeSpot.x, safeSpot.y);
                     }
                 }
                 else if(getCoordinates().equals(safeSpot) || SearchClient.nextTo(getX(), getY(), safeSpot.x, safeSpot.y)) {
-                    ObstacleArbitrator.jobIsDone(this);
-                    safeSpot = null;
-                    changeState(unassigned);
+                    obstacleJobIsDone();
                 }
                 else {
                     safeSpot = null;
                     findObstaclePath();
                 }
             }
+        }
+    }
+    private void obstacleJobIsDone() {
+        System.err.println("Obstacle removed! ");
+        releaseTroubledAgent();
+        safeSpot = null;
+        changeState(unassigned);
+    }
+    private void releaseTroubledAgent() {
+        if(inTrouble != null) {
+            ObstacleArbitrator.jobIsDone(this, inTrouble);
+            inTrouble = null;
         }
     }
     private void revertMoveIntention(MainBoard board) {
@@ -507,7 +543,9 @@ public class Agent extends MovingObject {
         }
         conflictSteps = commands.size();
     }
-
+    private boolean isRemovingObstacle() {
+        return (currentState == removingObstacle || (handlingConflict && previousState == removingObstacle));
+    }
     //external handlers
     public void youShallPass() {
         myPathIsBlocked = false;
@@ -529,26 +567,33 @@ public class Agent extends MovingObject {
         }
         changeState(unassigned);
     }
-    public void scheduleObstacleRemoval(Box issue, int offset) {
-        if(issue == attachedBox) {
-            System.err.println("Already on it!");
-            return;
+    public void scheduleObstacleRemoval(Box issue, Agent toRescue, int offset) {
+        if(issue.assignedAgent!= null) {
+            if(issue.assignedAgent != this) {
+                issue.assignedAgent.scheduleObstacleRemoval(issue, toRescue, offset);
+                return;
+            }
         }
-        else if(issue.assignedAgent!= null) {
-            issue.assignedAgent.finishTheJob();
-        }
-        nextBoxToPush = issue;
-        if(this.isMovingBox() && pathSmallerThanOffset(offset) ) {
+        scheduledObstacles.add(new ScheduledObstacle(issue, toRescue));
+        if((this.isMovingBox() && attachedBox != issue && pathSmallerThanOffset(offset)) || isRemovingObstacle() ) {
             System.err.println("Finishing job first!");
             //just finish the job
         }
         else {
-            System.err.println("Help is pending!");
+            System.err.println("Help is pending says agent: " + this);
             pendingHelp = true;
             if(hasMoved() && isJobless()) {
                 act();
             }
         }
+    }
+    public void forceObstacleRemoval(Box issue, Agent toRescue, int offset) {
+        System.err.println("Forcing obstacle removal");
+        if(isRemovingObstacle()) {
+            scheduledObstacles.push(new ScheduledObstacle(attachedBox, inTrouble));}
+        scheduledObstacles.push(new ScheduledObstacle(issue, toRescue));
+        pendingHelp = true;
+        obstacleForced = true;
     }
     private boolean pathSmallerThanOffset(int offset) {
         int pathLength;
@@ -564,7 +609,8 @@ public class Agent extends MovingObject {
         return (pathLength < offset);
     }
     public void rescueIsNotNeeded() {
-        obstacleCounter = 2;
+        obstacleCounter = 0;
+        rescueNotNeeded = true;
     }
     public void handleConflict(List<Command> commands, boolean conflictOrigin) {
         boolean needsToMove = false;
@@ -595,13 +641,18 @@ public class Agent extends MovingObject {
         }
 
     }
-    public boolean isMovingBox() { return currentState == movingBox;}
+    public boolean isMovingBox() { return (currentState == movingBox || (handlingConflict && previousState == movingBox))
+            ||  (isRemovingObstacle() && attachedBox != null );}
     public boolean isBoxAttached() {
     	return (attachedBox != null);
     }
     public int getPriority() {return currentState.ordinal();}
     public void waitForObstacleToBeRemoved() {
-        if(obstacleCounter <= 0) obstacleCounter = 10;
+        if(rescueNotNeeded) {
+            rescueNotNeeded = false;
+            return;
+        }
+        if(obstacleCounter <= 0) obstacleCounter = 30;
         myPathIsBlocked = true;
         beforeObstacleState = currentState;
         changeState(pathBlocked);
