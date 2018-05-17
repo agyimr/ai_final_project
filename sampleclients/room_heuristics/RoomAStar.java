@@ -75,25 +75,7 @@ public class RoomAStar {
                                 current_node.g + path.distance, to.getDistanceFromPoint(p),
                                 current_node.punishment + path.punishment, obstacles);
 
-                        Node already_in_open_set = getAlreadyInList(open_set, n);
-                        Node already_in_closed_set = getAlreadyInList(closed_set, n);
-
-                        // Check if open set contains a node which equals with current one but it's g values is less
-                        if (already_in_open_set != null) {
-                            if (already_in_open_set.p > n.p) {
-                                open_set.remove(already_in_open_set);
-                                open_set.add(n);
-                            }
-                            // if open set doesn't contains similar node, check on the closed set. if closed set contains,
-                            // we should check whether closed set's g values is bigger
-                        } else if (already_in_closed_set != null) {
-                            if (already_in_closed_set.p > n.p) {
-                                open_set.add(n);
-                            }
-                            // If neither of them contains the node, then we should add it to the open set.
-                        } else {
-                            open_set.add(n);
-                        }
+                        if (!open_set.contains(n) && !closed_set.contains(n)) open_set.add(n);
                     }
                 }
             }
@@ -151,25 +133,7 @@ public class RoomAStar {
                                 current_node.g + path.distance, 0,
                                 current_node.punishment + path.punishment, obstacles);
 
-                        Node already_in_open_set = getAlreadyInList(open_set, n);
-                        Node already_in_closed_set = getAlreadyInList(closed_set, n);
-
-                        // Check if open set contains a node which equals with current one but it's g values is less
-                        if (already_in_open_set != null) {
-                            if (already_in_open_set.p > n.p) {
-                                open_set.remove(already_in_open_set);
-                                open_set.add(n);
-                            }
-                            // if open set doesn't contains similar node, check on the closed set. if closed set contains,
-                            // we should check whether closed set's g values is bigger
-                        } else if (already_in_closed_set != null) {
-                            if (already_in_closed_set.p > n.p) {
-                                open_set.add(n);
-                            }
-                            // If neither of them contains the node, then we should add it to the open set.
-                        } else {
-                            open_set.add(n);
-                        }
+                        if (!open_set.contains(n) && !closed_set.contains(n)) open_set.add(n);
                     }
                 }
             }
@@ -190,25 +154,7 @@ public class RoomAStar {
                                 current_node.g + path.distance, passages.getDistanceFrom(p, to),
                                 current_node.punishment + path.punishment, obstacles);
 
-                        Node already_in_open_set = getAlreadyInList(open_set, n);
-                        Node already_in_closed_set = getAlreadyInList(closed_set, n);
-
-                        // Check if open set contains a node which equals with current one but it's g values is less
-                        if (already_in_open_set != null) {
-                            if (already_in_open_set.p > n.p) {
-                                open_set.remove(already_in_open_set);
-                                open_set.add(n);
-                            }
-                            // if open set doesn't contains similar node, check on the closed set. if closed set contains,
-                            // we should check whether closed set's g values is bigger
-                        } else if (already_in_closed_set != null) {
-                            if (already_in_closed_set.p > n.p) {
-                                open_set.add(n);
-                            }
-                            // If neither of them contains the node, then we should add it to the open set.
-                        } else {
-                            open_set.add(n);
-                        }
+                        if (!open_set.contains(n) && !closed_set.contains(n)) open_set.add(n);
                     }
                 }
             }

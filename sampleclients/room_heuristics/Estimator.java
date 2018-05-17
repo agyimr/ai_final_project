@@ -71,7 +71,25 @@ public class Estimator {
                         ArrayList<Obstacle> obstacles = new ArrayList<>(current_node.obstacles);
 
                         int path_length_until_box = current_node.g;
-                        obstacles.add(new Obstacle(box, helper_agent.a, current_node.position, path_length_until_box));
+
+                        // calculating waiting position
+                        Point waiting_point = null;
+                        boolean found = false;
+                        RoomNode tmp = current_node;
+                        while (tmp != null && !found) {
+                            // if free or box with same color...
+                            if (tmp.position != null &&
+                                    (RandomWalkClient.gameBoard.isFree(tmp.position.x, tmp.position.y) ||
+                                            (RandomWalkClient.gameBoard.isBox(tmp.position.x, tmp.position.y) &&
+                                                    ((Box)RandomWalkClient.gameBoard.getElement(tmp.position.x, tmp.position.y)).getColor().equals(agentColor)))) {
+                                found = true;
+                                waiting_point = tmp.position;
+                            }
+                            tmp = tmp.parent;
+                        }
+                        // if no suitable position found, fall back to the one right before the obstacle
+                        if (!found) waiting_point = current_node.position;
+                        obstacles.add(new Obstacle(box, helper_agent.a, waiting_point, path_length_until_box));
 
 
                         // calculating punishment
