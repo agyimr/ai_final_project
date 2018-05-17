@@ -64,7 +64,7 @@ public class RoomAStar {
             if (neighbour_sections != null) {
                 for(Path s : neighbour_sections) {
                     PathWithObstacles path = Estimator.estimatePath(current_node.position,
-                            s.to, s.through, current_node.g, agentColor);
+                            s.to, s.through, current_node.g, agentColor, current_node.through);
                     if (path != null) { // if path exists...
                         Point p = path.arrivingPosition;
                         //System.err.println(distance);
@@ -124,7 +124,7 @@ public class RoomAStar {
             for (Section s : current_node.sections) {
                 if (s != null && s.contains(to)) {
                     PathWithObstacles path = Estimator.estimatePath(current_node.position, to, s,
-                            current_node.g, agentColor);
+                            current_node.g, agentColor, current_node.through);
                     if (path != null) { // if path exists...
                         ArrayList<Obstacle> obstacles = new ArrayList<>(current_node.obstacles);
                         obstacles.addAll(path.obstacles);
@@ -143,7 +143,7 @@ public class RoomAStar {
             if (neighbour_sections != null) {
                 for(Path s : neighbour_sections) {
                     PathWithObstacles path = Estimator.estimatePath(current_node.position, s.to,
-                            s.through, current_node.g, agentColor);
+                            s.through, current_node.g, agentColor, current_node.through);
                     if (path != null) { // if path exists...
                         Point p = path.arrivingPosition;
                         //System.err.println(distance);

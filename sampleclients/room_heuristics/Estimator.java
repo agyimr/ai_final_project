@@ -13,13 +13,13 @@ public class Estimator {
     static int MILD_PUNISHMENT_FOR_SAME_COLOR_BOX_PUSHING = 3;
 
     public static PathWithObstacles estimatePath(Point from, Section to, Section through,
-                                                 int beginning_path_length, String agentColor) {
+                                                 int beginning_path_length, String agentColor, Section previousRoom) {
         Point closest_point = to.getClosestPoint(from);
         if (!containsBoxes(through) && !RandomWalkClient.gameBoard.isBox(closest_point.x, closest_point.y)) {
             return new PathWithObstacles(to.getDistanceFromPoint(from), 0, new ArrayList<>(), closest_point);
         }
 
-        RoomNode goal_node = search(from, to, through, beginning_path_length, agentColor);
+        RoomNode goal_node = search(from, to, through, beginning_path_length, agentColor, previousRoom);
         if (goal_node == null) return null;
 
         return new PathWithObstacles(goal_node.g - beginning_path_length, goal_node.punishment,
@@ -27,12 +27,12 @@ public class Estimator {
     }
 
     public static PathWithObstacles estimatePath(Point from, Point to, Section through,
-                                                 int beginning_path_length, String agentColor) {
+                                                 int beginning_path_length, String agentColor, Section previousRoom) {
         if (!containsBoxes(through) && !RandomWalkClient.gameBoard.isBox(to.x, to.y)) {
             return new PathWithObstacles(getDistance(to, from), 0, new ArrayList<>(), to);
         }
 
-        RoomNode goal_node = search(from, new Section(to, to), through, beginning_path_length, agentColor);
+        RoomNode goal_node = search(from, new Section(to, to), through, beginning_path_length, agentColor, previousRoom);
         if (goal_node == null) return null;
 
         return new PathWithObstacles(goal_node.g - beginning_path_length, goal_node.punishment,
@@ -40,7 +40,7 @@ public class Estimator {
     }
 
     private static RoomNode search(Point from, Section to, Section through,
-                                   int beginning_path_length, String agentColor) {
+                                   int beginning_path_length, String agentColor, Section previousRoom) {
         MainBoard map = RandomWalkClient.gameBoard;
         ArrayList<RoomNode> closed_set = new ArrayList<>();
         PriorityQueue<RoomNode> open_set = new PriorityQueue<>(10, Comparator.comparingInt((n) -> n.f));
@@ -61,7 +61,7 @@ public class Estimator {
 
             closed_set.add(current_node);
 
-            ArrayList<Point> neighbours = getValidNeighbours(current_node.position, through, to);
+            ArrayList<Point> neighbours = getValidNeighbours(current_node.position, through, to, previousRoom);
             for (Point neighbour: neighbours) {
                 if (map.isBox(neighbour.x, neighbour.y)) {
                     Box box = (Box)map.getElement(neighbour.x, neighbour.y);
@@ -124,7 +124,7 @@ public class Estimator {
         return null;
     }
 
-    private static ArrayList<Point> getValidNeighbours(Point position, Section through, Section to) {
+    private static ArrayList<Point> getValidNeighbours(Point position, Section through, Section to, Section previousRoom) {
         ArrayList<Point> neighbours = new ArrayList<>();
         ArrayList<Point> potential_neighbours = new ArrayList<>();
 
@@ -134,7 +134,8 @@ public class Estimator {
         potential_neighbours.add(new Point(position.x, position.y - 1));
 
         for (Point p : potential_neighbours) {
-            if (through.contains(p) || to.contains(p)) neighbours.add(p);
+            if (through.contains(p) || to.contains(p) ||
+                    (previousRoom != null && previousRoom.contains(p))) neighbours.add(p);
         }
 
         return neighbours;
