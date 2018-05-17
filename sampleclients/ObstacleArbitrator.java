@@ -10,7 +10,7 @@ import static sampleclients.RandomWalkClient.gameBoard;
 
 public class ObstacleArbitrator {
     public static Set<Box> scheduledObstacles= new HashSet<>();
-
+    public static HashMap<Box, Agent> rescuedAgents = new HashMap<>();
     public static Point processObstacles(Agent owner, ArrayList<Obstacle> obstacles) {
         Point anythingProcessed = null;
         for(Obstacle current : obstacles) {

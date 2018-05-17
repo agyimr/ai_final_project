@@ -25,6 +25,7 @@ public class RandomWalkClient {
         assignGoals();
         System.err.println(gameBoard);
         System.err.println(nextStepGameBoard);
+        //ObstaclePathFinding.findObstacles(3,3,24,15);
         //throw new NullPointerException(); //TODO stop here for debugging in preprocessing
 	}
 

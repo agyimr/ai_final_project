@@ -237,11 +237,11 @@ public class SearchClient {
             }
         }
         else {
-            pathInaccessible = true;
+            //pathInaccessible = true;
             System.err.println(owner);
             System.err.println(owner.getAttachedBox());
             System.err.println("Goal coords: " + goalX + ", " + goalY);
-            throw new NullPointerException();
+            //throw new NullPointerException();
         }
     }
 

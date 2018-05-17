@@ -8,9 +8,9 @@ import java.util.List;
 
 public class Estimator {
     static int STRICT_PUNISHMENT_FOR_GOAL_DESTRUCTION = 10;
-    static int STRICT_PUNISHMENT_FOR_AGENT_USAGE = 3;
-    static int MILD_PUNISHMENT_FOR_AGENT_USAGE = 1;
-    static int MILD_PUNISHMENT_FOR_SAME_COLOR_BOX_PUSHING = 0;
+    static int STRICT_PUNISHMENT_FOR_AGENT_USAGE = 10;
+    static int MILD_PUNISHMENT_FOR_AGENT_USAGE = 5;
+    static int MILD_PUNISHMENT_FOR_SAME_COLOR_BOX_PUSHING = 3;
 
     public static PathWithObstacles estimatePath(Point from, Section to, Section through,
                                                  int beginning_path_length, String agentColor) {
@@ -142,16 +142,15 @@ public class Estimator {
 
     private static AgentBoxDistance getClosestFreeAgent(Box box, int path_length, String agentColor) {
         if (box.getColor().equals(agentColor)) return new AgentBoxDistance(null, box, 0, true);
-        List<Agent> agents = RandomWalkClient.gameBoard.AgentColorGroups.get(box.getColor());
+        List<Agent> agents = MainBoard.AgentColorGroups.get(box.getColor());
         if (agents == null) return null;
         AgentBoxDistance abd = new AgentBoxDistance(null, null, Integer.MAX_VALUE, false);
 
         for(Agent a : agents) {
             // Estimate helper agent distance with manhattan distance
-            int distance = getDistance(a.getCoordinates(), box.getCoordinates());
-
+            //int distance = getDistance(a.getCoordinates(), box.getCoordinates());
             // Estimate agent distance with empty room heuristics
-            //int distance = RandomWalkClient.roomMaster.getEmptyPathEstimate(a.getCoordinates(), box.getCoordinates());
+            int distance = RandomWalkClient.roomMaster.getEmptyPathEstimate(a.getCoordinates(), box.getCoordinates());
 
             if (distance != Integer.MAX_VALUE) {
                 if (abd.a != null) {

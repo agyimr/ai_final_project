@@ -236,8 +236,8 @@ public class MainBoard {
         }
         setElement(obj.getX(), obj.getY(), obj);
     }
-    private boolean yOutOfBounds(int y) { return (y >= (MainBoardYDomain) || y < 0);}
-    private boolean xOutOfBounds(int x) {return (x >= (MainBoardXDomain) || x < 0);}
+    public static boolean yOutOfBounds(int y) { return (y >= (MainBoardYDomain) || y < 0);}
+    public static boolean xOutOfBounds(int x) {return (x >= (MainBoardXDomain) || x < 0);}
     private void manageMovingThroughGoal(MovingObject obj, int x, int y) {
         Goal steppedOnGoal = steppedOnGoals.get(obj);
         if(steppedOnGoal  != null) {
