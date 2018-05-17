@@ -36,7 +36,6 @@ public class Box extends MovingObject {
         }
         if (bestGoal == null) {
             noGoalOnTheMap = true;
-            assignedAgent = null;
             return false;
         }
         else if(bestGoal.assignedBox != null){
@@ -78,7 +77,7 @@ public class Box extends MovingObject {
     }
     public boolean isBeingMoved() {
         if(assignedAgent == null) return false;
-        return assignedAgent.isMovingBox();
+        return assignedAgent.isWithBox();
     }
     private boolean goalCloserToMe(Goal current, int distance) {
         if(current.assignedBox == null) return true;

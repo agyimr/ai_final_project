@@ -14,10 +14,15 @@ public class ObstacleArbitrator {
     public static Point processObstacles(Agent owner, ArrayList<Obstacle> obstacles) {
         Point anythingProcessed = null;
         for(Obstacle current : obstacles) {
-            if(!owner.getColor().equals(current.obstacle.getColor())) {
-                if(scheduledObstacles.contains(current.obstacle)) {
-                    continue;
+            if(owner.isMyBox(current.obstacle)) continue;
+            if(scheduledObstacles.contains(current.obstacle)) {
+                if(anythingProcessed == null) {
+                    anythingProcessed = current.waitingPosition;
+                    //owner.rescueIsNotNeeded(); TODO rescue is needed, this information has to be stored in scheduled obstacles
                 }
+                continue;
+            }
+            if(!owner.getColor().equals(current.obstacle.getColor())) {
                 if(!current.obstacle.isBeingMoved()) {
                     scheduledObstacles.add(current.obstacle);
                     if(owner.inTrouble == current.rescueAgent) {
@@ -31,6 +36,7 @@ public class ObstacleArbitrator {
                     if(current.obstacle.isBeingMoved()) {
                         //anythingProcessed = FindSafeSpot.safeSpotBFS(current.waitingPosition);
                         //if(anythingProcessed == null) {
+                        current.rescueAgent.forceObstacleRemoval(current.obstacle, owner, current.pathLengthUntilObstacle);
                         anythingProcessed = current.waitingPosition;
                         //}
                         owner.rescueIsNotNeeded();
@@ -46,6 +52,14 @@ public class ObstacleArbitrator {
                 System.err.println("Rescue:" + current.rescueAgent + " BOX: " + current.obstacle);
                 System.err.println("waiting position: " + anythingProcessed);
                 //throw new NullPointerException();
+            }
+            else {
+                if(anythingProcessed == null
+                        && !owner.isMyBox(current.obstacle)) {
+                    scheduledObstacles.add(current.obstacle);
+                    anythingProcessed = current.waitingPosition;
+                    owner.scheduleObstacleRemoval(current.obstacle, owner, 0);
+                }
             }
         }
         return anythingProcessed;

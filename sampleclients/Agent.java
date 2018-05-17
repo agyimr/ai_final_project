@@ -395,6 +395,7 @@ public class Agent extends MovingObject {
         changeState(removingObstacle);
         ScheduledObstacle obs = scheduledObstacles.poll();
         attachedBox = obs.obstacle;
+        attachedBox.assignedAgent = this;
         this.inTrouble = obs.inTrouble;
         pendingHelp = false;
         findObstaclePath();
@@ -410,7 +411,7 @@ public class Agent extends MovingObject {
                         findPathWithBox(safeSpot.x, safeSpot.y);
 
                     } else {
-                        if (findPathWithBox(attachedBox.assignedGoal.getX(), attachedBox.assignedGoal.getY())
+                        if (!obstacleForced && findPathWithBox(attachedBox.assignedGoal.getX(), attachedBox.assignedGoal.getY())
                                 && !agentOnMyPathWithBox()) {
                             changeState(possibleStates.movingBox);
                         } else {
@@ -474,8 +475,11 @@ public class Agent extends MovingObject {
     private void obstacleJobIsDone() {
         System.err.println("Obstacle removed! ");
         releaseTroubledAgent();
+        obstacleForced = false;
         safeSpot = null;
         changeState(unassigned);
+        waitingProcedure(2);
+
     }
     private void releaseTroubledAgent() {
         if(inTrouble != null) {
@@ -548,6 +552,7 @@ public class Agent extends MovingObject {
     }
     //external handlers
     public void youShallPass() {
+        System.err.println("I can go now");
         myPathIsBlocked = false;
         pathFindingEngine.pathBlocked = false;
     }
@@ -609,6 +614,7 @@ public class Agent extends MovingObject {
         return (pathLength < offset);
     }
     public void rescueIsNotNeeded() {
+        System.err.println("Rescue not needed for agent: " + this);
         obstacleCounter = 0;
         rescueNotNeeded = true;
     }
@@ -641,7 +647,8 @@ public class Agent extends MovingObject {
         }
 
     }
-    public boolean isMovingBox() { return (currentState == movingBox || (handlingConflict && previousState == movingBox))
+    public boolean isMovingBox() {
+        return (currentState == movingBox || (handlingConflict && previousState == movingBox))
             ||  (isRemovingObstacle() && attachedBox != null );}
     public boolean isBoxAttached() {
     	return (attachedBox != null);
@@ -650,10 +657,15 @@ public class Agent extends MovingObject {
     public void waitForObstacleToBeRemoved() {
         if(rescueNotNeeded) {
             rescueNotNeeded = false;
+            myPathIsBlocked = false;
+//            waitingProcedure(2);
+//            System.err.println("Waiting 2 turns to test this shit");
             return;
         }
+        else {
+            myPathIsBlocked = true;
+        }
         if(obstacleCounter <= 0) obstacleCounter = 30;
-        myPathIsBlocked = true;
         beforeObstacleState = currentState;
         changeState(pathBlocked);
         //waitingProcedure(2);
@@ -710,7 +722,10 @@ public class Agent extends MovingObject {
     public boolean isWithBox(){
         return isMovingBox() || (isBoxAttached() && nextToBox(attachedBox));
     }
-
+    public boolean isMyBox(Box issue) {
+        if(attachedBox == issue) return true;
+        return false;
+    }
     public possibleStates getCurrentState() {
         return currentState;
     }
