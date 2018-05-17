@@ -14,6 +14,8 @@ public class MainBoard {
     public static Map<Character, List<Goal>> goalsByID = new HashMap<>();
     public static List<Goal> allGoals = new LinkedList<>();
     public static int MainBoardYDomain = 0, MainBoardXDomain = 0;
+    public static boolean singleAgentMap = true;
+
     private Map<MovingObject, Goal> steppedOnGoals = new HashMap<>();
 
     public int getHeight() {
@@ -63,11 +65,10 @@ public class MainBoard {
         while ( ( line = in.readLine() ).matches( "^[a-z]+:\\s*[0-9A-Z](,\\s*[0-9A-Z])*\\s*$" ) ) {
             line = line.replaceAll( "\\s", "" );
             color = line.split( ":" )[0];
-
+            singleAgentMap = false;
             for ( String id : line.split( ":" )[1].split( "," ) )
                 colors.put( id.charAt( 0 ), color );
         }
-
         // Read lines specifying level layout
         ArrayList<String> table = new ArrayList<>();
         int currentX = 0;
@@ -148,6 +149,7 @@ public class MainBoard {
         }
         Collections.sort(agents, (left, right) -> left.getID() - right.getID());
         replaceBoxesWithoutAgentWithAWall();
+
     }
     private void replaceBoxesWithoutAgentWithAWall() {
         ListIterator<Box> iterator = allBoxes.listIterator();
