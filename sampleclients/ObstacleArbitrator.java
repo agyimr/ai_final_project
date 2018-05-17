@@ -36,7 +36,7 @@ public class ObstacleArbitrator {
                         owner.rescueIsNotNeeded();
                     }
                     else {
-                        anythingProcessed = FindSafeSpot.safeSpotBFS(owner.getCoordinates()); //TODO experimantal
+                        //anythingProcessed = FindSafeSpot.safeSpotBFS(owner.getCoordinates()); //TODO experimantal
                         if(anythingProcessed == null) anythingProcessed = current.waitingPosition;
                     }
 
