@@ -35,7 +35,7 @@ public class HeatMap {
                         this.heatMap[j][i] = 1000;
                     }
                     else if(RandomWalkClient.gameBoard.isGoal(i, j)) {
-                        this.heatMap[j][i] = 500;
+                        this.heatMap[j][i] = 1000;
                     } else if(reset) {
                         this.heatMap[j][i] = 0;
                     }

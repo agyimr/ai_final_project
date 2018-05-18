@@ -104,7 +104,7 @@ public class ObstacleArbitrator {
             System.err.println("Obstacles before removal: " + agentDictionary);
             if(agentDictionary.remove(savior.getAttachedBox()) == null) {
                 System.err.println(savior);
-                System.err.println(inTrouble)
+                System.err.println(inTrouble);
                 System.err.println(savior.getAttachedBox());;
                 //throw new NegativeArraySizeException();
             }

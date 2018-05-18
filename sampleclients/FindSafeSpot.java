@@ -8,7 +8,9 @@ public class FindSafeSpot {
     private static AnticipationPlanning anticiObj;
     private static boolean IamBox;
 
-    private static final int MAX_DEPTH = 10;
+    private static final int MAX_DEPTH = 40;
+
+    private static final int MAX_WIDE = 200;
 
     private static int startClock;
 
@@ -20,6 +22,11 @@ public class FindSafeSpot {
         RandomWalkClient.heatMap.iterate(MAX_DEPTH);
         System.err.println(RandomWalkClient.heatMap);
 
+//        try {
+//            Thread.sleep(3000);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
 
         map = RandomWalkClient.gameBoard;
         anticiObj = RandomWalkClient.anticipationPlanning;
@@ -32,11 +39,19 @@ public class FindSafeSpot {
         //Add the current agent position to explored
         frontier.add(new ConflictNode(startPos, anticiObj.getClock()));
 
-        double bestEstimation = 0;
-        Point bestSpot = null;
+        Point bestSpot = startPos;
+        double startEstimation = RandomWalkClient.heatMap.getHeat(startPos.x, startPos.y);
+        double bestEstimation = startEstimation;
+
+        int wide = 0;
 
         //continue search as long as there are points in the firstfrontier
         while (!frontier.isEmpty()) {
+
+            if(wide++ > MAX_WIDE) {
+                break;
+            }
+
             //pop the first element
             ConflictNode cur = frontier.get(0);
             frontier.remove(0);
@@ -51,9 +66,9 @@ public class FindSafeSpot {
             }
 
 
-            double estimation = estimateSpot(cur.getAgent(), cur.getClock());
+            double estimation = estimateSpot(startEstimation, cur.getAgent(), cur.getClock());
 
-            if(estimation < startEstimation && estimation > bestEstimation) {
+            if(estimation < bestEstimation) {
                 bestEstimation = estimation;
                 bestSpot = cur.getAgent();
             }
@@ -130,20 +145,30 @@ public class FindSafeSpot {
             return false;
         }
 
+        private static double estimateSpot(double startEstimation, Point spot, int localClock) {
 
-        private static double estimateSpot(Point spot, int localClock) {
+            final int MAX_HEAT = 999999999;
+            final double SENSIBILITY = 2;
+
+            // If I am a box and I want to reach a box
+            if( IamBox && map.isBox(spot.x, spot.y)) {
+                return MAX_HEAT;
+            }
+
 
             int geoDistancce = localClock - startClock;
 
             if(geoDistancce < 2) {
-                return 99999999;
+                return MAX_HEAT;
             }
 
             if(RandomWalkClient.anticipationPlanning.isThereNextBooking(spot, localClock)) {
-                return 999999999;
+                return MAX_HEAT;
             }
 
-            double estimation = RandomWalkClient.heatMap.getHeat(spot.x, spot.y) / geoDistancce;
+            double temparatureRange = startEstimation - RandomWalkClient.heatMap.getHeat(spot.x, spot.y);
+
+            double estimation = startEstimation - (temparatureRange / (geoDistancce));
 
             return estimation;
         }
