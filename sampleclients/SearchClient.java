@@ -17,7 +17,7 @@ public class SearchClient {
     private boolean pushingBox;
     private int goalX;
     private int goalY;
-    private final int searchIncrement = MainBoard.MainBoardYDomain * MainBoard.MainBoardXDomain  + 10;
+    private final int searchIncrement = MainBoard.MainBoardYDomain * MainBoard.MainBoardXDomain  + 20;
     private int searchRange =searchIncrement * 20;
     private boolean recursionTriggered = false;
     public LinkedList<LinkedList<Node>> immovableObstacles = new LinkedList<>();
@@ -59,6 +59,7 @@ public class SearchClient {
     }
     private LinkedList<Node> getNextRoomPath() {
         if(pathBlocked) {
+            System.err.println("Path blocked, switching to wait");
             pathBlocked = false;
             beforeFirstImmovableObstacle = null;
             owner.waitForObstacleToBeRemoved();
@@ -110,7 +111,7 @@ public class SearchClient {
         pathBlocked = false;
         beforeFirstImmovableObstacle = null;
         immovableObstacles.clear();
-        roomPath = RandomWalkClient.roomMaster.getRoomPath(owner.getCoordinates(), new Point(goalX, goalY));
+        roomPath = RandomWalkClient.roomMaster.getRoomPath(owner.getCoordinates(), new Point(goalX, goalY), owner.getColor());
         if(roomPath == null) return false; //TODO impossible to get there
         if( !roomPath.getLast().obstacles.isEmpty()) {
 //            System.err.println("Goal coordinates: " + goalX + "' " + goalY);
@@ -118,7 +119,7 @@ public class SearchClient {
 //            System.err.println(owner);
 //            System.err.println(owner.getAttachedBox());
 //            System.err.println(roomPath.getLast().obstacles);
-            Point firstSafeSpace = ObstacleArbitrator.processObstacles(owner, roomPath.getLast().obstacles, gameBoard.getElement(goalX, goalY));
+            Point firstSafeSpace = ObstacleArbitrator.processObstacles(owner, roomPath.getLast().obstacles);
             if(firstSafeSpace != null) {
                 //throw new NullPointerException();
                 beforeFirstImmovableObstacle = firstSafeSpace;
@@ -140,7 +141,7 @@ public class SearchClient {
     }
 
     private LinkedList<Node> FindPath(boolean pushing, int goalX, int goalY) {
-        //System.err.format("Search starting for agent at pos: %d, %d, goal: %d, %d.\n", owner.getX(), owner.getY(), goalX, goalY);
+        System.err.format("Search starting for agent at pos: %d, %d, goal: %d, %d.\n", owner.getX(), owner.getY(), goalX, goalY);
         initializeSearch(pushing, goalX, goalY);
         if(pushing) {
             strategy.addToFrontier(new Node(owner.getX(), owner.getY(),
@@ -160,7 +161,7 @@ public class SearchClient {
                 pathBlocked = true;
                 return findPathBeforeObstacle(pushing);
             }
-            processObstacles(roomMaster.getObstacles(owner.getCoordinates(), new Point(goalX, goalY)));
+            processObstacles(roomMaster.getObstacles(owner.getCoordinates(), new Point(goalX, goalY), owner.getColor()));
             if(beforeFirstImmovableObstacle != null) {
                 System.err.println("Path Blocked");
                 return findPathBeforeObstacle(pushing);
@@ -202,6 +203,10 @@ public class SearchClient {
         int iterations = 0;
         boolean goingToBox = false;
         if(gameBoard.isBox(x, y)) goingToBox = true;
+        boolean goingToGoal = false;
+        if(gameBoard.isGoal(x, y)) goingToGoal = true;
+        Node agentAtGoalPosition = null;
+        int agentAtGoalIteration = 0;
         while (true) {
             if (strategy.frontierIsEmpty()) {
                 return null;
@@ -212,8 +217,19 @@ public class SearchClient {
                     || leafNode.agentX == x && leafNode.agentY == y))) {
                 return leafNode.extractPlan();
             }
-            else if(pushing && leafNode.boxX == x && leafNode.boxY == y){
+            else if(pushing &&
+                    (leafNode.boxX == x && leafNode.boxY == y)){
                 return leafNode.extractPlan();
+            }
+            else if(pushing && !goingToGoal
+                    && ((leafNode.agentX == x && leafNode.agentY == y))) {
+                if(agentAtGoalPosition == null) {
+                    agentAtGoalPosition = leafNode;
+                    agentAtGoalIteration = iterations + 100;
+                }
+            }
+            if(agentAtGoalPosition != null && agentAtGoalIteration < iterations) {
+                return agentAtGoalPosition.extractPlan();
             }
             strategy.addToExplored(leafNode);
             for (Node n : leafNode.getExpandedNodes()) { // The list of expanded nodes is shuffled randomly; see Node.java.
@@ -221,7 +237,7 @@ public class SearchClient {
                     strategy.addToFrontier(n);
                 }
             }
-            if(++iterations > maxIterations) {
+            if(++iterations > maxIterations && !MainBoard.singleAgentMap) {
                 return null;
             }
         }
@@ -230,18 +246,18 @@ public class SearchClient {
 
     private void processObstacles(ArrayList<Obstacle> result) {
         if(result != null) {
-            Point firstSafeSpace = ObstacleArbitrator.processObstacles(owner, result, gameBoard.getElement(goalX, goalY));
+            Point firstSafeSpace = ObstacleArbitrator.processObstacles(owner, result);
             if(firstSafeSpace != null) {
-                pathBlocked = true;
+                //pathBlocked = true;
                 beforeFirstImmovableObstacle = firstSafeSpace;
             }
         }
         else {
-            pathInaccessible = true;
+            //pathInaccessible = true;
             System.err.println(owner);
             System.err.println(owner.getAttachedBox());
             System.err.println("Goal coords: " + goalX + ", " + goalY);
-            throw new NullPointerException();
+            //throw new NullPointerException();
         }
     }
 
@@ -264,7 +280,7 @@ public class SearchClient {
                 pathBlocked = true;
                 return findPathBeforeObstacle(pushingBox);
             }
-            processObstacles(roomMaster.getObstacles(owner.getCoordinates(), goalRoom));
+            processObstacles(roomMaster.getObstacles(owner.getCoordinates(), goalRoom, owner.getColor()));
             if(beforeFirstImmovableObstacle != null) {
                 return findPathBeforeObstacle(pushingBox);
             }
@@ -302,7 +318,7 @@ public class SearchClient {
                     strategy.addToFrontier(n);
                 }
             }
-            if(++iterations > maxIterations) {
+            if(++iterations > maxIterations && !MainBoard.singleAgentMap) {
                 return null;
             }
         }

@@ -189,9 +189,15 @@ public class Node {
         Node other = (Node) obj;
         if (this.agentY != other.agentY || this.agentX != other.agentX)
             return false;
-        if(this.action.actType == type.Noop && other.action.actType == type.Noop &&
-                this.timeFrame != other.timeFrame)
-            return false;
+        if(this.action.actType == type.Noop && other.action.actType == type.Noop ) {
+            if(Math.abs(this.timeFrame - other.timeFrame) < 4) {
+                return false;
+            }
+            else {
+                return true;
+            }
+        }
+
         return Arrays.deepEquals(this.boxes, other.boxes);
     }
 

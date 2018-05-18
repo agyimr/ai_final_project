@@ -32,10 +32,8 @@ public class FindSafeSpot {
         //Add the current agent position to explored
         frontier.add(new ConflictNode(startPos, anticiObj.getClock()));
 
-
-        Point bestSpot = startPos;
-        double startEstimation = estimateSpot(startPos, anticiObj.getClock());
-        double bestEstimation = -999999999;
+        double bestEstimation = 0;
+        Point bestSpot = null;
 
         //continue search as long as there are points in the firstfrontier
         while (!frontier.isEmpty()) {
@@ -88,7 +86,6 @@ public class FindSafeSpot {
             return maxNode.getAgent();
         }
         */
-        System.err.println("Hello ?");
         System.err.println("safeSpot " + startPos + " -> " + bestSpot);
         if(bestSpot.x == startPos.x && bestSpot.y == startPos.y){
             System.err.println("SAFESPOT NOT FOUND");
