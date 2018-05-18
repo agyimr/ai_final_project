@@ -229,12 +229,8 @@ public class Agent extends MovingObject {
                         return true;
                     }
                     int currentPath;
-                    if(MainBoard.singleAgentMap) {
-                        currentPath = RandomWalkClient.roomMaster.getEmptyPathEstimate(getCoordinates(), newBox.getCoordinates());
-                    }
-                    else {
-                        currentPath = RandomWalkClient.roomMaster.getPathEstimate(getCoordinates(), newBox.getCoordinates(), this.getColor());
-                    }
+                    //currentPath = RandomWalkClient.roomMaster.getEmptyPathEstimate(getCoordinates(), newBox.getCoordinates());
+                    currentPath = RandomWalkClient.roomMaster.getPathEstimate(getCoordinates(), newBox.getCoordinates(), this.getColor());
                     if(currentPath < bestPath) {
                         bestPath = currentPath;
                         bestBox = newBox;
@@ -423,12 +419,12 @@ public class Agent extends MovingObject {
             dropTheBox();
             attachedBox = obs.obstacle;
             attachedBox.assignedAgent = this;
+            findObstaclePath();
         }
         changeState(removingObstacle);
         System.err.println("Obstacle scheduled, removing: " + obs);
         this.inTrouble = obs.inTrouble;
         pendingHelp = false;
-        findObstaclePath();
 
     }
     private void findObstaclePath() {
@@ -480,22 +476,20 @@ public class Agent extends MovingObject {
         System.err.println(inTrouble);
         System.err.println(scheduledObstacles);
         System.err.println(attachedBox);
+        if( isBoxAttached() && attachedBox.getCoordinates().equals(safeSpot) || getCoordinates().equals(safeSpot)) {
+            attachedBox.boxRemovalTime = anticipationPlanning.getClock() + 5;
+            obstacleJobIsDone();
+        }
+        else if( !isBoxAttached() && (getCoordinates().equals(safeSpot) || SearchClient.aroundPoint(getX(), getY(), safeSpot.x, safeSpot.y))) {
+            obstacleJobIsDone();
+        }
         if(!executePath()) {
             if (safeSpot == null) { // I either just arrived at the box position or havent found a path at all
                 findObstaclePath();
             }
             else {
                 if(isBoxAttached()) {
-                    if( attachedBox.getCoordinates().equals(safeSpot) || getCoordinates().equals(safeSpot)) {
-                        attachedBox.boxRemovalTime = anticipationPlanning.getClock() + 5;
-                        obstacleJobIsDone();
-                    }
-                    else {
-                        findPathWithBox(safeSpot.x, safeSpot.y);
-                    }
-                }
-                else if(getCoordinates().equals(safeSpot) || SearchClient.aroundPoint(getX(), getY(), safeSpot.x, safeSpot.y)) {
-                    obstacleJobIsDone();
+                    findPathWithBox(safeSpot.x, safeSpot.y);
                 }
                 else {
                     safeSpot = null;
@@ -511,7 +505,7 @@ public class Agent extends MovingObject {
         safeSpot = null;
         dropTheBox();
         changeState(unassigned);
-        waitingProcedure(1);
+        //waitingProcedure(1);
     }
     private void releaseTroubledAgent() {
         if(inTrouble != null) {

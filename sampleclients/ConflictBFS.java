@@ -26,13 +26,13 @@ public class ConflictBFS {
 		PriorityQueue<Cnode> frontier = new PriorityQueue<Cnode>();
 		List<Command> path = new ArrayList<Command>();
 
-		System.err.println("\n locked");
+		//System.err.println("\n locked");
 		for(Point p : locked){
 			System.err.println(p.toString());
 		}
-		System.err.println("\n startlocked");
+		//System.err.println("\n startlocked");
 		for(Point p : startLocked){
-			System.err.println(p.toString());
+			//System.err.println(p.toString());
 		}
 
 		//Add the current agent position to explored
@@ -53,9 +53,9 @@ public class ConflictBFS {
 			
 			//Get neighbour states of cur
 			List<Cnode> neighbours = getNeighbours(cur, pos);
-			System.err.println("possible neihbours");
+			//System.err.println("possible neihbours");
 			for(Cnode n : neighbours){
-				System.err.println(n.toString());
+				//System.err.println(n.toString());
 			}
 
 			//add the current Cnode to explored
@@ -64,7 +64,7 @@ public class ConflictBFS {
 			for(Cnode n : neighbours){
 				//if point is not visited
 				if(!frontier.contains(n) && !explored.contains(n)) {
-					System.err.println("added to frontier: "+n.toString());
+					//System.err.println("added to frontier: "+n.toString());
 					frontier.add(n);
 				}
 			}
@@ -96,7 +96,7 @@ public class ConflictBFS {
 					//only consider this if there is no box attached
 
 					if(!movingBox){
-						System.err.println("move considered");
+						//System.err.println("move considered");
 						posCand = c.getNext(cur.getPoints());
 					}
 					break;
@@ -105,7 +105,7 @@ public class ConflictBFS {
 					//only consider if if the box is in dir2 - pull(x, dir2)
 
 					if(movingBox && c.dir2 == boxdir){
-						System.err.println("pull considered");
+						//System.err.println("pull considered");
 						posCand = c.getNext(cur.getPoints());
 					}
 					break;
@@ -114,7 +114,7 @@ public class ConflictBFS {
 					//only consider if the box is in the push direction - push(dir1 ,x)
 
 					if(movingBox && c.dir1 == boxdir ){
-						System.err.println("push considered");
+						//System.err.println("push considered");
 						posCand = c.getNext(cur.getPoints());
 					}
 					break;
@@ -154,12 +154,12 @@ public class ConflictBFS {
 						(nextMap.isAgent(x,y) && considerAgents) ||
 						(containsList(sl,cand) && (considerAgents && considerBoxes))
 						){
-					System.err.println("cur: ("+x+","+y+") : "+false);
+					//System.err.println("cur: ("+x+","+y+") : "+false);
 					return false;
 				}
 			}
 		}
-		System.err.println("cur: "+cand.toString()+" "+true);
+		//System.err.println("cur: "+cand.toString()+" "+true);
 		return true;
 	}
 	private static List<Command> generateGoalPath(Cnode goal){
@@ -232,10 +232,10 @@ public class ConflictBFS {
 								!(nextMap.isAgent(x,y) && considerAgents);
 		boolean alleyCase = 	!(reversed && isAlley(cur));
 		boolean alleyCase2 = 	!((!considerAgents || !considerBoxes) && isAlley(cur));
-		System.err.println("boxcase= "+boxCase);
-		System.err.println("agentCase= "+agentCase);
-		System.err.println("alleyCase= "+alleyCase);
-		System.err.println("alleyCase2= "+alleyCase2);
+//		System.err.println("boxcase= "+boxCase);
+//		System.err.println("agentCase= "+agentCase);
+//		System.err.println("alleyCase= "+alleyCase);
+//		System.err.println("alleyCase2= "+alleyCase2);
 		return  !map.isWall(x,y) &&
 				boxCase &&
 				agentCase &&
