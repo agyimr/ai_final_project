@@ -8,8 +8,8 @@ public class Box extends MovingObject {
     public Goal assignedGoal = null;
     public Agent assignedAgent = null;
     boolean noGoalOnTheMap = false;
-    public Box( char id, String color, int currentRow, int currentColumn ) {
-        super(id, color, currentRow, currentColumn, "Box");
+    public Box( char id, String color, int currentRow, int currentColumn, int objID) {
+        super(id, color, currentRow, currentColumn, objID,  "Box");
 //            System.err.println("Found " + color + " box " + id + " at pos: " + currentColumn + ", " + currentRow );
     }
     public void clearOwnerReferences() {
@@ -19,14 +19,20 @@ public class Box extends MovingObject {
         return assignedGoal == null;
     }
     boolean tryToFindAGoal() {
-        if(assignedGoal != null) return  true;
+        if(assignedGoal != null) {
+            if(assignedGoal.canBeSolved() && !assignedGoal.solved()) return true;
+            else {
+                assignedGoal.assignedBox = null;
+                assignedGoal = null;
+            }
+        }
         int bestDistance = Integer.MAX_VALUE;
         Goal bestGoal = null;
         List <Goal>goals = MainBoard.goalsByID.get(Character.toLowerCase(getID()));
         if(goals != null) {
             for(Goal current : goals) {
                 if(current.canBeSolved() && !current.solved()) {
-                    int currentDistance = RandomWalkClient.roomMaster.getPathEstimate(getCoordinates(), current.getCoordinates(), getColor());
+                    int currentDistance = RandomWalkClient.roomMaster.getEmptyPathEstimate(getCoordinates(), current.getCoordinates());
                     if( currentDistance < bestDistance && goalCloserToMe(current, currentDistance) ) { // remember, deleting this estimation crashes everything.
                         bestDistance = currentDistance;
                         bestGoal = current;
@@ -80,10 +86,11 @@ public class Box extends MovingObject {
         return assignedAgent.isWithBox();
     }
     private boolean goalCloserToMe(Goal current, int distance) {
+
         if(current.assignedBox == null) return true;
         else if(current.assignedBox.isBeingMoved()) return false;
         else {
-            int currentDistance = RandomWalkClient.roomMaster.getPathEstimate(current.getCoordinates(), current.assignedBox.getCoordinates(), getColor());
+            int currentDistance = RandomWalkClient.roomMaster.getEmptyPathEstimate(current.getCoordinates(), current.assignedBox.getCoordinates());
             if(currentDistance > distance) {
                 return true;
             }

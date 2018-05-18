@@ -8,8 +8,8 @@ public class Goal extends BasicObject {
     public Box assignedBox = null;
     public List<Goal> deps = new ArrayList<Goal>();
     public List<Goal> obs = new ArrayList<>();
-    public Goal( char id, int y, int x ) {
-        super( y, x,id, "Goal");
+    public Goal( char id, int y, int x, int objID ) {
+        super( y, x,id, objID,"Goal");
     }
     public boolean solved(){
         BasicObject el = RandomWalkClient.gameBoard.getElement(this.getX(),this.getY());
@@ -35,7 +35,7 @@ public class Goal extends BasicObject {
         List <Box>boxes = MainBoard.boxesByID.get(Character.toUpperCase(getID()));
         if(boxes != null) {
             for(Box current : boxes) {
-                int currentDistance = RandomWalkClient.roomMaster.getPathEstimate(getCoordinates(), current.getCoordinates(), current.getColor());
+                int currentDistance = RandomWalkClient.roomMaster.getEmptyPathEstimate(getCoordinates(), current.getCoordinates());
                 if(currentDistance < bestDistance && boxCloserToMe(current, currentDistance)) {
                     bestDistance = currentDistance;
                     bestBox = current;
@@ -66,7 +66,7 @@ public class Goal extends BasicObject {
     private boolean boxCloserToMe(Box current, int distance) {
         if(current.assignedGoal == null) return true;
         else {
-            int currentDistance = RandomWalkClient.roomMaster.getPathEstimate(current.getCoordinates(), current.assignedGoal.getCoordinates(), current.getColor());
+            int currentDistance = RandomWalkClient.roomMaster.getEmptyPathEstimate(current.getCoordinates(), current.assignedGoal.getCoordinates());
             if(currentDistance > distance) {
                 return true;
             }

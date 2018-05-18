@@ -7,10 +7,10 @@ import java.util.*;
 import java.util.List;
 
 public class Estimator {
-    static int STRICT_PUNISHMENT_FOR_GOAL_DESTRUCTION = 10;
-    static int STRICT_PUNISHMENT_FOR_AGENT_USAGE = 10;
-    static int MILD_PUNISHMENT_FOR_AGENT_USAGE = 5;
-    static int MILD_PUNISHMENT_FOR_SAME_COLOR_BOX_PUSHING = 3;
+    static int STRICT_PUNISHMENT_FOR_GOAL_DESTRUCTION = 15;
+    static int STRICT_PUNISHMENT_FOR_AGENT_USAGE = 20;
+    static int MILD_PUNISHMENT_FOR_AGENT_USAGE = 10;
+    static int MILD_PUNISHMENT_FOR_SAME_COLOR_BOX_PUSHING = 8;
 
     public static PathWithObstacles estimatePath(Point from, Section to, Section through,
                                                  int beginning_path_length, String agentColor, Section previousRoom) {

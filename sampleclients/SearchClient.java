@@ -17,7 +17,7 @@ public class SearchClient {
     private boolean pushingBox;
     private int goalX;
     private int goalY;
-    private final int searchIncrement = MainBoard.MainBoardYDomain * MainBoard.MainBoardXDomain  + 10;
+    private final int searchIncrement = MainBoard.MainBoardYDomain * MainBoard.MainBoardXDomain  + 20;
     private int searchRange =searchIncrement * 20;
     private boolean recursionTriggered = false;
     public LinkedList<LinkedList<Node>> immovableObstacles = new LinkedList<>();
@@ -59,6 +59,7 @@ public class SearchClient {
     }
     private LinkedList<Node> getNextRoomPath() {
         if(pathBlocked) {
+            System.err.println("Path blocked, switching to wait");
             pathBlocked = false;
             beforeFirstImmovableObstacle = null;
             owner.waitForObstacleToBeRemoved();
@@ -202,6 +203,10 @@ public class SearchClient {
         int iterations = 0;
         boolean goingToBox = false;
         if(gameBoard.isBox(x, y)) goingToBox = true;
+        boolean goingToGoal = false;
+        if(gameBoard.isGoal(x, y)) goingToGoal = true;
+        Node agentAtGoalPosition = null;
+        int agentAtGoalIteration = 0;
         while (true) {
             if (strategy.frontierIsEmpty()) {
                 return null;
@@ -212,8 +217,19 @@ public class SearchClient {
                     || leafNode.agentX == x && leafNode.agentY == y))) {
                 return leafNode.extractPlan();
             }
-            else if(pushing && leafNode.boxX == x && leafNode.boxY == y){
+            else if(pushing &&
+                    (leafNode.boxX == x && leafNode.boxY == y)){
                 return leafNode.extractPlan();
+            }
+            else if(pushing && !goingToGoal
+                    && ((leafNode.agentX == x && leafNode.agentY == y))) {
+                if(agentAtGoalPosition == null) {
+                    agentAtGoalPosition = leafNode;
+                    agentAtGoalIteration = iterations + 100;
+                }
+            }
+            if(agentAtGoalPosition != null && agentAtGoalIteration < iterations) {
+                return agentAtGoalPosition.extractPlan();
             }
             strategy.addToExplored(leafNode);
             for (Node n : leafNode.getExpandedNodes()) { // The list of expanded nodes is shuffled randomly; see Node.java.
@@ -221,7 +237,7 @@ public class SearchClient {
                     strategy.addToFrontier(n);
                 }
             }
-            if(++iterations > maxIterations) {
+            if(++iterations > maxIterations && !MainBoard.singleAgentMap) {
                 return null;
             }
         }
@@ -232,7 +248,7 @@ public class SearchClient {
         if(result != null) {
             Point firstSafeSpace = ObstacleArbitrator.processObstacles(owner, result);
             if(firstSafeSpace != null) {
-                pathBlocked = true;
+                //pathBlocked = true;
                 beforeFirstImmovableObstacle = firstSafeSpace;
             }
         }
@@ -302,7 +318,7 @@ public class SearchClient {
                     strategy.addToFrontier(n);
                 }
             }
-            if(++iterations > maxIterations) {
+            if(++iterations > maxIterations && !MainBoard.singleAgentMap) {
                 return null;
             }
         }

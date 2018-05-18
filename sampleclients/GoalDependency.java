@@ -189,6 +189,9 @@ public class GoalDependency {
             }else if(i==3){
                 pos = new Point(cur.getPos().x+1,cur.getPos().y);
             }
+            if(MainBoard.xOutOfBounds(pos.x) || MainBoard.yOutOfBounds(pos.y)) {
+                continue;
+            }
             BasicObject mapEntry = mainBoard.getElement(pos.x,pos.y);
             if (!mainBoard.isWall((int)pos.getX(), (int)pos.getY())) {
                 List<Goal> s = cur.getGoalSet();

@@ -9,11 +9,16 @@ public class BasicObject {
     private String ObjectType;
     private int y , x;
     private char id;
-    public BasicObject(int y, int x, char id, String... ObjectType ) {
+    private int uniqueObjectID;
+    public BasicObject(int y, int x, char id, int objtype, String... ObjectType ) {
         this.y = y;
         this.x = x;
         this.id = id;
+        uniqueObjectID = objtype;
         this.ObjectType = ObjectType.length == 1 ? ObjectType[0] : "BasicObject";
+    }
+    public int getUniqueObjectHashID() {
+        return uniqueObjectID;
     }
     public int getY() { return y;}
     public  void setY(int nextY) { y = nextY;}
@@ -53,5 +58,11 @@ public class BasicObject {
         // Compare the data members and return accordingly
         return Integer.compare(getX(), c.getX()) == 0
                 && Integer.compare(getY(), c.getY()) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(ObjectType, id, uniqueObjectID);
     }
 }
