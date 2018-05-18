@@ -93,9 +93,9 @@ public class ObstacleArbitrator {
                     owner.forceObstacleRemoval(current.obstacle, owner, 0);
 
                 }
-                else {
-                    owner.scheduleObstacleRemoval(current.obstacle, owner, current.pathLengthUntilObstacle);
-                }
+//                else {
+//                    owner.scheduleObstacleRemoval(current.obstacle, owner, current.pathLengthUntilObstacle);
+//                }
             }
         }
         return anythingProcessed;
