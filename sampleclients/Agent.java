@@ -7,6 +7,8 @@ import java.util.List;
 
 import static sampleclients.Agent.possibleStates.*;
 import static sampleclients.Command.type;
+import static sampleclients.RandomWalkClient.anticipationPlanning;
+
 //TODO reset goal and box upon completion of job
 public class Agent extends MovingObject {
     private class ScheduledObstacle {
@@ -38,6 +40,7 @@ public class Agent extends MovingObject {
     private boolean myPathIsBlocked = false;
     private int obstacleCounter = 0;
 
+    private int joblessCounter = 0;
     public LinkedList<Node> path;
     private possibleStates currentState = unassigned;
     private possibleStates previousState = currentState;
@@ -68,6 +71,9 @@ public class Agent extends MovingObject {
         while(serverOutput == null) {
             switch (currentState) {
                 case jobless:
+                    if(--joblessCounter < 0) {
+                        changeState(unassigned);
+                    }
                     serverOutput = "NoOp";
                     break;
                 case waiting:
@@ -145,6 +151,7 @@ public class Agent extends MovingObject {
 
             }
             else {
+                joblessCounter = 40;
                 safeSpotFound = false;
                 changeState(jobless);
             }
@@ -206,7 +213,7 @@ public class Agent extends MovingObject {
         for(MovingObject currentBox : MainBoard.BoxColorGroups.get(getColor())) {
             if(currentBox instanceof Box) {
                 newBox = (Box) currentBox;
-                if(newBox.noGoalOnTheMap || (newBox.assignedAgent != null || newBox.atGoalPosition() )
+                if(newBox.noGoalOnTheMap || newBox.boxRemovalTime > anticipationPlanning.getClock() ||  (newBox.assignedAgent != null || newBox.atGoalPosition() )
                         || ((!newBox.canBeSolved()))) {
                     System.err.println("Box: " + newBox + "not for me!");
                     continue;
@@ -402,7 +409,7 @@ public class Agent extends MovingObject {
     }
     private void clearPath() {
         if(path != null)
-            RandomWalkClient.anticipationPlanning.removePath(path, this, RandomWalkClient.anticipationPlanning.getClock());
+            anticipationPlanning.removePath(path, this, anticipationPlanning.getClock());
         path = null;
     }
     private void startObstacleRemoval() {
@@ -477,6 +484,7 @@ public class Agent extends MovingObject {
             else {
                 if(isBoxAttached()) {
                     if( attachedBox.getCoordinates().equals(safeSpot) || getCoordinates().equals(safeSpot)) {
+                        attachedBox.boxRemovalTime = anticipationPlanning.getClock() + 5;
                         obstacleJobIsDone();
                     }
                     else {

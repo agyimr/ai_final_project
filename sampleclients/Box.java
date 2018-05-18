@@ -8,6 +8,7 @@ public class Box extends MovingObject {
     public Goal assignedGoal = null;
     public Agent assignedAgent = null;
     boolean noGoalOnTheMap = false;
+    int boxRemovalTime = 0;
     public Box( char id, String color, int currentRow, int currentColumn, int objID) {
         super(id, color, currentRow, currentColumn, objID,  "Box");
 //            System.err.println("Found " + color + " box " + id + " at pos: " + currentColumn + ", " + currentRow );

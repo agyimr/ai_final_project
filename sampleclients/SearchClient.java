@@ -39,7 +39,7 @@ public class SearchClient {
     }
     private void initializeSearch(boolean pushing, Section goalRoom) {
         strategy.clear();
-        strategy.heuristic.initializeSearch(pushing, goalRoom);
+        strategy.heuristic.initializeSearch(pushing, goalRoom, goalX, goalY);
     }
     public boolean inGoalRoom() {
         return straightToGoal;
