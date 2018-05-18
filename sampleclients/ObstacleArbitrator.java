@@ -44,8 +44,10 @@ public class ObstacleArbitrator {
                     if(currentSchedule.savior == owner) {
                         owner.changeObstacle(current.obstacle);
                     }
+                    else {
+                        owner.rescueIsNotNeeded(); //TODO rescue is needed, this information has to be stored in scheduled obstacles
+                    }
                     anythingProcessed = current.waitingPosition;
-                    owner.rescueIsNotNeeded(); //TODO rescue is needed, this information has to be stored in scheduled obstacles
                 }
                 if(currentSchedule.inTrouble != owner && currentSchedule.savior != null && currentSchedule.savior != owner) {
                     additionalRescue.get(currentSchedule.savior).add(owner);
@@ -64,12 +66,12 @@ public class ObstacleArbitrator {
                 }
                 if(anythingProcessed == null) {
                     if(current.obstacle.isBeingMoved()) {
-                        agentDictionary.put(current.obstacle, new scheduledAgents(current.rescueAgent, owner));
-                        //anythingProcessed = FindSafeSpot.safeSpotBFS(current.waitingPosition);
-                        //if(anythingProcessed == null) {
-                        current.rescueAgent.forceObstacleRemoval(current.obstacle, owner, current.pathLengthUntilObstacle);
+                        if(true) {
+                            agentDictionary.put(current.obstacle, new scheduledAgents(current.rescueAgent, owner));
+                            current.rescueAgent.forceObstacleRemoval(current.obstacle, owner, current.pathLengthUntilObstacle);
+                        }
+
                         anythingProcessed = current.waitingPosition;
-                        //}
                         owner.rescueIsNotNeeded();
                     }
                     else {
@@ -85,7 +87,7 @@ public class ObstacleArbitrator {
                 //throw new NullPointerException();
             }
             else {
-                agentDictionary.put(current.obstacle, new scheduledAgents(current.rescueAgent, owner));
+                agentDictionary.put(current.obstacle, new scheduledAgents(owner, owner));
                 if(anythingProcessed == null) {
                     anythingProcessed = current.waitingPosition;
                     owner.forceObstacleRemoval(current.obstacle, owner, 0);
@@ -101,7 +103,10 @@ public class ObstacleArbitrator {
         if(savior.isBoxAttached()) {
             System.err.println("Obstacles before removal: " + agentDictionary);
             if(agentDictionary.remove(savior.getAttachedBox()) == null) {
-                throw new NegativeArraySizeException();
+                System.err.println(savior);
+                System.err.println(inTrouble)
+                System.err.println(savior.getAttachedBox());;
+                //throw new NegativeArraySizeException();
             }
             System.err.println("After removal: " + agentDictionary);
         }
