@@ -479,9 +479,11 @@ public class Agent extends MovingObject {
         if( isBoxAttached() && attachedBox.getCoordinates().equals(safeSpot) || getCoordinates().equals(safeSpot)) {
             attachedBox.boxRemovalTime = anticipationPlanning.getClock() + 5;
             obstacleJobIsDone();
+            return;
         }
         else if( !isBoxAttached() && (getCoordinates().equals(safeSpot) || SearchClient.aroundPoint(getX(), getY(), safeSpot.x, safeSpot.y))) {
             obstacleJobIsDone();
+            return;
         }
         if(!executePath()) {
             if (safeSpot == null) { // I either just arrived at the box position or havent found a path at all
