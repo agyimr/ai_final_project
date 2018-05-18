@@ -349,7 +349,7 @@ public class Conflicts {
                 newplan = true;
             }
             System.err.println("king noop "+rec+" turn and replans: "+newplan);
-            kingAgent.handleConflict(rec, kingAgent.getID() == original,true);
+            kingAgent.handleConflict(rec, kingAgent.getID() == original,newplan);
         }
 
         System.err.println("---- PLANMERGE end ----");
