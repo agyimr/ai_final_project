@@ -198,7 +198,10 @@ public class AnticipationPlanning {
         } else {
             return -1;
         }
+    }
 
+    public boolean isThereNextBooking(Point target, int instant) {
+        return this.getBoardCell(target.x, target.y).keySet().contains(instant);
     }
 
     private class Cell {
