@@ -122,6 +122,8 @@ public class Conflicts {
 		List<Point> agentPos = new ArrayList<Point>();
 		agentPos.add(agent1.getCoordinates());
 		if (agent1.isWithBox()) {
+            System.err.println("debug = "+agent1.toString());
+            System.err.println("debug = "+agent1.getAttachedBox().toString());
             System.err.println("isMovingBox");
 			agentPos.add(agent1.getAttachedBox().getCoordinates());
 		}
@@ -156,6 +158,10 @@ public class Conflicts {
         System.err.println("----- NoopFix start -------");
 		//Find next two points for king, if intersects with pawnAgent pos, return false, else true.
         if(kingAgent.isWaiting() || pawnAgent.isWaiting() ||  pawnAgent.path.isEmpty() || kingAgent.path.isEmpty()){
+            System.err.println("----- NoopFix end -------");
+            return false;
+        }
+        if(kingAgent.path.peek().action.actType == Command.type.Noop || pawnAgent.path.peek().action.actType == Command.type.Noop ){
             System.err.println("----- NoopFix end -------");
             return false;
         }
@@ -282,16 +288,16 @@ public class Conflicts {
             mps = -1;
         }
         System.err.println("mps:"+mps);
-        List<Command> solution = ConflictBFS.doBFS(locked, pawnAgentPos, startLocked,true,true,reversed);
+        List<Command> solution = ConflictBFS.doBFS(locked, pawnAgentPos, startLocked,true,true,reversed,pawnAgent.isMovingBox());
         if (solution.size() == 0) {
             System.err.println("\nPLANMERGE FOUND NO SOLUTION while considering other agents");
             System.err.println("trying to find solution while not considering other agents\n");
-            solution = ConflictBFS.doBFS(locked, pawnAgentPos, startLocked,false,true,reversed);
+            solution = ConflictBFS.doBFS(locked, pawnAgentPos, startLocked,false,true,reversed,pawnAgent.isMovingBox());
 
             if (solution.size() == 0) {
                 System.err.println("\nPLANMERGE FOUND NO SOLUTION while not considering other agents");
                 System.err.println("trying to find solution while not considering other agents or boxes\n");
-                solution = ConflictBFS.doBFS(locked, pawnAgentPos, startLocked,false,false,reversed);
+                solution = ConflictBFS.doBFS(locked, pawnAgentPos, startLocked,false,false,reversed,pawnAgent.isMovingBox());
 
                 if (solution.size() == 0) {
                     System.err.println("\nPLANMERGE FOUND NO SOLUTION while not considering other agents and boxes\n");
@@ -303,7 +309,7 @@ public class Conflicts {
                     if(pawnAgent.getID() == original){
                         System.err.println("PROBLEM ! UNSAFE HANDLE CONFLICT");
                     }
-                    pawnAgent.handleConflict(solution,false);
+                    pawnAgent.handleConflict(solution,false,false);
                     System.err.println("\n path before reversion");
                     System.err.println("size: "+solution.size());
                     for(Command n : solution){
@@ -325,7 +331,7 @@ public class Conflicts {
         }
 
         try{
-            pawnAgent.handleConflict(solution, pawnAgent.getID() == original);
+            pawnAgent.handleConflict(solution, pawnAgent.getID() == original,true);
         }catch (UnsupportedOperationException exc){
             System.err.println("\n"+rec+" move Cant be applied after conflict!");
             rec = delegateConflict(pawnAgent,involved,mps,rec);

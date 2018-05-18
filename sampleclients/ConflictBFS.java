@@ -12,12 +12,14 @@ public class ConflictBFS {
 	private static boolean considerAgents = true;
 	private static boolean considerBoxes = true;
 	private static boolean reversed = false;
+	private static boolean movingBox = false;
 	private static List<Point> sl;
-	public static List<Command> doBFS(List<Point> locked, List<Point> pos,List<Point> startLocked, boolean ca, boolean cb, boolean r){
+	public static List<Command> doBFS(List<Point> locked, List<Point> pos,List<Point> startLocked, boolean ca, boolean cb, boolean r, boolean mb){
 		sl = startLocked;
 		considerAgents = ca;
 		considerBoxes = cb;
 		reversed = r;
+		movingBox = mb;
 		map = RandomWalkClient.gameBoard;
 		nextMap = RandomWalkClient.nextStepGameBoard;
 		PriorityQueue<Cnode> explored = new PriorityQueue<Cnode>();
@@ -43,7 +45,7 @@ public class ConflictBFS {
 			frontier.remove(0);
 			
 			//goal check - not in any locked points
-			if(!containsList(locked,cur.getPoints()) && isGoal(cur)){
+			if(!containsList(locked,cur.getPoints()) && isGoal(cur) && !cur.equals(new Cnode(pos,0))){
 				path = generateGoalPath(cur);
 				break;
 			}
@@ -75,11 +77,9 @@ public class ConflictBFS {
 		Command[] allCommands = Command.every;
 
 		//If box attached - get its direction from the agent
-		if(startPos.size() == 2){
+		if(movingBox){
 			boxdir = getBoxDir(cur);
-		}else{
 		}
-
 		
 		// for all commands
 		for(int i = 0; i<allCommands.length;i++) {
@@ -139,9 +139,9 @@ public class ConflictBFS {
 						(map.isBox(x,y) && (considerBoxes || mapBoxHasAgent)) ||
 						(map.isAgent(x,y) && considerAgents) ||
 						nextMap.isWall(x,y) ||
-						(nextMap.isBox(x,y) && considerBoxes) ||
-						(nextMap.isAgent(x,y) && (considerAgents || nextMapBoxHasAgent)) ||
-						(containsList(sl,cand) && (considerAgents || considerBoxes))
+						(nextMap.isBox(x,y) && considerBoxes || nextMapBoxHasAgent) ||
+						(nextMap.isAgent(x,y) && considerAgents) ||
+						(containsList(sl,cand) && (considerAgents && considerBoxes))
 						){
 						return false;
 				}
@@ -212,16 +212,22 @@ public class ConflictBFS {
 		if(nextMap.getElement(x,y) instanceof Box){
 			nextMapBoxHasAgent = ((Box) nextMap.getElement(x,y)).assignedAgent == null;
 		}
+		System.err.println(cur.toString());
 		boolean boxCase = 		!(map.isBox(x,y) && considerBoxes && mapBoxHasAgent) &&
 								!(nextMap.isBox(x,y) && considerBoxes && nextMapBoxHasAgent);
 		boolean agentCase = 	!(map.isAgent(x,y) && considerAgents) &&
 								!(nextMap.isAgent(x,y) && considerAgents);
 		boolean alleyCase = 	!(reversed && isAlley(cur));
-
+		boolean alleyCase2 = 	!((!considerAgents || !considerBoxes) && isAlley(cur));
+		System.err.println("boxcase= "+boxCase);
+		System.err.println("agentCase= "+agentCase);
+		System.err.println("alleyCase= "+alleyCase);
+		System.err.println("alleyCase2= "+alleyCase2);
 		return  !map.isWall(x,y) &&
 				boxCase &&
 				agentCase &&
-				alleyCase;
+				alleyCase &&
+				alleyCase2;
 	}
 	private static boolean isAlley(Cnode cur) {
 		Point agent =  cur.getPoints().get(0);
@@ -242,6 +248,26 @@ public class ConflictBFS {
 		curP = new Command(dir.W).getNext(agent);
 		if(!map.isWall(curP.x,curP.y)){
 			freeSpaces+=1;
+		}
+
+		return freeSpaces <= 2;
+
+
+	}
+	private static boolean isAlley(Point cur) {
+		int freeSpaces = 0;
+
+		if (!map.isWall(cur.x + 1, cur.y)) {
+			freeSpaces += 1;
+		}
+		if (!map.isWall(cur.x - 1, cur.y)) {
+			freeSpaces += 1;
+		}
+		if (!map.isWall(cur.x, cur.y + 1)) {
+			freeSpaces += 1;
+		}
+		if (!map.isWall(cur.x, cur.y - 1)) {
+			freeSpaces += 1;
 		}
 
 		return freeSpaces <= 2;

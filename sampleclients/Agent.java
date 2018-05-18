@@ -664,7 +664,7 @@ public class Agent extends MovingObject {
         System.err.println("Rescue not needed for agent: " + this);
         rescueNotNeeded = true;
     }
-    public void handleConflict(List<Command> commands, boolean conflictOrigin) {
+    public void handleConflict(List<Command> commands, boolean conflictOrigin,boolean act) {
         boolean needsToMove = false;
         if(hasMoved()) {
             revertMoveIntention(RandomWalkClient.nextStepGameBoard);
@@ -673,7 +673,7 @@ public class Agent extends MovingObject {
         handlingConflict = true;
         changeState(inConflict);
         replacePath(commands);
-        if(needsToMove || conflictOrigin) {
+        if(act && (needsToMove || conflictOrigin) ) {
             act();
         }
     }
@@ -695,7 +695,7 @@ public class Agent extends MovingObject {
     }
     public boolean isMovingBox() {
         return (currentState == movingBox || (handlingConflict && previousState == movingBox))
-            ||  (isRemovingObstacle() && attachedBox != null );}
+            ||  (isRemovingObstacle() && attachedBox != null && (isBoxAttached() && nextToBox(attachedBox)));}
     public boolean isBoxAttached() {
     	return (attachedBox != null);
     }
