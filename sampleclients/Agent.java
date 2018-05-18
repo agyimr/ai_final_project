@@ -214,7 +214,7 @@ public class Agent extends MovingObject {
         for(MovingObject currentBox : MainBoard.BoxColorGroups.get(getColor())) {
             if(currentBox instanceof Box) {
                 newBox = (Box) currentBox;
-                if(newBox.noGoalOnTheMap || newBox.boxRemovalTime > anticipationPlanning.getClock() ||  (newBox.assignedAgent != null || newBox.atGoalPosition() )
+                if(newBox.noGoalOnTheMap ||  (newBox.assignedAgent != null || newBox.atGoalPosition() )
                         || ((!newBox.canBeSolved()))) {
                     System.err.println("Box: " + newBox + "not for me!");
                     continue;
@@ -229,8 +229,12 @@ public class Agent extends MovingObject {
                         return true;
                     }
                     int currentPath;
-                    //currentPath = RandomWalkClient.roomMaster.getEmptyPathEstimate(getCoordinates(), newBox.getCoordinates());
-                    currentPath = RandomWalkClient.roomMaster.getPathEstimate(getCoordinates(), newBox.getCoordinates(), this.getColor());
+                    if(MainBoard.singleAgentMap) {
+                        currentPath = RandomWalkClient.roomMaster.getEmptyPathEstimate(getCoordinates(), newBox.getCoordinates());
+                    }
+                    else {
+                        currentPath = RandomWalkClient.roomMaster.getPathEstimate(getCoordinates(), newBox.getCoordinates(), this.getColor());
+                    }
                     if(currentPath < bestPath) {
                         bestPath = currentPath;
                         bestBox = newBox;
