@@ -237,7 +237,7 @@ public class SearchClient {
                     strategy.addToFrontier(n);
                 }
             }
-            if(++iterations > maxIterations && !MainBoard.singleAgentMap) {
+            if(++iterations > maxIterations) {
                 return null;
             }
         }
@@ -318,7 +318,7 @@ public class SearchClient {
                     strategy.addToFrontier(n);
                 }
             }
-            if(++iterations > maxIterations && !MainBoard.singleAgentMap) {
+            if(++iterations > maxIterations) {
                 return null;
             }
         }
