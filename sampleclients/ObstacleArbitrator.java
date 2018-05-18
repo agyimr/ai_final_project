@@ -93,6 +93,9 @@ public class ObstacleArbitrator {
                     owner.forceObstacleRemoval(current.obstacle, owner, 0);
 
                 }
+                else {
+                    owner.scheduleObstacleRemoval(current.obstacle, owner, current.pathLengthUntilObstacle);
+                }
             }
         }
         return anythingProcessed;
@@ -105,7 +108,7 @@ public class ObstacleArbitrator {
             if(agentDictionary.remove(savior.getAttachedBox()) == null) {
                 System.err.println(savior);
                 System.err.println(inTrouble);
-                System.err.println(savior.getAttachedBox());;
+                System.err.println(savior.getAttachedBox());
                 //throw new NegativeArraySizeException();
             }
             System.err.println("After removal: " + agentDictionary);
