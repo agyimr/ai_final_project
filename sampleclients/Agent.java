@@ -48,9 +48,9 @@ public class Agent extends MovingObject {
         unassigned,
         waiting,
         pathBlocked,
+        removingObstacle,
         movingTowardsBox,
         movingBox,
-        removingObstacle,
         inConflict
     }
     String serverOutput = null;
