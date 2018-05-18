@@ -147,15 +147,15 @@ public class MainBoard {
             currentX = 0;
             ++MainBoardYDomain;
         }
-        fillEmptySpaces();
+        fillEmptySpaces(uniqueId);
         Collections.sort(agents, (left, right) -> left.getID() - right.getID());
         replaceBoxesWithoutAgentWithAWall();
 
     }
-    private void fillEmptySpaces() {
+    private void fillEmptySpaces(int uniqueId) {
         for(List<BasicObject> xCoords: gameBoard) {
             while(xCoords.size() < MainBoardXDomain) {
-                xCoords.add(null);
+                xCoords.add(new Wall('+', xCoords.size(), gameBoard.indexOf(xCoords), uniqueId++));
             }
         }
     }

@@ -26,17 +26,31 @@ public class ObstacleArbitrator {
         }
     }
     public static HashMap<Box, scheduledAgents> agentDictionary = new HashMap<>();
+    public static HashMap<Agent, HashSet<Agent>> additionalRescue = initializeAdditionalRescue();
+    private static HashMap<Agent, HashSet<Agent>> initializeAdditionalRescue() {
+        HashMap<Agent, HashSet<Agent>> dict = new HashMap<>();
+        for(Agent agent: MainBoard.agents) {
+            dict.put(agent, new HashSet<>());
+        }
+        return dict;
+    }
     public static Point processObstacles(Agent owner, ArrayList<Obstacle> obstacles) {
         Point anythingProcessed = null;
         for(Obstacle current : obstacles) {
             if(owner.isMyBox(current.obstacle)) continue;
             if(agentDictionary.containsKey(current.obstacle)) {
+                scheduledAgents currentSchedule = agentDictionary.get(current.obstacle);
                 if(anythingProcessed == null) {
-                    if(agentDictionary.get(current.obstacle).savior == owner) {
+                    if(currentSchedule.savior == owner) {
                         owner.changeObstacle(current.obstacle);
                     }
+                    else {
+                        owner.rescueIsNotNeeded(); //TODO rescue is needed, this information has to be stored in scheduled obstacles
+                    }
                     anythingProcessed = current.waitingPosition;
-                    owner.rescueIsNotNeeded(); //TODO rescue is needed, this information has to be stored in scheduled obstacles
+                }
+                if(currentSchedule.inTrouble != owner && currentSchedule.savior != null && currentSchedule.savior != owner) {
+                    additionalRescue.get(currentSchedule.savior).add(owner);
                 }
                 continue;
             }
@@ -52,12 +66,12 @@ public class ObstacleArbitrator {
                 }
                 if(anythingProcessed == null) {
                     if(current.obstacle.isBeingMoved()) {
-                        agentDictionary.put(current.obstacle, new scheduledAgents(current.rescueAgent, owner));
-                        //anythingProcessed = FindSafeSpot.safeSpotBFS(current.waitingPosition);
-                        //if(anythingProcessed == null) {
-                        current.rescueAgent.forceObstacleRemoval(current.obstacle, owner, current.pathLengthUntilObstacle);
+                        if(true) {
+                            agentDictionary.put(current.obstacle, new scheduledAgents(current.rescueAgent, owner));
+                            current.rescueAgent.forceObstacleRemoval(current.obstacle, owner, current.pathLengthUntilObstacle);
+                        }
+
                         anythingProcessed = current.waitingPosition;
-                        //}
                         owner.rescueIsNotNeeded();
                     }
                     else {
@@ -73,7 +87,7 @@ public class ObstacleArbitrator {
                 //throw new NullPointerException();
             }
             else {
-                agentDictionary.put(current.obstacle, new scheduledAgents(current.rescueAgent, owner));
+                agentDictionary.put(current.obstacle, new scheduledAgents(owner, owner));
                 if(anythingProcessed == null) {
                     anythingProcessed = current.waitingPosition;
                     owner.forceObstacleRemoval(current.obstacle, owner, 0);
@@ -89,7 +103,10 @@ public class ObstacleArbitrator {
         if(savior.isBoxAttached()) {
             System.err.println("Obstacles before removal: " + agentDictionary);
             if(agentDictionary.remove(savior.getAttachedBox()) == null) {
-                throw new NegativeArraySizeException();
+                System.err.println(savior);
+                System.err.println(inTrouble)
+                System.err.println(savior.getAttachedBox());;
+                //throw new NegativeArraySizeException();
             }
             System.err.println("After removal: " + agentDictionary);
         }
@@ -98,6 +115,10 @@ public class ObstacleArbitrator {
         }
         if(inTrouble != null) {
             inTrouble.youShallPass();
+            for(Agent additionals : additionalRescue.get(savior)) {
+                additionals.youShallPass();
+            }
+            additionalRescue.get(savior).clear();
 //            if(!inTrouble.obstacles.isEmpty()){
 //                throw new NullPointerException();
 //            }

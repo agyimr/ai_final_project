@@ -21,10 +21,10 @@ public abstract class Heuristic implements Comparator<Node> {
         this.goalY = goalY;
         goalRoom = null;
     }
-    public void initializeSearch(boolean pushingBox, Section goalRoom) {
+    public void initializeSearch(boolean pushingBox, Section goalRoom, int goalX, int goalY) {
         this.pushingBox = pushingBox;
-        this.goalX = -1;
-        this.goalY = -1;
+        this.goalX = goalX;
+        this.goalY = goalY;
         this.goalRoom = goalRoom;
     }
 	public int h(Node n) {
@@ -33,10 +33,10 @@ public abstract class Heuristic implements Comparator<Node> {
 
         if(goalRoom != null) {
             if(pushingBox) {
-                value = getBoxHeuristic(n, goalRoom.getDistanceFromPoint(new Point(n.boxX, n.boxY)));
+                value = getBoxHeuristic(n, goalRoom.getDistanceFromPoint(new Point(n.boxX, n.boxY)) * 2 + ManhattanDistance(n.boxX, n.boxY, goalX, goalY));
             }
             else {
-                value = getAgentHeuristic(n, goalRoom.getDistanceFromPoint(new Point(n.agentX, n.agentY)));
+                value = getAgentHeuristic(n, goalRoom.getDistanceFromPoint(new Point(n.agentX, n.agentY)) * 2 + ManhattanDistance(n.agentX, n.agentY, goalX, goalY));
             }
         }
         else {
