@@ -87,8 +87,8 @@ public class Conflicts {
 		    pawnAgent = agent1;
         }
 
-        System.err.println("pawn is:"+pawnAgent.getID());
-        System.err.println("king is:"+kingAgent.getID());
+        System.err.println("pawn is:"+pawnAgent.getID()+" with state: "+pawnAgent.getCurrentState());
+        System.err.println("king is:"+kingAgent.getID()+" with state: "+kingAgent.getCurrentState());
 
         if(!involved.contains(conflictPartner)){
             involved.add(conflictPartner);
@@ -344,7 +344,12 @@ public class Conflicts {
             return false;
         }
         if(!kingAgent.hasMoved() && kingAgent.path!= null && !kingAgent.path.isEmpty() && kingAgent.path.peek().action.actType != Command.type.Noop) {
-            kingAgent.handleConflict(rec, kingAgent.getID() == original,false);
+            boolean newplan = false;
+            if(kingAgent.path.size() < 2 && kingAgent.path.peek().action.actType == Command.type.Noop){
+                newplan = true;
+            }
+            System.err.println("king noop "+rec+" turn and replans: "+newplan);
+            kingAgent.handleConflict(rec, kingAgent.getID() == original,true);
         }
 
         System.err.println("---- PLANMERGE end ----");

@@ -719,6 +719,7 @@ public class Agent extends MovingObject {
         serverOutput = null;
         switch (currentState) {
             case waiting:
+                System.err.println("Waiting counter = "+waitingCounter);
                 waitingCounter--;
             case unassigned:
             case jobless:
