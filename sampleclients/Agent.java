@@ -494,7 +494,7 @@ public class Agent extends MovingObject {
                         findPathWithBox(safeSpot.x, safeSpot.y);
                     }
                 }
-                else if(getCoordinates().equals(safeSpot) || SearchClient.nextTo(getX(), getY(), safeSpot.x, safeSpot.y)) {
+                else if(getCoordinates().equals(safeSpot) || SearchClient.aroundPoint(getX(), getY(), safeSpot.x, safeSpot.y)) {
                     obstacleJobIsDone();
                 }
                 else {
@@ -687,6 +687,7 @@ public class Agent extends MovingObject {
         rescueNotNeeded = true;
     }
     public void handleConflict(List<Command> commands, boolean conflictOrigin,boolean act) {
+        System.err.println("Conflict handle with path: " + commands + " for: " + this);
         boolean needsToMove = false;
         if(hasMoved()) {
             revertMoveIntention(RandomWalkClient.nextStepGameBoard);
@@ -700,6 +701,7 @@ public class Agent extends MovingObject {
         }
     }
     public void handleConflict(int waitingTime, boolean conflictOrigin, boolean newPlanNeeded) {
+        System.err.println("Conflict handle with waiting: " + waitingTime + " for: " + this);
         boolean needsToMove = false;
         if(hasMoved()) {
             revertMoveIntention(RandomWalkClient.nextStepGameBoard);

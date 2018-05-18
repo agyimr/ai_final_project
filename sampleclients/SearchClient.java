@@ -199,6 +199,9 @@ public class SearchClient {
         return (Math.abs(firstX - secondX) == 1) && (Math.abs(firstY - secondY) == 0)
                 || (Math.abs(firstX - secondX) == 0) && (Math.abs(firstY - secondY) == 1);
     }
+    public static boolean aroundPoint(int firstX, int firstY, int secondX, int secondY) {
+        return (Math.abs(firstX - secondX) <= 1) && (Math.abs(firstY - secondY) <= 1);
+    }
     private LinkedList<Node> conductSearch(int maxIterations, int x, int y, boolean pushing) { //FUCKING JAVA
         int iterations = 0;
         boolean goingToBox = false;
@@ -214,7 +217,7 @@ public class SearchClient {
             Node leafNode = strategy.getAndRemoveLeaf();
             if (!pushing &&
                     ((goingToBox && nextTo(leafNode.agentX, leafNode.agentY, x, y)
-                    || leafNode.agentX == x && leafNode.agentY == y))) {
+                    || (!goingToBox && aroundPoint(leafNode.agentX, leafNode.agentY, x, y))))) {
                 return leafNode.extractPlan();
             }
             else if(pushing &&
