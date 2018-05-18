@@ -47,7 +47,7 @@ public class ObstacleArbitrator {
                     anythingProcessed = current.waitingPosition;
                     owner.rescueIsNotNeeded(); //TODO rescue is needed, this information has to be stored in scheduled obstacles
                 }
-                if(currentSchedule.inTrouble != owner) {
+                if(currentSchedule.inTrouble != owner && currentSchedule.savior != null && currentSchedule.savior != owner) {
                     additionalRescue.get(currentSchedule.savior).add(owner);
                 }
                 continue;
