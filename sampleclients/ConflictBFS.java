@@ -53,13 +53,18 @@ public class ConflictBFS {
 			
 			//Get neighbour states of cur
 			List<Cnode> neighbours = getNeighbours(cur, pos);
-			
+			System.err.println("possible neihbours");
+			for(Cnode n : neighbours){
+				System.err.println(n.toString());
+			}
+
 			//add the current Cnode to explored
 			explored.add(cur);
 			
 			for(Cnode n : neighbours){
 				//if point is not visited
 				if(!frontier.contains(n) && !explored.contains(n)) {
+					System.err.println("added to frontier: "+n.toString());
 					frontier.add(n);
 				}
 			}
@@ -85,25 +90,31 @@ public class ConflictBFS {
 		for(int i = 0; i<allCommands.length;i++) {
 			Command c = allCommands[i];
 			List<Point> posCand = null;
-			
+
 			switch(c.actType){
 				case Move:
 					//only consider this if there is no box attached
-					if(startPos.size()==1){
+
+					if(!movingBox){
+						System.err.println("move considered");
 						posCand = c.getNext(cur.getPoints());
 					}
 					break;
 					
 				case Pull:
 					//only consider if if the box is in dir2 - pull(x, dir2)
-					if(startPos.size() == 2 && c.dir2 == boxdir){
+
+					if(movingBox && c.dir2 == boxdir){
+						System.err.println("pull considered");
 						posCand = c.getNext(cur.getPoints());
 					}
 					break;
 					
 				case Push:
-					//only consider if the box is in the push direction - push(dir1 ,x) 
-					if(startPos.size() == 2 && c.dir1 == boxdir ){
+					//only consider if the box is in the push direction - push(dir1 ,x)
+
+					if(movingBox && c.dir1 == boxdir ){
+						System.err.println("push considered");
 						posCand = c.getNext(cur.getPoints());
 					}
 					break;
@@ -143,10 +154,12 @@ public class ConflictBFS {
 						(nextMap.isAgent(x,y) && considerAgents) ||
 						(containsList(sl,cand) && (considerAgents && considerBoxes))
 						){
-						return false;
+					System.err.println("cur: ("+x+","+y+") : "+false);
+					return false;
 				}
 			}
 		}
+		System.err.println("cur: "+cand.toString()+" "+true);
 		return true;
 	}
 	private static List<Command> generateGoalPath(Cnode goal){
