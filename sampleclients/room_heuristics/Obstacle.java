@@ -20,6 +20,7 @@ public class Obstacle {
 
     @Override
     public String toString() {
+        if (rescueAgent == null) return "Rescueagent null, box: " + obstacle.toString();
         return "Box: " + obstacle.toString() + ", Rescue Agent: " + rescueAgent.toString() + ", Path length until obstacle: " +
                 pathLengthUntilObstacle + ", Waiting Position: " + waitingPosition.toString();
     }

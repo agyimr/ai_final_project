@@ -14,6 +14,8 @@ public class MainBoard {
     public static Map<Character, List<Goal>> goalsByID = new HashMap<>();
     public static List<Goal> allGoals = new LinkedList<>();
     public static int MainBoardYDomain = 0, MainBoardXDomain = 0;
+    public static boolean singleAgentMap = true;
+
     private Map<MovingObject, Goal> steppedOnGoals = new HashMap<>();
 
     public int getHeight() {
@@ -58,16 +60,15 @@ public class MainBoard {
     private void readMap(BufferedReader in) throws IOException{
         Map< Character, String > colors = new HashMap< Character, String >();
         String line, color;
-
+        int uniqueId = 0;
         // Read lines specifying colors
         while ( ( line = in.readLine() ).matches( "^[a-z]+:\\s*[0-9A-Z](,\\s*[0-9A-Z])*\\s*$" ) ) {
             line = line.replaceAll( "\\s", "" );
             color = line.split( ":" )[0];
-
+            singleAgentMap = false;
             for ( String id : line.split( ":" )[1].split( "," ) )
                 colors.put( id.charAt( 0 ), color );
         }
-
         // Read lines specifying level layout
         ArrayList<String> table = new ArrayList<>();
         int currentX = 0;
@@ -78,7 +79,7 @@ public class MainBoard {
                 if (isAgent(id)) {
                     String currentColor = colors.get( id );
                     if(currentColor == null) currentColor = "blue";
-                    Agent newAgent = new Agent( id,currentColor, MainBoardYDomain, currentX);
+                    Agent newAgent = new Agent( id,currentColor, MainBoardYDomain, currentX, uniqueId++);
                     objects.add(i, newAgent);
                     agents.add( newAgent );
                     List<Agent> result = AgentColorGroups.get(currentColor);
@@ -95,7 +96,7 @@ public class MainBoard {
                 else if (isBox(id)) {
                     String currentColor = colors.get( id );
                     if(currentColor == null) currentColor = "blue";
-                    Box newBox = new Box( id, currentColor, MainBoardYDomain, currentX);
+                    Box newBox = new Box( id, currentColor, MainBoardYDomain, currentX, uniqueId++);
                     allBoxes.add(newBox);
                     List<Box> boxResult = boxesByID.get(id);
                     objects.add(i, newBox);
@@ -118,7 +119,7 @@ public class MainBoard {
                     }
                 }
                 else if(isGoal(id)) {
-                    Goal goal = new Goal(id, MainBoardYDomain, currentX);
+                    Goal goal = new Goal(id, MainBoardYDomain, currentX, uniqueId++);
                     allGoals.add(goal);
                     objects.add(i, goal);
                     List<Goal> goalRes = goalsByID.get(id);
@@ -132,7 +133,7 @@ public class MainBoard {
                     }
                 }
                 else if(isWall(id)) {
-                    objects.add(i, new Wall(id, currentX, MainBoardYDomain));
+                    objects.add(i, new Wall(id, currentX, MainBoardYDomain, uniqueId++));
                 }
                 else {
                     objects.add(i, null);
@@ -146,8 +147,17 @@ public class MainBoard {
             currentX = 0;
             ++MainBoardYDomain;
         }
+        fillEmptySpaces();
         Collections.sort(agents, (left, right) -> left.getID() - right.getID());
         replaceBoxesWithoutAgentWithAWall();
+
+    }
+    private void fillEmptySpaces() {
+        for(List<BasicObject> xCoords: gameBoard) {
+            while(xCoords.size() < MainBoardXDomain) {
+                xCoords.add(null);
+            }
+        }
     }
     private void replaceBoxesWithoutAgentWithAWall() {
         ListIterator<Box> iterator = allBoxes.listIterator();
@@ -161,7 +171,7 @@ public class MainBoard {
                     BoxColorGroups.remove(current.getColor());
                 }
                 iterator.remove();
-                setElement( current.getX(), current.getY(), new Wall('+', current.getX(), current.getY()));
+                setElement( current.getX(), current.getY(), new Wall('+', current.getX(), current.getY(), current.getUniqueObjectHashID()));
             }
         }
     }
@@ -234,8 +244,8 @@ public class MainBoard {
         }
         setElement(obj.getX(), obj.getY(), obj);
     }
-    private boolean yOutOfBounds(int y) { return (y >= (MainBoardYDomain) || y < 0);}
-    private boolean xOutOfBounds(int x) {return (x >= (MainBoardXDomain) || x < 0);}
+    public static boolean yOutOfBounds(int y) { return (y >= (MainBoardYDomain) || y < 0);}
+    public static boolean xOutOfBounds(int x) {return (x >= (MainBoardXDomain) || x < 0);}
     private void manageMovingThroughGoal(MovingObject obj, int x, int y) {
         Goal steppedOnGoal = steppedOnGoals.get(obj);
         if(steppedOnGoal  != null) {

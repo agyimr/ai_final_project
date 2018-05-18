@@ -19,12 +19,14 @@ public class RandomWalkClient {
 	public RandomWalkClient() {
         gameBoard = new MainBoard(in); //map read in the constructor
         nextStepGameBoard = new MainBoard(gameBoard);
+        System.err.println(gameBoard);
+        System.err.println(nextStepGameBoard);
+        System.err.println(MainBoard.MainBoardXDomain);
+        System.err.println(MainBoard.MainBoardYDomain);
         GoalDependency.getGoalDependency();
         roomMaster = new RoomAStar(gameBoard);
         anticipationPlanning = new AnticipationPlanning(gameBoard);
         assignGoals();
-        System.err.println(gameBoard);
-        System.err.println(nextStepGameBoard);
         //throw new NullPointerException(); //TODO stop here for debugging in preprocessing
 	}
 
@@ -111,7 +113,7 @@ public class RandomWalkClient {
 
 	public static void main( String[] args ) {
 
-        new Debugger("levels/MAobstaclemedium.lvl", 150);
+        new Debugger("competition_levels/SAKJFWAOL.lvl", 500);
 
         // Use stderr to print to console
 

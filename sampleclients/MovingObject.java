@@ -7,8 +7,8 @@ import static sampleclients.Command.type;
 
 public class MovingObject extends BasicObject {
     private String color;
-    public MovingObject ( char id, String color, int y, int x , String ObjectType) {
-        super(y, x, id,  ObjectType);
+    public MovingObject ( char id, String color, int y, int x , int objID, String ObjectType) {
+        super(y, x, id, objID,  ObjectType);
         this.color = color;
 
     }

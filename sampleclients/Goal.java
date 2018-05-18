@@ -8,8 +8,8 @@ public class Goal extends BasicObject {
     public Box assignedBox = null;
     public List<Goal> deps = new ArrayList<Goal>();
     public List<Goal> obs = new ArrayList<>();
-    public Goal( char id, int y, int x ) {
-        super( y, x,id, "Goal");
+    public Goal( char id, int y, int x, int objID ) {
+        super( y, x,id, objID,"Goal");
     }
     public boolean solved(){
         BasicObject el = RandomWalkClient.gameBoard.getElement(this.getX(),this.getY());
