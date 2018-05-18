@@ -26,7 +26,7 @@ public class RandomWalkClient {
         GoalDependency.getGoalDependency();
         roomMaster = new RoomAStar(gameBoard);
         anticipationPlanning = new AnticipationPlanning(gameBoard);
-        if(!MainBoard.singleAgentMap)assignGoals();
+        assignGoals();
         //throw new NullPointerException(); //TODO stop here for debugging in preprocessing
 	}
 

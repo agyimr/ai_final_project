@@ -76,12 +76,8 @@ public class ObstacleArbitrator {
                 agentDictionary.put(current.obstacle, new scheduledAgents(current.rescueAgent, owner));
                 if(anythingProcessed == null) {
                     anythingProcessed = current.waitingPosition;
-                    if(MainBoard.singleAgentMap) {
+                    owner.forceObstacleRemoval(current.obstacle, owner, 0);
 
-                    }
-                    else {
-                        owner.forceObstacleRemoval(current.obstacle, owner, 0);
-                    }
                 }
             }
         }

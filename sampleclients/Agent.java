@@ -207,17 +207,17 @@ public class Agent extends MovingObject {
             if(currentBox instanceof Box) {
                 newBox = (Box) currentBox;
                 if(newBox.noGoalOnTheMap || (newBox.assignedAgent != null || newBox.atGoalPosition() )
-                        || ((!newBox.tryToFindAGoal()))) {
+                        || ((!newBox.canBeSolved()))) {
                     System.err.println("Box: " + newBox + "not for me!");
                     continue;
                 }
-                else if(newBox.assignedGoal.canBeSolved()) {
+                else {
                     System.err.println("here's my box!");
                     if(nextToBox(newBox)) { // can find a path to box, or is next to!
                         attachedBox = newBox;
                         attachedBox.assignedAgent = this;
                         changeState(movingBox);
-
+                        attachedBox.tryToFindAGoal();
                         return true;
                     }
                     int currentPath;
@@ -239,6 +239,7 @@ public class Agent extends MovingObject {
             attachedBox = bestBox;
             attachedBox.assignedAgent = this;
             if(findPathToBox(attachedBox)) {
+                attachedBox.tryToFindAGoal();
                 changeState(movingTowardsBox);
                 return true;
             }
